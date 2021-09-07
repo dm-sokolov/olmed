@@ -77,7 +77,7 @@
 						</script>
 					</xsl:when>
 					<xsl:otherwise>
-						<div class="h3 text-center">
+						<div class="h3">
 							<xsl:choose>
 								<xsl:when test="other_name/node()">
 									<xsl:value-of disable-output-escaping="yes" select="other_name" />
@@ -85,8 +85,7 @@
 								<xsl:otherwise>Записаться на прием</xsl:otherwise>
 							</xsl:choose>
 						</div>
-						<div class="text-center mb-3">Заполните форму и наш специалист подберет удобное время визита для Вас</div>
-					<div class="text-center mb-3"><a href="/personalnie-dannie/" target="_blank" class="text-white">Политика обработки персональных данных</a></div>
+						
 						<xsl:choose>
 							<xsl:when test="error != ''">
 								<div id="error">
@@ -128,7 +127,11 @@
 								</div>
 								
 							</div>
-						</form>
+						</form><div class="form-group">
+										<small class="form-text text-muted">
+										Нажимая кнопку "<xsl:value-of select="button_value" />", я подтверждаю, что даю свое согласие на обработку предоставленных мной данных в соответствии с <a href="/personalnie-dannie/">Политикой обработки персональных данных</a>
+										</small>
+									</div>
 					</xsl:otherwise>
 				</xsl:choose>
 			</div>
@@ -193,7 +196,11 @@
 						<xsl:if test="obligatory = 1">
 							<xsl:attribute name="class">form-control required</xsl:attribute>
 							<xsl:attribute name="minlength">1</xsl:attribute>
-							<xsl:attribute name="title">Заполните поле <xsl:value-of select="$name" /></xsl:attribute>
+							<xsl:attribute name="title"><xsl:choose>
+									<xsl:when test="name = 'fio'">Напишите имя</xsl:when>
+									<xsl:when test="name = 'phone'">Напишите номер телефона</xsl:when>
+									<xsl:when test="name = 'vrach'">Выберите врача</xsl:when>
+							</xsl:choose></xsl:attribute>
 						</xsl:if>
 						<xsl:if test="name = 'phone'">
 							<xsl:attribute name="type">tel</xsl:attribute>

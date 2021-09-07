@@ -11,7 +11,8 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @author Hostmake LLC
  * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
-class Event_Module extends Core_Module{
+class Event_Module extends Core_Module
+{
 	/**
 	 * Module version
 	 * @var string
@@ -22,7 +23,7 @@ class Event_Module extends Core_Module{
 	 * Module date
 	 * @var date
 	 */
-	public $date = '2021-02-16';
+	public $date = '2021-08-23';
 
 	/**
 	 * Module name
@@ -171,8 +172,8 @@ class Event_Module extends Core_Module{
 	public function getCalendarContextMenuActions()
 	{
 		// Идентификатор формы "Дела"
-		$iAdmin_Form_Id = 220;
-		$oAdmin_Form = Core_Entity::factory('Admin_Form', $iAdmin_Form_Id);
+		// $iAdmin_Form_Id = 220;
+		// $oAdmin_Form = Core_Entity::factory('Admin_Form', $iAdmin_Form_Id);
 
 		return array('<a href="javascript:void(0);" onclick="$.modalLoad({path: \'/admin/event/index.php\', action: \'edit\', operation: \'modal\', additionalParams: \'hostcms[checked][0][0]=1&date=\' + $(this).parents(\'ul\').data(\'timestamp\'), windowId: \'id_content\'}); return false">' . Core::_('Event.add_event') . '</a>');
 	}

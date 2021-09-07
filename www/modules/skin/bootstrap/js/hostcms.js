@@ -129,11 +129,51 @@ $('body').popover({
 		$(this).data("titleclass") + '"></h3><div class="popover-content"></div></div>'
 });
 
-$('body').popover({
+
+/*$('body').popover({
 	html: true,
 	selector: '[data-toggle=popover-hover]',
 	trigger: "hover"
+});*/
+$('body').on("mouseenter", '[data-toggle=popover-hover]', function() {
+	var _this = this;
+	$(this).popover({
+		html: true,
+		trigger: "manual",
+		// animation: false
+	})
+	.popover("show");
+	$(".popover").on("mouseleave", function() {
+		$(_this).popover('destroy');
+	});
+}).on("mouseleave", '[data-toggle=popover-hover]', function() {
+	var _this = this;
+	setTimeout(function() {
+		if (!$(".popover:hover").length) {
+			$(_this).popover("destroy");
+		}
+	}, 300);
 });
+
+/*$("#pop123").popover({
+	trigger: "manual",
+	html: true,
+	animation: false
+	})
+	.on("mouseenter", function() {
+		var _this = this;
+		$(this).popover("show");
+		$(".popover").on("mouseleave", function() {
+		$(_this).popover('hide');
+	});
+	}).on("mouseleave", function() {
+		var _this = this;
+		setTimeout(function() {
+	if (!$(".popover:hover").length) {
+		$(_this).popover("hide");
+		}
+	}, 300);
+});*/
 
 /*Handles ToolTips*/
 $('body').tooltip({
@@ -195,17 +235,26 @@ function InitiateSideMenu() {
 	//Sidebar Menu Handle
 
 	//HostCMS: Fix i.menu-expand
-	$(".sidebar-menu i.menu-expand").on('click', function (e) {
+/* 	$(".sidebar-menu i.menu-expand").on('click touchend', function (e) {
 		e.stopImmediatePropagation();
 		e.preventDefault();
 
 		$(this).closest('li').toggleClass('open');
-	});
+	}); */
 
-	$(".sidebar-menu").on('click', function (e) {
+	$(".sidebar-menu").on('click touchend', function (e) {
+
 		var menuLink = $(e.target).closest("a");
+
 		if (!menuLink || menuLink.length == 0)
 			return;
+
+		// HostCMS: Fix submenu
+		if (menuLink.is('[href]') && !$(e.target).hasClass('menu-expand'))
+		{
+			e.stopImmediatePropagation();
+			return;
+		}
 
 		if (!menuLink.hasClass("menu-dropdown")) {
 			if (b && menuLink.get(0).parentNode.parentNode == this) {
@@ -215,12 +264,6 @@ function InitiateSideMenu() {
 				}
 			}
 			return;
-		}
-
-		// HostCMS: Fix submenu
-		if (menuLink.is('[href]') && !$(e.target).hasClass('menu-expand'))
-		{
-			return false;
 		}
 
 		var submenu = menuLink.next().get(0);
@@ -458,7 +501,7 @@ function InitiateSettings() {
 				$('.navbar')
 					.toggleClass('navbar-fixed-top');
 			}
-			
+
 			setCookiesForFixedSettings();
 		});
 

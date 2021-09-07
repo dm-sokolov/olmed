@@ -10,8 +10,12 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * - itemsProperties(TRUE|FALSE|array()) выводить значения дополнительных свойств товаров, по умолчанию FALSE. Может принимать массив с идентификаторами дополнительных свойств, значения которых необходимо вывести.
  * - itemsPropertiesList(TRUE|FALSE|array()) выводить список дополнительных свойств товаров, по умолчанию TRUE
  * - modifications(TRUE|FALSE) показывать модификации для выбранных товаров, по умолчанию FALSE
+ * - commentsRating(TRUE|FALSE) показывать оценки комментариев для выбранных товаров, по умолчанию FALSE
  * - limit($limit) количество
  *
+ * Доступные свойства:
+ *
+ * - total количество товаров в сравнении
  *
  * <code>
  * $Shop_Compare_Controller_Show = new Shop_Compare_Controller_Show(
@@ -43,6 +47,7 @@ class Shop_Compare_Controller_Show extends Core_Controller
 		'itemsProperties',
 		'itemsPropertiesList',
 		'modifications',
+		'commentsRating',
 		'offset',
 		'page',
 		'total',
@@ -89,7 +94,7 @@ class Shop_Compare_Controller_Show extends Core_Controller
 				->value($this->_oSiteuser ? $this->_oSiteuser->id : 0)
 		);
 
-		$this->itemsProperties = $this->modifications = FALSE;
+		$this->itemsProperties = $this->modifications = $this->commentsRating = FALSE;
 		$this->itemsPropertiesList = TRUE;
 		$this->limit = 10;
 
@@ -155,40 +160,7 @@ class Shop_Compare_Controller_Show extends Core_Controller
 				->name('page')
 				->value(intval($this->page)));
 
-		// Список свойств товаров
-		if ($this->itemsPropertiesList)
-		{
-			$oShop_Item_Property_List = Core_Entity::factory('Shop_Item_Property_List', $oShop->id);
-
-			$aProperties = is_array($this->itemsPropertiesList) && count($this->itemsPropertiesList)
-					? $oShop_Item_Property_List->Properties->getAllByid($this->itemsPropertiesList, FALSE, 'IN')
-					: $oShop_Item_Property_List->Properties->findAll();
-
-			foreach ($aProperties as $oProperty)
-			{
-				$this->_aItem_Properties[$oProperty->property_dir_id][] = $oProperty->clearEntities();
-
-				$oShop_Item_Property = $oProperty->Shop_Item_Property;
-
-				$oShop_Item_Property->shop_measure_id && $oProperty->addEntity(
-					$oShop_Item_Property->Shop_Measure
-				);
-			}
-
-			$aProperty_Dirs = $oShop_Item_Property_List->Property_Dirs->findAll();
-			foreach ($aProperty_Dirs as $oProperty_Dir)
-			{
-				$oProperty_Dir->clearEntities();
-				$this->_aItem_Property_Dirs[$oProperty_Dir->parent_id][] = $oProperty_Dir->clearEntities();
-			}
-
-			$Shop_Item_Properties = Core::factory('Core_Xml_Entity')
-				->name('shop_item_properties');
-
-			$this->addEntity($Shop_Item_Properties);
-
-			$this->_addItemsPropertiesList(0, $Shop_Item_Properties);
-		}
+		$this->total = 0;
 
 		if ($this->limit > 0)
 		{
@@ -196,24 +168,29 @@ class Shop_Compare_Controller_Show extends Core_Controller
 
 			$aShop_Compares = $Shop_Compare_Controller->getAll($oShop);
 
+			$this->total = count($aShop_Compares);
+
 			$this->addEntity(
 				Core::factory('Core_Xml_Entity')
 					->name('total')
-					->value(count($aShop_Compares))
+					->value($this->total)
 			);
 
-			$this->total = count($aShop_Compares);
+			$aGroups = array();
 
 			$aShop_Compares = array_slice($aShop_Compares, $this->offset, $this->limit);
-
 			foreach ($aShop_Compares as $oShop_Compare)
 			{
 				$oShop_Item = Core_Entity::factory('Shop_Item')->find($oShop_Compare->shop_item_id);
 				if (!is_null($oShop_Item->id))
 				{
+					!in_array($oShop_Item->shop_group_id, $aGroups)
+						&& $aGroups[] = $oShop_Item->shop_group_id;
+
 					$oShop_Compare
 						->showXmlProperties($this->itemsProperties)
-						->showXmlModifications($this->modifications);
+						->showXmlModifications($this->modifications)
+						->showXmlCommentsRating($this->commentsRating);
 
 					$this->addEntity($oShop_Compare->clearEntities());
 				}
@@ -221,6 +198,41 @@ class Shop_Compare_Controller_Show extends Core_Controller
 				{
 					$oShop_Compare->delete();
 				}
+			}
+
+			// Список свойств товаров
+			if ($this->itemsPropertiesList && count($aGroups))
+			{
+				$oShop_Item_Property_List = Core_Entity::factory('Shop_Item_Property_List', $oShop->id);
+
+				$aProperties = is_array($this->itemsPropertiesList) && count($this->itemsPropertiesList)
+					? $oShop_Item_Property_List->Properties->getAllByid($this->itemsPropertiesList, FALSE, 'IN')
+					: $oShop_Item_Property_List->getPropertiesForGroup($aGroups);
+
+				foreach ($aProperties as $oProperty)
+				{
+					$this->_aItem_Properties[$oProperty->property_dir_id][] = $oProperty->clearEntities();
+
+					$oShop_Item_Property = $oProperty->Shop_Item_Property;
+
+					$oShop_Item_Property->shop_measure_id && $oProperty->addEntity(
+						$oShop_Item_Property->Shop_Measure
+					);
+				}
+
+				$aProperty_Dirs = $oShop_Item_Property_List->Property_Dirs->findAll();
+				foreach ($aProperty_Dirs as $oProperty_Dir)
+				{
+					$oProperty_Dir->clearEntities();
+					$this->_aItem_Property_Dirs[$oProperty_Dir->parent_id][] = $oProperty_Dir->clearEntities();
+				}
+
+				$Shop_Item_Properties = Core::factory('Core_Xml_Entity')
+					->name('shop_item_properties');
+
+				$this->addEntity($Shop_Item_Properties);
+
+				$this->_addItemsPropertiesList(0, $Shop_Item_Properties);
 			}
 		}
 

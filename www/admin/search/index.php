@@ -67,7 +67,7 @@ $bIndexingCompleted = TRUE;
 if ($oAdmin_Form_Controller->getAction() == 'process')
 {
 	Core_Session::start();
-	
+
 	try
 	{
 		// Текущий пользователь
@@ -186,6 +186,12 @@ if ($oAdmin_Form_Controller->getAction() == 'process')
 
 if ($bIndexingCompleted)
 {
+	// Clear Cache
+	if (Core::moduleIsActive('cache'))
+	{
+		Core_Cache::instance(Core::$mainConfig['defaultCache'])->deleteAll('search');
+	}
+
 	Admin_Form_Entity::factory('Form')
 		->controller($oAdmin_Form_Controller)
 		->action($sAdminFormAction)

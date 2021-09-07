@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Siteuser
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Siteuser_Email_Model extends Core_Entity
 {
@@ -279,7 +279,7 @@ class Siteuser_Email_Model extends Core_Entity
 
 						// Resize iframe in modal
 						dialog.on('shown.bs.modal', function (){
-							var iframeHeight =  $("#frame<?php echo $this->id?>").contents().height();
+							var iframeHeight = $("#frame<?php echo $this->id?>").contents().height();
 							$("#frame<?php echo $this->id?>").height(iframeHeight);
 						});
 
@@ -361,5 +361,22 @@ class Siteuser_Email_Model extends Core_Entity
 				?><span class="badge badge-square badge-max-width siteuser-email-to margin-right-5"><a href="mailto:<?php echo htmlspecialchars($sEmail)?>"><?php echo htmlspecialchars($sEmail)?></a></span><?php
 			}
 		}
+	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event siteuser_email.onBeforeGetRelatedSite
+	 * @hostcms-event siteuser_email.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Siteuser->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
 	}
 }

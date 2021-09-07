@@ -77,13 +77,13 @@ class Directory_Controller_Tab_Social extends Directory_Controller_Tab
 				Admin_Form_Entity::factory('Checkbox')
 					->divAttr(array('class' => 'col-xs-3 col-sm-2 no-padding margin-top-23'))
 					->name($this->prefix . 'social_public' . $sNameSuffix)
-					->checked($iSocialPublic ? $iSocialPublic : NULL)
-					->value($iSocialPublic)
+					->value(1)
+					->checked($iSocialPublic ? $iSocialPublic : FALSE)
 					->caption(Core::_('Directory_Social.social_public'))
 			);
 			
 			// Для нового свойства добавляет скрытое поле, хранящее состояние чекбокса
-			if (!$oUser_Directory_Social)
+			/*if (!$oUser_Directory_Social)
 			{
 				$oRowElements->add(
 					Core::factory('Core_Html_Entity_Input')
@@ -91,9 +91,95 @@ class Directory_Controller_Tab_Social extends Directory_Controller_Tab
 						->value(0)
 						->name($this->prefix . 'social_public_value' . $sNameSuffix)
 				);
-			}
+			}*/
 		}
 
 		return $oRowElements;
+	}
+	
+	public function applyObjectProperty($Admin_Form_Controller, $object)
+	{
+		$windowId = $Admin_Form_Controller->getWindowId();
+
+		$prefix = preg_replace('/[^A-Za-z0-9_-]/', '', $this->prefix);
+
+		// Социальные сети, установленные значения
+		$aDirectory_Socials = $object->Directory_Socials->findAll(FALSE);
+		foreach ($aDirectory_Socials as $oDirectory_Social)
+		{
+			$sSocial_Address = Core_Array::getPost("{$prefix}social_address#{$oDirectory_Social->id}", NULL, 'trim');
+
+			if (!empty($sSocial_Address))
+			{
+				$aUrl = @parse_url($sSocial_Address);
+
+				// Если не был указан протокол, или
+				// указанный протокол некорректен для url
+				!array_key_exists('scheme', $aUrl)
+					&& $sSocial_Address = 'https://' . $sSocial_Address;
+
+				$oDirectory_Social
+					->directory_social_type_id(Core_Array::getPost("{$prefix}social#{$oDirectory_Social->id}", 0, 'int'))
+					->public(Core_Array::getPost("{$prefix}social_public#{$oDirectory_Social->id}", 0, 'int'))
+					->value($sSocial_Address)
+					->save();
+			}
+			else
+			{
+				// Удаляем пустую строку с полями
+				ob_start();
+				Core::factory('Core_Html_Entity_Script')
+					->value("$.deleteFormRow($(\"#{$windowId} select[name='{$prefix}social#{$oDirectory_Social->id}']\").closest('.row').find('.btn-delete').get(0));")
+					->execute();
+				$Admin_Form_Controller->addMessage(ob_get_clean());
+				$oDirectory_Social->delete();
+			}
+		}
+
+		// Социальные сети, новые значения
+		$aSocialAddresses = Core_Array::getPost("{$prefix}social_address", array());
+		$aSocials = Core_Array::getPost("{$prefix}social", array());
+		$aSocialPublic = Core_Array::getPost("{$prefix}social_public", array());
+
+		if (is_array($aSocialAddresses) && count($aSocialAddresses))
+		{
+			$i = 0;
+			foreach ($aSocialAddresses as $key => $sSocial_Address)
+			{
+				$sSocial_Address = trim($sSocial_Address);
+
+				if (!empty($sSocial_Address))
+				{
+					$aUrl = @parse_url($sSocial_Address);
+
+					// Если не был указан протокол, или
+					// указанный протокол некорректен для url
+					!array_key_exists('scheme', $aUrl)
+						&& $sSocial_Address = 'https://' . $sSocial_Address;
+
+					$oDirectory_Social = Core_Entity::factory('Directory_Social')
+						->directory_social_type_id(Core_Array::get($aSocials, $key, 0, 'int'))
+						->public(Core_Array::get($aSocialPublic, $key, 0, 'int'))
+						->value($sSocial_Address)
+						->save();
+
+					$object->add($oDirectory_Social);
+
+					ob_start();
+					Core::factory('Core_Html_Entity_Script')
+						->value("$(\"#{$windowId} select[name='{$prefix}social\\[\\]']\").eq({$i}).prop('name', '{$prefix}social#{$oDirectory_Social->id}').closest('.row').find('.btn-delete').removeClass('hide');
+						$(\"#{$windowId} input[name='{$prefix}social_address\\[\\]']\").eq({$i}).prop('name', '{$prefix}social_address#{$oDirectory_Social->id}');
+						$(\"#{$windowId} input[name='{$prefix}social_public\\[\\]']\").eq({$i}).prop('name', '{$prefix}social_public#{$oDirectory_Social->id}');
+						")
+						->execute();
+
+					$Admin_Form_Controller->addMessage(ob_get_clean());
+				}
+				else
+				{
+					$i++;
+				}
+			}
+		}
 	}
 }

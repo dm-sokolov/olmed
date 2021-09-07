@@ -21,7 +21,7 @@ class Report_Module extends Core_Module{	/**
 	 * Module date
 	 * @var date
 	 */
-	public $date = '2021-02-16';
+	public $date = '2021-08-23';
 	/**
 	 * Module name
 	 * @var string

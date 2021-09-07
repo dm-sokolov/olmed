@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage List
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class List_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 {
@@ -67,7 +67,7 @@ class List_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 					->name('site_id')
 					->value($this->_object->site_id)
 					->caption(Core::_('List.site_id'))
-					->divAttr(array('class' => 'form-group col-xs-12 col-sm-4'));
+					->divAttr(array('class' => 'form-group col-xs-12 col-sm-6 col-md-4'));
 
 				$oMainRow3->add($oSelect_Sites);
 
@@ -82,7 +82,7 @@ class List_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 					->name('url_type')
 					->value($this->_object->url_type)
 					->caption(Core::_('List.url_type'))
-					->divAttr(array('class' => 'form-group col-xs-12 col-sm-4'));
+					->divAttr(array('class' => 'form-group col-xs-12 col-sm-6 col-md-4'));
 
 				$oMainRow3->add($oSelect_Url);
 
@@ -130,7 +130,7 @@ class List_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 	/**
 	 * Показ списка групп или поле ввода с autocomplete для большого количества групп
 	 * @param string $fieldName имя поля группы
-	 * @return array  массив элементов, для добавления в строку
+	 * @return array массив элементов, для добавления в строку
 	 */
 	public function listDirShow($fieldName)
 	{
@@ -178,42 +178,42 @@ class List_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 				->value($this->_object->$fieldName)
 				->type('hidden');
 
+			$windowId = $this->_Admin_Form_Controller->getWindowId();
+
 			$oCore_Html_Entity_Script = Core::factory('Core_Html_Entity_Script')
 				->value("
-					$('[name = list_dir_name]').autocomplete({
-						  source: function(request, response) {
-
+					$('#{$windowId} [name = list_dir_name]').autocomplete({
+						source: function(request, response) {
 							$.ajax({
-							  url: '/admin/list/index.php?autocomplete=1&show_dir=1&site_id={$this->_object->site_id}',
-							  dataType: 'json',
-							  data: {
-								queryString: request.term
-							  },
-							  success: function( data ) {
-								response( data );
-							  }
+								url: '/admin/list/index.php?autocomplete=1&show_dir=1&site_id={$this->_object->site_id}',
+								dataType: 'json',
+								data: {
+									queryString: request.term
+								},
+								success: function(data) {
+									response(data);
+								}
 							});
-						  },
-						  minLength: 1,
-						  create: function() {
-							$(this).data('ui-autocomplete')._renderItem = function( ul, item ) {
+						},
+						minLength: 1,
+						create: function() {
+							$(this).data('ui-autocomplete')._renderItem = function(ul, item) {
 								return $('<li></li>')
 									.data('item.autocomplete', item)
 									.append($('<a>').text(item.label))
 									.appendTo(ul);
 							}
-
-							 $(this).prev('.ui-helper-hidden-accessible').remove();
-						  },
-						  select: function( event, ui ) {
-							$('[name = {$fieldName}]').val(ui.item.id);
-						  },
-						  open: function() {
+							$(this).prev('.ui-helper-hidden-accessible').remove();
+						},
+						select: function(event, ui) {
+							$('#{$windowId} [name = {$fieldName}]').val(ui.item.id);
+						},
+						open: function() {
 							$(this).removeClass('ui-corner-all').addClass('ui-corner-top');
-						  },
-						  close: function() {
+						},
+						close: function() {
 							$(this).removeClass('ui-corner-top').addClass('ui-corner-all');
-						  }
+						}
 					});
 				");
 

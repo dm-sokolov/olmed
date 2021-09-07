@@ -1,6 +1,6 @@
 <div class="container mb-4">
 	<div class="row">	
-		<div class="col-md-8 col-lg-9">
+		<div class="col col-xl-9">
 			<div class="breadcrumbs">
 				<?php
 					// Вывод строки навигации
@@ -18,16 +18,19 @@
 			<?php
 			$object = Core_Page::instance()->object;
 			$informationsystem = TRUE;
-
-			if(is_object($object) && get_class($object) == 'Informationsystem_Controller_Show' && $object->group && $object->group != 85 )
+      
+			if(is_object($object) && get_class($object) == 'Informationsystem_Controller_Show' && $object->group)
 			{
+				$oInfoSys = Core_Page::instance()->object->getEntity(); 
+			  $infoSysId = $oInfoSys->id;
+				if ($infoSysId != 40) {
 				$groupId = $object->group;
 
 				$oInformationsystem_Group = Core_Entity::factory('Informationsystem_Group', $groupId);
 				$oProperty = Core_Entity::factory('Property', Core_Page::instance()->config['propertyId']);
 
 				$aPropertyValues = $oProperty->getValues($oInformationsystem_Group->id);
-                                if(!($object->item && $object->group == 85))
+                                if(!($object->item && $object->group == 52))
                                 {
 				if(isset($aPropertyValues[0]) && $aPropertyValues[0]->file)
 				{
@@ -40,14 +43,15 @@
 					$informationsystem = FALSE;
 				}
 			    }
-                        }
-                       // В элементах группы "Акции" не выводим слайдер
-                        if (is_object($object) && get_class($object) == 'Informationsystem_Controller_Show' && $object->item && $object->group == 85) {
-                          $informationsystem = FALSE;
-                        }
+       }
+			}
+    // В элементах инфосистемы "Услуги" не выводим слайдер
+    /*if (is_object($object) && get_class($object) == 'Informationsystem_Controller_Show' && $object->item) {
+          $informationsystem = FALSE;
+    }*/
 
 			// Акции на главной
-			if(is_object($object) && $informationsystem && !($object->group && $object->group == 85) )
+			/*if(is_object($object) && $informationsystem && !($object->group && $object->group == 52) && !($object->group && $object->group == 733 ) )
 			{
 				$Informationsystem_Controller_Show = new Informationsystem_Controller_Show(
 					Core_Entity::factory('Informationsystem', Core_Page::instance()->config['informationsystemId3'])
@@ -64,13 +68,13 @@
 					->itemsProperties(TRUE)
 					->calculateTotal(FALSE)
 					->show();
-			}
+			}*/
 			?>
 			<?php
 				Core_Page::instance()->execute();
 			?>
 		</div>
-		<div class="col-md-4 col-lg-3">
+		<div class="olmed_sidebar col-xl-3 d-none d-xl-block">
 			<?php
 				// Услуги справа
 				$Informationsystem_Controller_Show_Observer = new Informationsystem_Controller_Show_Observer(

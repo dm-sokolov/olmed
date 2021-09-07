@@ -5,7 +5,7 @@
  * @package HostCMS
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 require_once('../../bootstrap.php');
 
@@ -94,10 +94,6 @@ if ($oAdmin_Form_Controller->getAction() == 'send')
 
 	$sDbDrivers = implode(', ', $aDbDrivers);
 
-	$mbFuncOverload = function_exists('mb_get_info')
-		? mb_get_info('func_overload')
-		: 'undefined';
-
 	$message .= "_____________________________________\n";
 	$message .= Core::_('Support.mail_system_information') . "\n";
 	$message .= Core::_('Support.mail_php_version', phpversion()) ."\n";
@@ -107,7 +103,9 @@ if ($oAdmin_Form_Controller->getAction() == 'send')
 	$message .= Core::_('Support.mail_pcre_version', Core::getPcreVersion()) ."\n";
 	$message .= Core::_('Support.mail_max_execution_time', intval(ini_get('max_execution_time'))) ."\n";
 	$message .= Core::_('Support.mail_memory_limit', $memoryLimit) ."\n";
-	$message .= Core::_('Support.mail_func_overload', $mbFuncOverload) ."\n";
+
+	PHP_VERSION_ID < 80000
+		&& $message .= Core::_('Support.mail_func_overload', function_exists('mb_get_info') ? mb_get_info('func_overload') : 'undefined') ."\n";
 
 	$message .= "_____________________________________\n";
 
@@ -310,7 +308,7 @@ $oAdmin_Form_Entity
 					)
 					->smallImage(
 						array('show' => FALSE))
-					->divAttr(array('id' => 'file', 'class' => 'col-xs-12 add-deal-attachment'))
+					->divAttr(array('id' => 'file', 'class' => 'col-xs-12 col-sm-6 add-deal-attachment'))
 					->add(
 						Admin_Form_Entity::factory('Code')
 							->html('<div class="input-group-addon no-padding add-remove-property"><div class="no-padding-left col-lg-12"><div class="btn btn-palegreen" onclick="$.cloneFile(\'' . $windowId .'\'); event.stopPropagation();"><i class="fa fa-plus-circle close"></i></div>

@@ -96,7 +96,7 @@
 								
 								
 								<div class="text-center mb-3">Заполните форму и наш специалист подберет удобное время визита для Вас</div>
-							<div class="text-center mb-3"><a href="/personalnie-dannie/" target="_blank" class="text-white">Политика обработки персональных данных</a></div>
+							<div class="text-center mb-3"><a href="/personalnie-dannie/" target="_blank" class="">Политика обработки персональных данных</a></div>
 								<form name="form{@id}" id="form{@id}" class="validate" action="./" method="post" enctype="multipart/form-data">
 									<div class="form-row">
 										<!-- Вывод разделов формы 0-го уровня -->

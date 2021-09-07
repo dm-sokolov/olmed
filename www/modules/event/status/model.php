@@ -18,7 +18,7 @@ class Event_Status_Model extends Core_Entity
 	 * @var array
 	 */
 	protected $_hasMany = array(
-		'event' =>  array()
+		'event' => array()
 	);
 
 	/**
@@ -121,6 +121,21 @@ class Event_Status_Model extends Core_Entity
 			->set('event_status_id', 0)
 			->where('event_status_id', '=', $this->id)
 			->execute();
+
+		if (Core::moduleIsActive('bot'))
+		{
+			$oModule = Core_Entity::factory('Module')->getByPath('event');
+
+			if ($oModule)
+			{
+				$aBot_Modules = Bot_Controller::getBotModules($oModule->id, 0, $this->id);
+
+				foreach ($aBot_Modules as $oBot_Module)
+				{
+					$oBot_Module->delete();
+				}
+			}
+		}
 
 		return parent::delete($primaryKey);
 	}

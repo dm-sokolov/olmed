@@ -179,17 +179,20 @@ class Siteuser_Controller_Show extends Core_Controller
 					$aShop_Discountcards = $oSiteuser->Shop_Discountcards->getAllByshop_id($oShop->id);
 					foreach ($aShop_Discountcards as $oShop_Discountcard)
 					{
-						$oShop->addEntity(
-							$oShop_Discountcard
-								->clearEntities()
-								->addEntity(
-									Core::factory('Core_Xml_Entity')
-										->name('bonuses_amount')
-										->value(
-											$oShop_Discountcard->getBonusesAmount()
-										)
-								)
-						);
+						if ($oShop_Discountcard->active)
+						{
+							$oShop->addEntity(
+								$oShop_Discountcard
+									->clearEntities()
+									->addEntity(
+										Core::factory('Core_Xml_Entity')
+											->name('bonuses_amount')
+											->value(
+												$oShop_Discountcard->getBonusesAmount()
+											)
+									)
+							);
+						}
 					}
 				}
 

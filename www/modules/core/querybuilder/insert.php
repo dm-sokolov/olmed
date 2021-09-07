@@ -29,8 +29,8 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * $oCore_QueryBuilder_Insert = Core_QueryBuilder::insert('table_name')
  * 	->columns('column1', 'column2', 'column3')
  * 	->select(
- *  	Core_QueryBuilder::select('*')->from('source_table')
- *  )
+ *		Core_QueryBuilder::select('*')->from('source_table')
+ *	)
  *	->execute();
  * </code>
  *

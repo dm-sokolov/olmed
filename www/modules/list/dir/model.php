@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage List
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2019 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class List_Dir_Model extends Core_Entity
 {
@@ -84,13 +84,13 @@ class List_Dir_Model extends Core_Entity
 		$this->id = $primaryKey;
 
 		Core_Event::notify($this->_modelName . '.onBeforeRedeclaredDelete', $this, array($primaryKey));
-		
+
 		$this->List_Dirs->deleteAll(FALSE);
 		$this->Lists->deleteAll(FALSE);
 
 		return parent::delete($primaryKey);
 	}
-	
+
 	/**
 	 * Backend badge
 	 * @param Admin_Form_Field $oAdmin_Form_Field
@@ -104,5 +104,22 @@ class List_Dir_Model extends Core_Entity
 			->class('badge badge-hostcms badge-square')
 			->value($count)
 			->execute();
-	}	
+	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event list_dir.onBeforeGetRelatedSite
+	 * @hostcms-event list_dir.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
+	}
 }

@@ -12,7 +12,7 @@ return array(
 	'company_department_id' => 'Department',
 	'parent_id' => 'Parent location',
 	'responsible_user_id' => 'Responsible',
-	'edit_success'  => 'Location information added successfully!',
+	'edit_success' => 'Location information added successfully!',
 	'markDeleted_success' => 'Location information deleted successfully!',
 	'delete_success' => 'Item deleted successfully!',
 	'undelete_success' => 'Item restored successfully!',

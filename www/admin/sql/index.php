@@ -100,7 +100,7 @@ $formSettings = Core_Array::getPost('hostcms', array())
 
 if ($formSettings['action'] == 'duplicate')
 {
-	$iCount = 0;
+	$iCountQueries = 0;
 
 	$oCore_DataBase = Core_DataBase::instance();
 
@@ -147,7 +147,7 @@ if ($formSettings['action'] == 'duplicate')
 				$oCore_DataBase->setQueryType(5)
 					->query("ALTER TABLE {$sTableName} DROP INDEX " . $oCore_DataBase->quoteColumnName($sIndexName));
 
-				$iCount++;
+				$iCountQueries++;
 			}
 		}
 		catch (Exception $e)
@@ -156,7 +156,7 @@ if ($formSettings['action'] == 'duplicate')
 		}
 	}
 
-	if ($iCount == 0)
+	if ($iCountQueries == 0)
 	{
 		Core_Message::show(Core::_('Sql.no_duplicate'), 'info');
 	}
@@ -164,7 +164,8 @@ if ($formSettings['action'] == 'duplicate')
 
 $sText = Core_Array::getPost('text');
 
-$iCount = 0;
+$iCountQueries = 0;
+
 try
 {
 	// Текущий пользователь
@@ -188,7 +189,11 @@ try
 		{
 			$startTime = Core::getmicrotime();
 
-			$iCount = Sql_Controller::instance()->execute($sText);
+			Core_Log::instance()->clear()
+				->status(Core_Log::$MESSAGE)
+				->write('Sql Query: ' . $sText);
+
+			$iCountQueries = Sql_Controller::instance()->execute($sText);
 
 			$fTime = Core::getmicrotime() - $startTime;
 
@@ -196,15 +201,16 @@ try
 
 			$iColumnCount = Core_DataBase::instance()->getColumnCount();
 
-			$iCount
-				&& Core_Message::show(Core::_('Sql.success_message', $iCount));
+			$iCountQueries == 1
+				? Core_Message::show(Core::_('Sql.success_message_with_affected', $iCountQueries, $iAffectedRows))
+				: Core_Message::show(Core::_('Sql.success_message', $iCountQueries));
 
 			// It was Select Query
 			if ($iColumnCount)
 			{
 				$iLimit = 30;
 
-				if ($iAffectedRows && $iCount == 1)
+				if ($iAffectedRows && $iCountQueries == 1)
 				{
 					$oTable = Core::factory('Core_Html_Entity_Table')
 						->class('admin-table table table-bordered table-hover table-striped sql-table')
@@ -273,18 +279,25 @@ catch (Exception $e)
 	Core_Message::show($e->getMessage(), 'error');
 }
 
-Core_Message::show(Core::_('sql.warning'));
+Core_Message::show(Core::_('sql.warning'), 'warning');
+
+$oTextarea_Sql = Admin_Form_Entity::factory('Textarea');
+
+$oTmpOptions = $oTextarea_Sql->syntaxHighlighterOptions;
+$oTmpOptions['mode'] = 'ace/mode/sql';
 
 $oMainTab = Admin_Form_Entity::factory('Tab')->name('main');
 $oMainTab
 	->add(Admin_Form_Entity::factory('Div')->class('row')->add(
-		Admin_Form_Entity::factory('Textarea')
+		$oTextarea_Sql
 			->name('text')
 			->caption(Core::_('sql.text'))
-			->rows(15)
+			->rows(25)
+			->syntaxHighlighter(defined('SYNTAX_HIGHLIGHTING') ? SYNTAX_HIGHLIGHTING : TRUE)
+			->syntaxHighlighterOptions($oTmpOptions)
 			->divAttr(array('class' => 'form-group col-xs-12'))
 			->value(
-			($iCount == 0 || mb_strlen($sText) < 10240)
+			($iCountQueries == 0 || mb_strlen($sText) < 10240)
 				? $sText
 				: NULL
 			)

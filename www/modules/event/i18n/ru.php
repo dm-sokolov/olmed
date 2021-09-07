@@ -6,7 +6,7 @@
  * @subpackage Event
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 return array(
 	'model_name' => 'Дела',
@@ -61,7 +61,7 @@ return array(
 	'periodDays' => 'Дни',
 	'today' => 'Сегодня в',
 	'yesterday' => 'Вчера в',
-	'edit_success'  => 'Информация о событии изменена!',
+	'edit_success' => 'Информация о событии изменена!',
 	'changeImportant_success' => 'Важность события изменена',
 	'changeCompleted_success' => 'Завершенность события изменена',
 	'markDeleted_success' => 'Дело удалено',

@@ -6,7 +6,7 @@
  * @subpackage Lead
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 return array(
 	'model_name' => 'Зрелость лидов',
@@ -20,7 +20,7 @@ return array(
 	'color' => 'Цвет',
 	'description' => 'Описание',
 	'sorting' => 'Порядок сортировки',
-	'edit_success'  => 'Информация о зрелости лида изменена!',
+	'edit_success' => 'Информация о зрелости лида изменена!',
 	'copy_success' => 'Зрелость лида успешно скопирована!',
 	'markDeleted_success' => 'Зрелость лида успешено удалена!',
 	'markDeleted_error' => 'Ошибка! Зрелость лида не удалена!',

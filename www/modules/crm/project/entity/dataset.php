@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Crm
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Crm_Project_Entity_Dataset extends Admin_Form_Dataset
 {
@@ -111,21 +111,6 @@ class Crm_Project_Entity_Dataset extends Admin_Form_Dataset
 		}
 
 		return $this->_count;
-	}
-
-	/**
-	 * Dataset objects list
-	 * @var array|NULL
-	 */
-	protected $_objects = array();
-
-	/**
-	 * Get objects
-	 * @return array
-	 */
-	public function getObjects()
-	{
-		return $this->_objects;
 	}
 
 	/**

@@ -31,4 +31,6 @@ return array(
 	'undelete_success' => 'Елемент відновлено!',
 	'ban' => 'Заблокувати',
 	'ban_comment' => 'Заблокований за коментар: %s',
+	'option_gradeStep' => 'Крок оцінки',
+	'option_gradeLimit' => 'Ліміт оцінки',
 );

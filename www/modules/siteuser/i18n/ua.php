@@ -104,4 +104,6 @@ return array(
 	'text' => 'Текст',
 	'from' => 'E-mail відправника',
 	'sender_name' => 'Ім відправника',
+
+	'option_save_emails' => 'Зберігати листи'
 );

@@ -111,9 +111,10 @@ if (Core_Auth::logged())
 						->where('siteusers.login', 'LIKE', '%' . $sQuery . '%')
 					->close()
 					->where('siteusers.site_id', '=', CURRENT_SITE)
+					->where('siteusers.deleted', '=', 0)
 					->limit(Core::$mainConfig['autocompleteItems']);
 
-				$aSiteuser_People = $oSiteuser_People->findAll();
+				$aSiteuser_People = $oSiteuser_People->findAll(FALSE);
 
 				foreach ($aSiteuser_People as $oSiteuser_Person)
 				{
@@ -132,9 +133,10 @@ if (Core_Auth::logged())
 						->where('siteusers.login', 'LIKE', '%' . $sQuery . '%')
 					->close()
 					->where('siteusers.site_id', '=', CURRENT_SITE)
+					->where('siteusers.deleted', '=', 0)
 					->limit(Core::$mainConfig['autocompleteItems']);
 
-				$aSiteuser_Companies = $oSiteuser_Companies->findAll();
+				$aSiteuser_Companies = $oSiteuser_Companies->findAll(FALSE);
 
 				foreach ($aSiteuser_Companies as $oSiteuser_Company)
 				{
@@ -177,106 +179,151 @@ function prepareSiteuserJSON($object)
 			$aSiteuser_Companies = $object->Siteuser_Companies->findAll(FALSE);
 			foreach ($aSiteuser_Companies as $oSiteuser_Company)
 			{
-				$avatar = $oSiteuser_Company->getAvatar();
-
-				$aDirectory_Phones = $oSiteuser_Company->Directory_Phones->findAll(FALSE);
-				$phone = isset($aDirectory_Phones[0])
-					? $aDirectory_Phones[0]->value
-					: '';
-
-				$aDirectory_Emails = $oSiteuser_Company->Directory_Emails->findAll(FALSE);
-				$email = isset($aDirectory_Emails[0])
-					? $aDirectory_Emails[0]->value
-					: '';
-
-				$aReturn['companies'][] = array(
-					'id' => 'company_' . $oSiteuser_Company->id,
-					'name' =>  $oSiteuser_Company->name,
-					'avatar' =>  $avatar,
-					'phone' =>  $phone,
-					'email' =>  $email,
-					'type' =>  'company',
-				);
+				$aReturn['companies'][] = prepareSiteuserJSONCompany($oSiteuser_Company);
 			}
 
 			$aSiteuser_People = $object->Siteuser_People->findAll(FALSE);
 			foreach ($aSiteuser_People as $oSiteuser_Person)
 			{
-				$avatar = $oSiteuser_Person->getAvatar();
-				$fullName = $oSiteuser_Person->getFullName();
-
-				$aDirectory_Phones = $oSiteuser_Person->Directory_Phones->findAll(FALSE);
-				$phone = isset($aDirectory_Phones[0])
-					? $aDirectory_Phones[0]->value
-					: '';
-
-				$aDirectory_Emails = $oSiteuser_Person->Directory_Emails->findAll(FALSE);
-				$email = isset($aDirectory_Emails[0])
-					? $aDirectory_Emails[0]->value
-					: '';
-
-				$aReturn['people'][] = array(
-					'id' => 'person_' . $oSiteuser_Person->id,
-					'name' =>  $fullName,
-					'avatar' =>  $avatar,
-					'phone' =>  $phone,
-					'email' =>  $email,
-					'type' =>  'person',
-				);
+				$aReturn['people'][] = prepareSiteuserJSONPerson($oSiteuser_Person);
 			}
 		break;
 		case 'Siteuser_Company_Model':
-			$avatar = $object->getAvatar();
-
-			$aDirectory_Phones = $object->Directory_Phones->findAll(FALSE);
-			$phone = isset($aDirectory_Phones[0])
-				? $aDirectory_Phones[0]->value
-				: '';
-
-			$aDirectory_Emails = $object->Directory_Emails->findAll(FALSE);
-			$email = isset($aDirectory_Emails[0])
-				? $aDirectory_Emails[0]->value
-				: '';
-
-			$aReturn = array(
-				'id' => 'company_' . $object->id,
-				'text' => $object->name . ' [' . $object->Siteuser->login . '] ' . '%%%' . $avatar,
-				'name' =>  $object->name,
-				'avatar' =>  $avatar,
-				'phone' =>  $phone,
-				'email' =>  $email,
-				'login' => $object->Siteuser->login,
-				'siteuser_id' => $object->siteuser_id,
-				'type' =>  'company',
-			);
+			$aReturn = prepareSiteuserJSONCompany($object);
 		break;
 		case 'Siteuser_Person_Model':
-			$avatar = $object->getAvatar();
-			$fullName = $object->getFullName();
-
-			$aDirectory_Phones = $object->Directory_Phones->findAll(FALSE);
-			$phone = isset($aDirectory_Phones[0])
-				? $aDirectory_Phones[0]->value
-				: '';
-
-			$aDirectory_Emails = $object->Directory_Emails->findAll(FALSE);
-			$email = isset($aDirectory_Emails[0])
-				? $aDirectory_Emails[0]->value
-				: '';
-
-			$aReturn = array(
-				'id' => 'person_' . $object->id,
-				'text' => $fullName . ' [' . $object->Siteuser->login . '] ' . '%%%' . $avatar,
-				'name' =>  $fullName,
-				'avatar' =>  $avatar,
-				'phone' =>  $phone,
-				'email' =>  $email,
-				'login' => $object->Siteuser->login,
-				'siteuser_id' => $object->siteuser_id,
-				'type' =>  'person',
-			);
+			$aReturn = prepareSiteuserJSONPerson($object);
 		break;
 	}
+
+	return $aReturn;
+}
+
+
+function prepareSiteuserJSONCompany($object)
+{
+	$avatar = $object->getAvatar();
+
+	$aDirectory_Phones = $object->Directory_Phones->findAll(FALSE);
+	$phone = isset($aDirectory_Phones[0])
+		? $aDirectory_Phones[0]->value
+		: '';
+
+	$aDirectory_Emails = $object->Directory_Emails->findAll(FALSE);
+	$email = isset($aDirectory_Emails[0])
+		? $aDirectory_Emails[0]->value
+		: '';
+
+	$aAddresses = array();
+
+	$aDirectory_Addresses = $object->Directory_Addresses->findAll(FALSE);
+	foreach ($aDirectory_Addresses as $oDirectory_Address)
+	{
+		$shop_country_id = $shop_country_location_city_id = $shop_country_location_id = 0;
+
+		if (strlen(trim($oDirectory_Address->city)))
+		{
+			$oShop_Country_Location_City = Core_Entity::factory('Shop_Country_Location_City')->getByName($oDirectory_Address->city);
+
+			if (!is_null($oShop_Country_Location_City))
+			{
+				$shop_country_location_city_id = $oShop_Country_Location_City->id;
+				$shop_country_location_id = $oShop_Country_Location_City->shop_country_location_id;
+				$shop_country_id = $oShop_Country_Location_City->Shop_Country_Location->Shop_Country->id;
+			}
+		}
+		elseif (strlen(trim($oDirectory_Address->country)))
+		{
+			$oShop_Country = Core_Entity::factory('Shop_Country')->getByName($oDirectory_Address->country);
+
+			if (!is_null($oShop_Country))
+			{
+				$shop_country_id = $oShop_Country->id;
+			}
+		}
+
+		$aAddresses[] = array(
+			'country' => intval($shop_country_id),
+			'location' => intval($shop_country_location_id),
+			'city' => intval($shop_country_location_city_id),
+			'postcode' => $oDirectory_Address->postcode,
+			'address' => $oDirectory_Address->value
+		);
+	}
+
+	$aReturn = array(
+		'id' => 'company_' . $object->id,
+		'text' => $object->name . ' [' . $object->Siteuser->login . '] ' . '%%%' . $avatar,
+		'name' =>  $object->name,
+		'avatar' =>  $avatar,
+		'phone' =>  $phone,
+		'email' =>  $email,
+		'tin' => $object->tin,
+		'addresses' => $aAddresses,
+		'login' => $object->Siteuser->login,
+		'siteuser_id' => $object->siteuser_id,
+		'type' =>  'company',
+	);
+
+	return $aReturn;
+}
+
+function prepareSiteuserJSONPerson($object)
+{
+	$avatar = $object->getAvatar();
+	$fullName = $object->getFullName();
+
+	$aDirectory_Phones = $object->Directory_Phones->findAll(FALSE);
+	$phone = isset($aDirectory_Phones[0])
+		? $aDirectory_Phones[0]->value
+		: '';
+
+	$aDirectory_Emails = $object->Directory_Emails->findAll(FALSE);
+	$email = isset($aDirectory_Emails[0])
+		? $aDirectory_Emails[0]->value
+		: '';
+
+	$shop_country_id = $shop_country_location_city_id = $shop_country_location_id = 0;
+
+	if (strlen(trim($object->city)))
+	{
+		$oShop_Country_Location_City = Core_Entity::factory('Shop_Country_Location_City')->getByName($object->city);
+
+		if (!is_null($oShop_Country_Location_City))
+		{
+			$shop_country_location_city_id = $oShop_Country_Location_City->id;
+			$shop_country_location_id = $oShop_Country_Location_City->shop_country_location_id;
+			$shop_country_id = $oShop_Country_Location_City->Shop_Country_Location->Shop_Country->id;
+		}
+	}
+	elseif (strlen(trim($object->country)))
+	{
+		$oShop_Country = Core_Entity::factory('Shop_Country')->getByName($object->country);
+
+		if (!is_null($oShop_Country))
+		{
+			$shop_country_id = $oShop_Country->id;
+		}
+	}
+
+	$aReturn = array(
+		'id' => 'person_' . $object->id,
+		'text' => $fullName . ' [' . $object->Siteuser->login . '] ' . '%%%' . $avatar,
+		'name' =>  $object->name,
+		'surname' =>  $object->surname,
+		'patronymic' =>  $object->patronymic,
+		'avatar' =>  $avatar,
+		'phone' =>  $phone,
+		'email' =>  $email,
+		'country' => intval($shop_country_id),
+		'location' => intval($shop_country_location_id),
+		'city' => intval($shop_country_location_city_id),
+		'postcode' => $object->postcode,
+		'address' => $object->address,
+		'login' => $object->Siteuser->login,
+		'siteuser_id' => $object->siteuser_id,
+		'type' =>  'person',
+	);
 
 	return $aReturn;
 }

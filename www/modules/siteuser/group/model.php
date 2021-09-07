@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Siteuser
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2019 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Siteuser_Group_Model extends Core_Entity
 {
@@ -122,13 +122,14 @@ class Siteuser_Group_Model extends Core_Entity
 	public function getDefault($bCache = TRUE)
 	{
 		$this->queryBuilder()
-			//->clear()
-			->where('default', '=', 1)
+			->where('siteuser_groups.default', '=', 1)
 			->limit(1);
 
 		$aSiteuser_Groups = $this->findAll($bCache);
 
-		return isset($aSiteuser_Groups[0]) ? $aSiteuser_Groups[0] : NULL;
+		return isset($aSiteuser_Groups[0])
+			? $aSiteuser_Groups[0]
+			: NULL;
 	}
 
 	/**
@@ -137,7 +138,14 @@ class Siteuser_Group_Model extends Core_Entity
 	 */
 	public function setDefault()
 	{
-		$aSiteuser_Groups = $this->Site->Siteuser_Groups->findAll();
+		$this->save();
+
+		$oSiteuser_Groups = $this->Site->Siteuser_Groups;
+		$oSiteuser_Groups
+			->queryBuilder()
+			->where('siteuser_groups.default', '=', 1);
+
+		$aSiteuser_Groups = $oSiteuser_Groups->findAll();
 
 		foreach ($aSiteuser_Groups as $oSiteuser_Group)
 		{
@@ -149,5 +157,22 @@ class Siteuser_Group_Model extends Core_Entity
 		$this->save();
 
 		return $this;
+	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event siteuser_group.onBeforeGetRelatedSite
+	 * @hostcms-event siteuser_group.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
 	}
 }

@@ -171,7 +171,7 @@ class Form_Field_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 				$oMainTab
 					->move($this->getField('default_value'), $oMainRow8);
 
-				$this->getField('obligatory')->divAttr(array('class' => 'form-group col-lg-4 hidden-2 hidden-9'));
+				$this->getField('obligatory')->divAttr(array('class' => 'form-group col-lg-4 hidden-9'));
 				$oMainTab
 					->move($this->getField('obligatory'), $oMainRow9);
 

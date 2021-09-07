@@ -149,11 +149,11 @@
 	
 	<!-- Шаблон вывода информационного элемента -->
 	<xsl:template match="informationsystem_item">
-		<div class="media mb-4">
+		<div class="media mb-4 d-flex flex-column flex-md-row">
 			<xsl:choose>
 				<xsl:when test="image_small!=''">
 					<a href="{url}" title="{name}">
-						<img src="{dir}{image_small}" class="mr-3" alt="{name}" />
+						<img src="{dir}{image_small}" class="mr-3 mb-4" alt="{name}" />
 					</a>
 				</xsl:when>
 				<xsl:otherwise>

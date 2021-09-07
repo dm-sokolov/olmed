@@ -192,6 +192,18 @@ $oAdmin_Form_Dataset->addCondition(
 
 // $oAdmin_Form_Dataset->changeField('datetime', 'type', 10);
 
+// Список значений для фильтра и поля
+$aForm_Statuses = Core_Entity::factory('Form_Status')->findAll();
+$aList = array('0' => Core::_('Admin.none'));
+foreach ($aForm_Statuses as $oForm_Status)
+{
+	$aList[$oForm_Status->id] = $oForm_Status->name;
+}
+
+$oAdmin_Form_Dataset
+	->changeField('form_status_id', 'type', 8)
+	->changeField('form_status_id', 'list', $aList);
+
 // Добавляем источник данных контроллеру формы
 $oAdmin_Form_Controller->addDataset(
 	$oAdmin_Form_Dataset

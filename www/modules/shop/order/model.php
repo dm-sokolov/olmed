@@ -313,7 +313,11 @@ class Shop_Order_Model extends Core_Entity
 		$aOrderItems = $this->Shop_Order_Items->findAll(FALSE);
 		foreach ($aOrderItems as $oShop_Order_Item)
 		{
-			$fAmount += $oShop_Order_Item->getAmount();
+			// Не установлен статус у товара или статус НЕ отмененный
+			if (!$oShop_Order_Item->isCanceled())
+			{
+				$fAmount += $oShop_Order_Item->getAmount();
+			}
 		}
 
 		return $fAmount;
@@ -371,7 +375,10 @@ class Shop_Order_Model extends Core_Entity
 		$aShop_Order_Items = $this->Shop_Order_Items->findAll(FALSE);
 		foreach ($aShop_Order_Items as $oShop_Order_Item)
 		{
-			$weight += $oShop_Order_Item->Shop_Item->weight * $oShop_Order_Item->quantity;
+			if (!$oShop_Order_Item->isCanceled())
+			{
+				$weight += $oShop_Order_Item->Shop_Item->weight * $oShop_Order_Item->quantity;
+			}
 		}
 
 		return Shop_Controller::instance()->round($weight);
@@ -421,11 +428,9 @@ class Shop_Order_Model extends Core_Entity
 			}
 		}
 
-		$this->canceled = 1 - $this->canceled;
-		$this->save();
-
-		// Удалить зарезервированные товары
-		$this->deleteReservedItems();
+		$this->canceled == 0
+			? $this->cancel()
+			: $this->uncancel();
 
 		if ($this->shop_payment_system_id)
 		{
@@ -446,12 +451,70 @@ class Shop_Order_Model extends Core_Entity
 			}
 		}
 
-		$this->historyPushCanceled();
+
 
 		Core_Event::notify($this->_modelName . '.onAfterChangeStatusCanceled', $this);
 
 		return $this;
 	}
+
+	/**
+	 * Cancel the order
+	 * @return self
+	 * @hostcms-event shop_order.onBeforeCancel
+	 * @hostcms-event shop_order.onAfterCancel
+	 */
+	public function cancel()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeCancel', $this);
+
+		if (!$this->canceled)
+		{
+			$this->canceled = 1;
+			$this->save();
+
+			// Удалить зарезервированные товары
+			$this->deleteReservedItems();
+
+			$this->historyPushCanceled();
+		}
+
+		Core_Event::notify($this->_modelName . '.onAfterCancel', $this);
+
+		return $this->save();
+	}
+
+	/**
+	 * Uncancel the order
+	 * @return self
+	 * @hostcms-event shop_order.onBeforeUncancel
+	 * @hostcms-event shop_order.onAfterUncancel
+	 */
+	public function uncancel()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeUncancel', $this);
+
+		if ($this->canceled)
+		{
+			$this->canceled = 0;
+			$this->save();
+
+			// Удалить зарезервированные товары
+			$this->deleteReservedItems();
+
+			// Резервируется при редактировании
+			/*$this->Shop->reserve
+				&& !$this->paid && !$this->posted
+				&& $this->reserveItems();*/
+
+			$this->historyPushCanceled();
+		}
+
+		Core_Event::notify($this->_modelName . '.onAfterUncancel', $this);
+
+		return $this->save();
+	}
+
 
 	/**
 	 * Recalc delivery price by delivery conditions
@@ -474,11 +537,11 @@ class Shop_Order_Model extends Core_Entity
 		{
 			if ($oShop_Order_Item->type == 0)
 			{
-				$tax = $oShop_Order_Item->rate
-					? $oShop_Controller->round($oShop_Order_Item->price * $oShop_Order_Item->rate / 100)
-					: 0;
-				$iOrderSum += ($oShop_Order_Item->price + $tax) * $oShop_Order_Item->quantity;
-				$iOrderWeight += $oShop_Order_Item->Shop_Item->weight * $oShop_Order_Item->quantity;
+				if (!$oShop_Order_Item->isCanceled())
+				{
+					$iOrderSum += $oShop_Order_Item->getPrice() * $oShop_Order_Item->quantity;
+					$iOrderWeight += $oShop_Order_Item->Shop_Item->weight * $oShop_Order_Item->quantity;
+				}
 			}
 		}
 
@@ -672,13 +735,13 @@ class Shop_Order_Model extends Core_Entity
 
 	/**
 	 * Show order items data in XML
-	 * @var boolean
+	 * @var mixed
 	 */
 	protected $_showXmlItems = FALSE;
 
 	/**
 	 * Show items in XML
-	 * @param boolean $showXmlItems
+	 * @param mixed $showXmlItems TRUE|FALSE|'not canceled'
 	 * @return self
 	 */
 	public function showXmlItems($showXmlItems = TRUE)
@@ -875,36 +938,37 @@ class Shop_Order_Model extends Core_Entity
 			$this->Siteuser->showXmlProperties($this->_showXmlProperties)
 		);
 
-		$amount = $total_tax = 0;
-
 		if ($this->_showXmlItems)
 		{
+			$amount = $total_tax = 0;
+
 			$aShop_Order_Items = $this->Shop_Order_Items->findAll(FALSE);
 			foreach ($aShop_Order_Items as $oShop_Order_Item)
 			{
-				$this->addEntity(
-					$oShop_Order_Item->clearEntities()
-						->showXmlProperties($this->_showXmlProperties)
-						->showXmlItem(TRUE)
-				);
-				//$tax = $oShop_Order_Item->quantity * $oShop_Order_Item->price / (100 + $oShop_Order_Item->rate) * $oShop_Order_Item->rate;
-				//$tax = Shop_Controller::instance()->round($oShop_Order_Item->price * $oShop_Order_Item->rate / 100);
+				if ($this->_showXmlItems !== 'not canceled' || !$oShop_Order_Item->isCanceled())
+				{
+					$this->addEntity(
+						$oShop_Order_Item->clearEntities()
+							->showXmlProperties($this->_showXmlProperties)
+							->showXmlItem(TRUE)
+					);
 
-				$total_tax += $oShop_Order_Item->getTax() * $oShop_Order_Item->quantity;
-				$amount += $oShop_Order_Item->getAmount();
+					$total_tax += $oShop_Order_Item->getTax() * $oShop_Order_Item->quantity;
+					$amount += $oShop_Order_Item->getAmount();
+				}
 			}
-		}
 
-		// Total order amount
-		$this->addEntity(
-			Core::factory('Core_Xml_Entity')
-				->name('total_amount')
-				->value(Shop_Controller::instance()->round($amount))
-		)->addEntity(
-			Core::factory('Core_Xml_Entity')
-				->name('total_tax')
-				->value(Shop_Controller::instance()->round($total_tax))
-		);
+			// Total order amount
+			$this->addEntity(
+				Core::factory('Core_Xml_Entity')
+					->name('total_amount')
+					->value(Shop_Controller::instance()->round($amount))
+			)->addEntity(
+				Core::factory('Core_Xml_Entity')
+					->name('total_tax')
+					->value(Shop_Controller::instance()->round($total_tax))
+			);
+		}
 
 		return $this;
 	}
@@ -955,7 +1019,8 @@ class Shop_Order_Model extends Core_Entity
 
 				if (isset($aShop_Discountcards[0]))
 				{
-					$this->_oShop_Discountcard = $aShop_Discountcards[0];
+					$aShop_Discountcards[0]->active
+						&& $this->_oShop_Discountcard = $aShop_Discountcards[0];
 				}
 				else
 				{
@@ -1101,7 +1166,8 @@ class Shop_Order_Model extends Core_Entity
 
 				if (isset($aShop_Discountcards[0]))
 				{
-					$this->_oShop_Discountcard = $aShop_Discountcards[0];
+					$aShop_Discountcards[0]->active
+						&& $this->_oShop_Discountcard = $aShop_Discountcards[0];
 				}
 			}
 
@@ -1118,12 +1184,55 @@ class Shop_Order_Model extends Core_Entity
 			$this->_paidShopDiscountcard();
 
 			// История
-			$this->historyPushCanceled();
+			$this->historyPushPaid();
 		}
 
 		Core_Event::notify($this->_modelName . '.onAfterCancelPaid', $this);
 
 		return $this->save();
+	}
+
+	/*
+	 * Check shop order item statuses
+	 * @return self
+	 */
+	public function checkShopOrderItemStatuses()
+	{
+		$aTmp = array();
+
+		$aShop_Order_Items = $this->Shop_Order_Items->getAllByType(0, FALSE);
+
+		foreach ($aShop_Order_Items as $oShop_Order_Item)
+		{
+			if ($oShop_Order_Item->shop_order_item_status_id)
+			{
+				$aTmp[$oShop_Order_Item->shop_order_item_status_id][] = $oShop_Order_Item->id;
+			}
+		}
+
+		// У всех товаров один статус
+		if (count($aTmp) == 1)
+		{
+			$shop_order_item_status_id = key($aTmp);
+			$oShop_Order_Item_Status = Core_Entity::factory('Shop_Order_Item_Status', $shop_order_item_status_id);
+
+			if ($oShop_Order_Item_Status->shop_order_status_id != $this->shop_order_status_id)
+			{
+				if ($oShop_Order_Item_Status->shop_order_status_id)
+				{
+					$this->shop_order_status_id = $oShop_Order_Item_Status->shop_order_status_id;
+					$this->save();
+
+					$this->historyPushChangeStatus();
+					$this->notifyBotsChangeStatus();
+				}
+
+				$oShop_Order_Item_Status->canceled
+					&& $this->cancel();
+			}
+		}
+
+		return $this;
 	}
 
 	/**
@@ -1171,7 +1280,6 @@ class Shop_Order_Model extends Core_Entity
 		$this->deleteReservedItems();
 
 		$aShop_Order_Items = $this->Shop_Order_Items->findAll(FALSE);
-
 		foreach ($aShop_Order_Items as $oShop_Order_Item)
 		{
 			$oShop_Item_Reserved = Core_Entity::factory('Shop_Item_Reserved');
@@ -1328,7 +1436,7 @@ class Shop_Order_Model extends Core_Entity
 			in_array($oShop_Order_Item->type, array(3, 4, 5))
 				? $fTotalDiscount += $fAmount
 				: $fTotalAmount += $fAmount;
-				
+
 			$oShop_Item->clearCache();
 		}
 
@@ -1373,6 +1481,11 @@ class Shop_Order_Model extends Core_Entity
 										? $fAmount * $oShop_Bonus->value / 100
 										: $oShop_Bonus->value;
 
+									// Тип зачисления по умолчанию
+									$oShop_Discountcard_Bonus_Type = $oShop->Shop_Discountcard_Bonus_Types->getDefault();
+									!is_null($oShop_Discountcard_Bonus_Type)
+										&& $oShop_Discountcard_Bonus->shop_discountcard_bonus_type_id = $oShop_Discountcard_Bonus_Type->id;
+
 									$this->_oShop_Discountcard->add($oShop_Discountcard_Bonus);
 								}
 							}
@@ -1392,8 +1505,7 @@ class Shop_Order_Model extends Core_Entity
 		if ($oShop->write_off_paid_items)
 		{
 			$this->paid
-				? $this->post()
-				: $this->unpost();
+				&& $this->post();
 		}
 
 		// Транзакции пользователю за уровни партнерской программы
@@ -2173,6 +2285,26 @@ class Shop_Order_Model extends Core_Entity
 					}
 				}
 
+				if ($oShop_Order_Item->rate > 0)
+				{
+					$oShop_Tax = $oShop_Item && $oShop_Item->shop_tax_id
+						? $oShop_Item->Shop_Tax
+						: NULL;
+
+					$taxName = $oShop_Tax ? $oShop_Tax->name : 'НДС';
+
+					$oTaxRates = $oCurrentItemXml->addChild('СтавкиНалогов');
+					$oTaxRate = $oTaxRates->addChild('СтавкаНалога');
+					$oTaxRate->addChild('Наименование', $taxName);
+					$oTaxRate->addChild('Ставка', $oShop_Order_Item->rate);
+
+					$oTaxes = $oCurrentItemXml->addChild('Налоги');
+					$oTax = $oTaxes->addChild('Налог');
+					$oTax->addChild('Наименование', $taxName);
+					$oTax->addChild('УчтеноВСумме', 'true');
+					$oTax->addChild('Сумма', $oShop_Order_Item->getTax());
+				}
+
 				if ($oShop_Order_Item->shop_warehouse_id)
 				{
 					$oWarehouses = $oCurrentItemXml->addChild('Склады');
@@ -2196,6 +2328,9 @@ class Shop_Order_Model extends Core_Entity
 				$oCurrentItemXml = $oDiscountXml->addChild('Скидка');
 				$oCurrentItemXml->addChild('Наименование', $oShop_Order_Item->name);
 				$oCurrentItemXml->addChild('Сумма', -1 * $oShop_Order_Item->getPrice() * $oShop_Order_Item->quantity);
+				// https://v8.1c.ru/upload/integraciya/realizovannye-resheniya/commerceml_2_10_2.pdf страница 43
+				// Сумма	СуммаТип	[0..1]
+				// Общая сумма по документу. Налоги, скидки и дополнительные расходы включаются в данную сумму в зависимости от установок "УчтеноВСумме", поэтому true
 				$oCurrentItemXml->addChild('УчтеноВСумме', 'true');
 			}
 		}
@@ -2330,7 +2465,12 @@ class Shop_Order_Model extends Core_Entity
 								? $oShop_Order_Item->getTax() * $oShop_Order_Item->quantity
 								: 0;
 
-							$fItemAmount = $oShop_Order_Item->getAmount();
+							// Не установлен статус у товара или статус НЕ отмененный
+							$bNotCanceled = !$oShop_Order_Item->isCanceled();
+
+							$fItemAmount = $bNotCanceled
+								? $oShop_Order_Item->getAmount()
+								: 0;
 
 							$fShopTaxValueSum += $fShopTaxValue;
 							$fShopOrderItemSum += $fItemAmount;
@@ -2341,7 +2481,13 @@ class Shop_Order_Model extends Core_Entity
 									<?php echo $i++?>
 								</td>
 								<td>
-									<?php echo htmlspecialchars($oShop_Order_Item->name)?>
+									<?php
+									if ($oShop_Order_Item->shop_order_item_status_id)
+									{
+										?><i class="fa <?php echo $oShop_Order_Item->Shop_Order_Item_Status->canceled ? 'fa-times-circle' : 'fa-circle'?>" style="color: <?php echo htmlspecialchars($oShop_Order_Item->Shop_Order_Item_Status->color)?>" title="<?php echo htmlspecialchars($oShop_Order_Item->Shop_Order_Item_Status->name)?>"></i> <?php
+									}
+									echo htmlspecialchars($oShop_Order_Item->name);
+									?>
 								</td>
 								<td>
 									<?php echo htmlspecialchars($oShop_Order_Item->marking)?>
@@ -2359,7 +2505,7 @@ class Shop_Order_Model extends Core_Entity
 									<?php echo $fShopTaxValue != 0 ? $fShopTaxValue : '-'?>
 								</td>
 								<td>
-									<?php echo number_format($fItemAmount, 2, '.', '')?>
+									<?php echo $bNotCanceled ? number_format($fItemAmount, 2, '.', '') : '-'?>
 								</td>
 							</tr>
 							<?php
@@ -2370,7 +2516,7 @@ class Shop_Order_Model extends Core_Entity
 							<td width="80%" align="right" style="border-bottom: 1px solid #e9e9e9" colspan="6">
 								<?php echo Core::_("Shop_Order.table_nds")?>
 							</td>
-							<td width="80%" align="right"  style="border-bottom: 1px solid #e9e9e9" colspan="3">
+							<td width="80%" align="right" style="border-bottom: 1px solid #e9e9e9" colspan="3">
 								<?php echo sprintf("%.2f", $fShopTaxValueSum) . " " . htmlspecialchars($this->Shop->Shop_Currency->name)?>
 							</td>
 						</tr>
@@ -2406,7 +2552,7 @@ class Shop_Order_Model extends Core_Entity
 		// Fix popover for form in tab
 		$windowId == 'shop-orders' && $windowId = 'id_content';
 
-		?><a href="<?php echo $link?>" onclick="$('#' + $.getWindowId('<?php echo $windowId?>') + ' #row_0_<?php echo $this->id?>').toggleHighlight();<?php echo $onclick?>" data-container="#<?php echo $windowId?>" data-titleclass="bordered-lightgray" data-toggle="popover-hover" data-placement="left" data-title="<?php echo htmlspecialchars(Core::_('Shop_Order.popover_title', $this->invoice))?>" data-content="<?php echo htmlspecialchars($this->orderPopover())?>"><i class="fa fa-list" title=""></i></a><?php
+		?><a id="popover-hover" href="#<?php echo $link?>" onclick="$('#' + $.getWindowId('<?php echo $windowId?>') + ' #row_0_<?php echo $this->id?>').toggleHighlight();<?php echo $onclick?>" data-container="#<?php echo $windowId?>" data-titleclass="bordered-lightgray" data-toggle="popover-hover" data-placement="left" data-title="<?php echo htmlspecialchars(Core::_('Shop_Order.popover_title', $this->invoice))?>" data-content="<?php echo htmlspecialchars($this->orderPopover())?>"><i class="fa fa-list" title=""></i></a><?php
 	}
 
 	/**
@@ -2516,7 +2662,10 @@ class Shop_Order_Model extends Core_Entity
 				$oSiteuser = $this->Siteuser;
 
 				$oShop_Discountcard = $oSiteuser->Shop_Discountcards->getByShop_id($oShop->id);
-				if (!is_null($oShop_Discountcard) && $oShop_Discountcard->shop_discountcard_level_id)
+				if (!is_null($oShop_Discountcard)
+					&& $oShop_Discountcard->active
+					&& $oShop_Discountcard->shop_discountcard_level_id
+				)
 				{
 					$oShop_Discountcard_Level = $oShop_Discountcard->Shop_Discountcard_Level;
 
@@ -2788,17 +2937,22 @@ class Shop_Order_Model extends Core_Entity
 		$aReplace['tax'] = Shop_Controller::instance()->round($total_tax);
 		$aReplace['amount'] = Shop_Controller::instance()->round($total_amount);
 		$aReplace['amount_tax_included'] = Shop_Controller::instance()->round($this->getAmount());
-		$aReplace['amount_in_words'] = Core_Str::ucfirst(Core_Inflection::instance('ru')->numberInWords($aReplace['amount_tax_included']));
+		
+		$lng = $this->Shop->Site->lng;
+		
+		$aReplace['amount_in_words'] = Core_Inflection::available($lng)
+			? Core_Str::ucfirst(Core_Inflection::instance($lng)->currencyInWords($aReplace['amount_tax_included'], $this->Shop_Currency->code))
+			: $aReplace['amount_tax_included'] . ' ' . $this->Shop_Currency->code;
 
 		$aReplace['delivery_name'] = $this->shop_delivery_id ? Core_Str::ucfirst($this->Shop_Delivery->name) : '';
 
 		$aReplace['payment_name'] = $this->shop_payment_system_id ? Core_Str::ucfirst($this->Shop_Payment_System->name) : '';
 		$aReplace['payment_status'] = $this->paid ? Core::_('Admin_Form.yes') : Core::_('Admin_Form.no');
-		$aReplace['payment_date'] =  $this->paid ? Core_Date::sql2date($this->payment_datetime) : '';
-		$aReplace['payment_datetime'] =  $this->paid ? Core_Date::sql2datetime($this->payment_datetime) : '';
+		$aReplace['payment_date'] = $this->paid ? Core_Date::sql2date($this->payment_datetime) : '';
+		$aReplace['payment_datetime'] = $this->paid ? Core_Date::sql2datetime($this->payment_datetime) : '';
 
-		$aReplace['status_date'] =  $this->status_datetime != '0000-00-00 00:00:00' ? Core_Date::sql2date($this->status_datetime) : '';
-		$aReplace['status_datetime'] =  $this->status_datetime != '0000-00-00 00:00:00' ? Core_Date::sql2datetime($this->status_datetime) : '';
+		$aReplace['status_date'] = $this->status_datetime != '0000-00-00 00:00:00' ? Core_Date::sql2date($this->status_datetime) : '';
+		$aReplace['status_datetime'] = $this->status_datetime != '0000-00-00 00:00:00' ? Core_Date::sql2datetime($this->status_datetime) : '';
 
 		Core_Event::notify($this->_modelName . '.onAfterGetPrintlayoutReplaces', $this, array($aReplace));
 		$eventResult = Core_Event::getLastReturn();
@@ -3217,5 +3371,22 @@ class Shop_Order_Model extends Core_Entity
 		}
 
 		return implode("\n<br />", $aReturn);
+	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event shop_order.onBeforeGetRelatedSite
+	 * @hostcms-event shop_order.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Shop->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
 	}
 }

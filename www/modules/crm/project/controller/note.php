@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Crm
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Crm_Project_Controller_Note extends Admin_Form_Controller_View
 {
@@ -142,7 +142,7 @@ class Crm_Project_Controller_Note extends Admin_Form_Controller_View
 							<span class="input-group-btn padding-left-30 formButtons">
 								<button id="sendForm" class="btn btn-default" type="submit" onclick="<?php echo $oAdmin_Form_Controller
 									->checked(array(0 => array(0)))
-									->getAdminSendForm('addNote', NULL, $additionalParams)?>">
+									->getAdminSendForm(array('action' => 'addNote', 'additionalParams' => $additionalParams))?>">
 									<i class="fa fa-plus fa-fw"></i>
 								</button>
 							</span>
@@ -218,11 +218,11 @@ class Crm_Project_Controller_Note extends Admin_Form_Controller_View
 													? $Admin_Word_Value->name
 													: '';
 
-												$href = $oAdmin_Form_Controller->getAdminActionLoadHref($oAdmin_Form_Controller->getPath(), $oAdmin_Form_Action->name, NULL, 0, $oEntity->id);
+												$href = $oAdmin_Form_Controller->getAdminActionLoadHref($oAdmin_Form_Controller->getPath(), $oAdmin_Form_Action->name, NULL, 0, intval($oEntity->id));
 
 												$onclick = $oAdmin_Form_Action->name == 'edit'
 													? "$.modalLoad({path: '{$oAdmin_Form_Controller->getPath()}', action: 'edit', operation: 'modal', additionalParams: 'hostcms[checked][0][{$oEntity->id}]=1&crm_project_id={$oCrm_Project->id}', windowId: '{$windowId}'}); return false"
-													: $oAdmin_Form_Controller->getAdminActionLoadAjax($oAdmin_Form_Controller->getPath(), $oAdmin_Form_Action->name, NULL, 0, $oEntity->id);
+													: $oAdmin_Form_Controller->getAdminActionLoadAjax($oAdmin_Form_Controller->getPath(), $oAdmin_Form_Action->name, NULL, 0, intval($oEntity->id));
 
 												// Добавляем установку метки для чекбокса и строки + добавлем уведомление, если необходимо
 												if ($oAdmin_Form_Action->confirm)

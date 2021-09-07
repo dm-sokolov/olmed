@@ -159,7 +159,7 @@ class Company_Controller_Structure extends Admin_Form_Controller_View
 					)
 			)->add(
 				Admin_Form_Entity::factory('Code')
-					->html("<script>$('#editDepartment').on('click', function () {
+					->html("<script>$('#{$windowId} #editDepartment').on('click', function () {
 						$.adminLoad({path: '{$oAdmin_Form_Controller->getPath()}', additionalParams: 'hostcms[checked][0][0]=1&company_id={$this->_oCompany->id}', action: 'editDepartment', windowId: '{$windowId}'});
 					});</script>")
 			);
@@ -222,7 +222,7 @@ class Company_Controller_Structure extends Admin_Form_Controller_View
 									. (
 										in_array('editDepartment', $aAllowedActions)
 											? "
-											var divCompanyStructure = $('.dd');
+											var divCompanyStructure = $('#{$windowId} .dd');
 											divCompanyStructure.nestable({maxDepth: 30});
 
 											divCompanyStructure.data('serializedCompanyStructure', divCompanyStructure.nestable('serialize'));
@@ -236,12 +236,12 @@ class Company_Controller_Structure extends Admin_Form_Controller_View
 												e.stopPropagation();
 											});
 
-											//$('.dd-handle .btn', divCompanyStructure).on('mousedown  touchstart', function (e) {
-											$('.dd-handle [data-action]', divCompanyStructure).on('mousedown  touchstart', function (e) {
+											//$('.dd-handle .btn', divCompanyStructure).on('mousedown touchstart', function (e) {
+											$('.dd-handle [data-action]', divCompanyStructure).on('mousedown touchstart', function (e) {
 												e.stopPropagation();
 											});
 
-											$('.dd-handle .dropdown-menu', divCompanyStructure).on('mousedown  touchstart', function (e) {
+											$('.dd-handle .dropdown-menu', divCompanyStructure).on('mousedown touchstart', function (e) {
 												e.stopPropagation();
 											});
 
@@ -280,7 +280,7 @@ class Company_Controller_Structure extends Admin_Form_Controller_View
 											{
 												var \$this = $(this),
 													departmentId = \$this.closest('li.dd-item').data('id'),
-													divCompanyStructure = $('.dd'),
+													divCompanyStructure = $('#{$windowId} .dd'),
 													parentDepartmentId = getParentIdByDepartmentId(divCompanyStructure.data('serializedCompanyStructure'), departmentId);
 
 												divCompanyStructure.data({'departmentId': departmentId, 'parentDepartmentId': parentDepartmentId});
@@ -288,7 +288,7 @@ class Company_Controller_Structure extends Admin_Form_Controller_View
 
 											function nestableOnEndEvent(event)
 											{
-												var	divCompanyStructure = $('.dd'),
+												var	divCompanyStructure = $('#{$windowId} .dd'),
 													parentDepartmentId = divCompanyStructure.data('parentDepartmentId'),
 													departmentId = divCompanyStructure.data('departmentId'),
 													newParentDepartmentId = $('li[data-id = ' + departmentId + '] ', divCompanyStructure).closest('ol.dd-list').closest('li.dd-item').data('id') || 0;
@@ -300,7 +300,7 @@ class Company_Controller_Structure extends Admin_Form_Controller_View
 														title: '" . Core::_('Company_Department.edit_form_title') . "',
 														message: '" . Core::_('Company_Department.moveMessage') . "',
 														callback: function (result) {
-															var divCompanyStructure = $('.dd'),
+															var divCompanyStructure = $('#{$windowId} .dd'),
 																paramAdminLoad = {
 																'path': '{$oAdmin_Form_Controller->getPath()}',
 																'additionalParams': 'company_id={$this->_oCompany->id}&hostcms[checked][0][' + departmentId +']=1',
@@ -331,7 +331,7 @@ class Company_Controller_Structure extends Admin_Form_Controller_View
 										count($aAllowedActions)
 											? "
 											// Действия с отделами и сотрудниками
-											$('.department [data-action]').on('click', function(){
+											$('#{$windowId} .department [data-action]').on('click', function(){
 													var \$this = $(this),
 													actionName = \$this.data('action'),
 													departmentId = \$this.closest('li.dd-item').data('id'),
@@ -425,7 +425,7 @@ class Company_Controller_Structure extends Admin_Form_Controller_View
 								});
 
 								jQuery(function ($){
-									$('.department-users .scroll-wrapper').each(function (){
+									$('#{$windowId} .department-users .scroll-wrapper').each(function (){
 											var \$this = $(this);
 
 											if (\$this.find('tr.user').length > 3)
@@ -443,10 +443,10 @@ class Company_Controller_Structure extends Admin_Form_Controller_View
 											//console.log($(this), $(this).outerHeight());
 									});
 
-									$('.dd button').click();
+									$('#{$windowId} .dd button').click();
 
-									$('.department-users.widget.collapsed .widget-buttons *[data-toggle=\"collapse\"]').click();
-							   })
+									$('#{$windowId} .department-users.widget.collapsed .widget-buttons *[data-toggle=\"collapse\"]').click();
+							})
 							</script>")
 				);
 		}
@@ -458,7 +458,7 @@ class Company_Controller_Structure extends Admin_Form_Controller_View
 
 	protected function _showLevel($parent_id, $aAllowedActions = array())
 	{
-		$aHeadIds = array();
+		// $aHeadIds = array();
 
 		if (isset($this->_aCompany_Departmens[$parent_id]))
 		{

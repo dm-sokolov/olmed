@@ -145,12 +145,14 @@ class Restapi_Command_Controller extends Core_Command_Controller
 
 		if (!is_null($this->_error))
 		{
-			$return['error']['message'] = $this->_error;
+			is_array($return)
+				&& $return['error']['message'] = $this->_error;
 		}
 
 		if ($messageContent != '')
 		{
-			$return['error']['extraMessage'] = $messageContent;
+			is_array($return)
+				&& $return['error']['extraMessage'] = $messageContent;
 		}
 
 		switch ($this->_mode)
@@ -231,6 +233,175 @@ class Restapi_Command_Controller extends Core_Command_Controller
 			: NULL;
 	}
 
+	protected function _parsePathV1($aPath)
+	{
+		foreach ($aPath as $key => $path)
+		{
+			if ($key == 0)
+			{
+				$sSingularName = $this->_getClassName($path);
+
+				if ($sSingularName === FALSE)
+				{
+					$this->_error = 'Wrong entity name';
+					$this->_statusCode = 400;
+
+					return FALSE;
+				}
+
+				$oPreviosEntity = Core_Entity::factory($sSingularName);
+			}
+			elseif (is_numeric($path) && $oPreviosEntity instanceof Core_ORM)
+			{
+				$oPreviosEntity = $oPreviosEntity->getById($path);
+
+				// Entity exists
+				if (is_null($oPreviosEntity))
+				{
+					$this->_error = 'Entity Not Found By PK';
+					$this->_statusCode = 403;
+
+					return FALSE;
+				}
+
+				// Check access
+				if (!$this->_user->checkObjectAccess($oPreviosEntity))
+				{
+					$this->_error = sprintf('Entity %d. Access Forbidden.', $path);
+					$this->_statusCode = 403;
+
+					return FALSE;
+				}
+
+				$bFound = TRUE;
+			}
+			else
+			{
+				if (is_object($oPreviosEntity) && $oPreviosEntity instanceof Core_ORM && $oPreviosEntity->id)
+				{
+					$bFound = FALSE;
+
+					try {
+						if (isset($oPreviosEntity->$path))
+						{
+							$oPreviosEntity = $oPreviosEntity->$path;
+						}
+						elseif (method_exists($oPreviosEntity, $path) || method_exists($oPreviosEntity, 'isCallable') && $oPreviosEntity->isCallable($path))
+						{
+							$oPreviosEntity = $oPreviosEntity->$path();
+
+							$bFound = TRUE;
+						}
+					}
+					catch (Exception $e)
+					{
+						$this->_error = $e->getMessage();
+						$this->_statusCode = 422;
+
+						return FALSE;
+					}
+				}
+				else
+				{
+					$this->_error = 'Parent Entity Not Found';
+					$this->_statusCode = 403;
+
+					return FALSE;
+				}
+			}
+		}
+
+		$mAnswer = NULL;
+
+		if ($bFound)
+		{
+			$mAnswer = $oPreviosEntity;
+		}
+		else
+		{
+			// LIMIT
+			$tmpLimit = Core_Array::getGet('limit');
+			if (is_numeric($tmpLimit) && $tmpLimit > 0)
+			{
+				$this->_limit = intval($tmpLimit);
+			}
+
+			// OFFSET
+			$tmpOffset = Core_Array::getGet('offset');
+			if (is_numeric($tmpOffset) && $tmpOffset >= 0)
+			{
+				$this->_offset = intval($tmpOffset);
+			}
+
+			$oPreviosEntity->queryBuilder()
+				->limit($this->_limit)
+				->offset($this->_offset);
+
+			// ORDER BY
+			$aTmpOrderBy = Core_Array::getGet('orderBy');
+			if (!is_null($aTmpOrderBy) && !is_array($aTmpOrderBy))
+			{
+				$aTmpOrderBy = array($aTmpOrderBy);
+			}
+			if (is_array($aTmpOrderBy))
+			{
+				foreach ($aTmpOrderBy as $tmpOrderBy)
+				{
+					$aTmpExplodeOrderBy = explode(' ', $tmpOrderBy);
+					if (strlen($aTmpExplodeOrderBy[0]))
+					{
+						$orderBy = $aTmpExplodeOrderBy[0];
+
+						$orderByDirection = isset($aTmpExplodeOrderBy[1])
+							? $aTmpExplodeOrderBy[1]
+							: 'ASC';
+
+						$oPreviosEntity->queryBuilder()
+							->orderBy($orderBy, $orderByDirection);
+					}
+				}
+			}
+
+			$aPredefinedFields = array(
+				'limit',
+				'offset',
+				'orderBy',
+			);
+
+			// OTHER OPTIONS
+			foreach ($_GET as $key => $value)
+			{
+				if (!in_array($key, $aPredefinedFields))
+				{
+					$oPreviosEntity->queryBuilder()
+						->where($key, is_array($value) && count($value) ? 'IN' : '=', $value);
+				}
+			}
+
+			try {
+				$aResult = $oPreviosEntity->findAll(FALSE);
+			}
+			catch (Exception $e)
+			{
+				$this->_error = $e->getMessage();
+				$this->_statusCode = 422;
+
+				return FALSE;
+			}
+
+			$mAnswer = array();
+			foreach ($aResult as $oEntity)
+			{
+				if ($this->_user->checkObjectAccess($oEntity))
+				{
+					$mAnswer[] = $oEntity;
+				}
+			}
+		}
+
+		return $mAnswer;
+	}
+
 	/**
 	 * Verson 1.0
 	 * @hostcms-event Restapi_Command_Controller.onBeforeAddNewEntity
@@ -288,162 +459,15 @@ class Restapi_Command_Controller extends Core_Command_Controller
 		{
 			// SELECT ITEMS
 			case 'GET':
-				foreach ($aPath as $key => $path)
+				$mAnswer = $this->_parsePathV1($aPath);
+
+				if ($this->_statusCode == 200)
 				{
-					if ($key == 0)
-					{
-						$sSingularName = $this->_getClassName($path);
-
-						if ($sSingularName === FALSE)
-						{
-							return FALSE;
-						}
-
-						$oPreviosEntity = Core_Entity::factory($sSingularName);
-					}
-					elseif (is_numeric($path) && $oPreviosEntity instanceof Core_ORM)
-					{
-						$oPreviosEntity = $oPreviosEntity->getById($path);
-
-						// Entity exists
-						if (is_null($oPreviosEntity))
-						{
-							$this->_error = 'Entity Not Found By PK';
-							$this->_statusCode = 403;
-
-							return FALSE;
-						}
-
-						// Check access
-						if (!$this->_user->checkObjectAccess($oPreviosEntity))
-						{
-							$this->_error = sprintf('Entity %d. Access Forbidden.', $path);
-							$this->_statusCode = 403;
-
-							return FALSE;
-						}
-
-						$bFound = TRUE;
-					}
-					else
-					{
-						if (is_object($oPreviosEntity) && $oPreviosEntity instanceof Core_ORM && $oPreviosEntity->id)
-						{
-							$bFound = FALSE;
-
-							try {
-								if (isset($oPreviosEntity->$path))
-								{
-									$oPreviosEntity = $oPreviosEntity->$path;
-								}
-								elseif (method_exists($oPreviosEntity, $path) || method_exists($oPreviosEntity, 'isCallable') && $oPreviosEntity->isCallable($path))
-								{
-									$oPreviosEntity = $oPreviosEntity->$path();
-
-									$bFound = TRUE;
-								}
-							}
-							catch (Exception $e)
-							{
-								$this->_error = $e->getMessage();
-								$this->_statusCode = 422;
-
-								return FALSE;
-							}
-						}
-						else
-						{
-							$this->_error = 'Parent Entity Not Found';
-							$this->_statusCode = 403;
-
-							return FALSE;
-						}
-					}
-				}
-
-				if (!$bFound)
-				{
-					// LIMIT
-					$tmpLimit = Core_Array::getGet('limit');
-					if (is_numeric($tmpLimit) && $tmpLimit > 0)
-					{
-						$this->_limit = intval($tmpLimit);
-					}
-
-					// OFFSET
-					$tmpOffset = Core_Array::getGet('offset');
-					if (is_numeric($tmpOffset) && $tmpOffset >= 0)
-					{
-						$this->_offset = intval($tmpOffset);
-					}
-
-					$oPreviosEntity->queryBuilder()
-						->limit($this->_limit)
-						->offset($this->_offset);
-
-					// ORDER BY
-					$aTmpOrderBy = Core_Array::getGet('orderBy');
-					if (!is_null($aTmpOrderBy) && !is_array($aTmpOrderBy))
-					{
-						$aTmpOrderBy = array($aTmpOrderBy);
-					}
-					if (is_array($aTmpOrderBy))
-					{
-						foreach ($aTmpOrderBy as $tmpOrderBy)
-						{
-							$aTmpExplodeOrderBy = explode(' ', $tmpOrderBy);
-							if (strlen($aTmpExplodeOrderBy[0]))
-							{
-								$orderBy = $aTmpExplodeOrderBy[0];
-
-								$orderByDirection = isset($aTmpExplodeOrderBy[1])
-									? $aTmpExplodeOrderBy[1]
-									: 'ASC';
-
-								$oPreviosEntity->queryBuilder()
-									->orderBy($orderBy, $orderByDirection);
-							}
-						}
-					}
-
-					$aPredefinedFields = array(
-						'limit',
-						'offset',
-						'orderBy',
-					);
-
-					// OTHER OPTIONS
-					foreach ($_GET as $key => $value)
-					{
-						if (!in_array($key, $aPredefinedFields))
-						{
-							$oPreviosEntity->queryBuilder()
-								->where($key, is_array($value) && count($value) ? 'IN' : '=', $value);
-						}
-					}
-
-					try {
-						$aResult = $oPreviosEntity->findAll(FALSE);
-					}
-					catch (Exception $e)
-					{
-						$this->_error = $e->getMessage();
-						$this->_statusCode = 422;
-
-						return FALSE;
-					}
-
-					foreach ($aResult as $oEntity)
-					{
-						if ($this->_user->checkObjectAccess($oEntity))
-						{
-							$this->_answer[] = $oEntity;
-						}
-					}
+					$this->_answer = $mAnswer;
 				}
 				else
 				{
-					$this->_answer = $oPreviosEntity;
+					return $mAnswer;
 				}
 			break;
 			// CREATE NEW ITEM
@@ -678,7 +702,8 @@ class Restapi_Command_Controller extends Core_Command_Controller
 
 							$oPreviosEntity->save();
 
-							$this->_statusCode = 201;
+							// Created
+							$this->_statusCode = 201; 
 							$this->_answer = 'OK';
 						}
 						catch (Exception $e)
@@ -700,62 +725,38 @@ class Restapi_Command_Controller extends Core_Command_Controller
 			break;
 			// DELETE ITEM
 			case 'DELETE':
-				foreach ($aPath as $key => $path)
+				$mAnswer = $this->_parsePathV1($aPath);
+
+				if ($this->_statusCode == 200)
 				{
-					if ($key == 0)
+					!is_array($mAnswer)
+						&& $mAnswer = array($mAnswer);
+				
+					$i = 0;
+				
+					foreach ($mAnswer as $oEntity)
 					{
-						$sSingularName = $this->_getClassName($path);
-
-						if ($sSingularName === FALSE)
+						try {
+							is_null($oEntity->getMarksDeleted())
+								? $oEntity->delete()
+								: $oEntity->markDeleted();
+							$i++;
+						}
+						catch (Exception $e)
 						{
+							$this->_error = $e->getMessage();
+							$this->_statusCode = 422;
+
 							return FALSE;
 						}
-
-						$oPreviosEntity = Core_Entity::factory($sSingularName);
 					}
-					elseif ($key == 1 && is_numeric($path))
-					{
-						$oPreviosEntity = $oPreviosEntity->getById($path);
 
-						// Entity exists
-						if (is_null($oPreviosEntity))
-						{
-							$this->_error = 'Entity Not Found By PK';
-							$this->_statusCode = 403;
-
-							return FALSE;
-						}
-
-						// Check access
-						if (!$this->_user->checkObjectAccess($oPreviosEntity))
-						{
-							$this->_error = sprintf('Entity %d. Access Forbidden.', $path);
-							$this->_statusCode = 403;
-
-							return FALSE;
-						}
-
-						$bFound = TRUE;
-					}
+					//$this->_statusCode = 204; // No Content
+					$this->_answer = sprintf('Deleted %d item(s)', $i);
 				}
-
-				if ($bFound)
+				else
 				{
-					try {
-						is_null($oPreviosEntity->getMarksDeleted())
-							? $oPreviosEntity->delete()
-							: $oPreviosEntity->markDeleted();
-
-						$this->_statusCode = 204;
-						$this->_answer = 'OK';
-					}
-					catch (Exception $e)
-					{
-						$this->_error = $e->getMessage();
-						$this->_statusCode = 422;
-
-						return FALSE;
-					}
+					return $mAnswer;
 				}
 			break;
 			case 'OPTIONS':
@@ -920,7 +921,6 @@ class Restapi_Command_Controller extends Core_Command_Controller
 		$this->_user = NULL;
 
 		$aHeaders = $this->_getRequestHeaders();
-
 		if (isset($aHeaders['Authorization']))
 		{
 			if (preg_match('/Bearer ([0-9a-zA-Z]+)/', $aHeaders['Authorization'], $matches))

@@ -24,14 +24,17 @@ if (strlen($tableName))
 {
 	$aFileds = Core_DataBase::instance()->getColumns($tableName);
 
+	$bSetPK = FALSE;
 	foreach ($aFileds as $key => $aRow)
 	{
 		// Set temporary key and order field for the Admin_Form
-		if ($aRow['key'] == 'PRI')
+		if ($aRow['key'] == 'PRI' && !$bSetPK)
 		{
 			$oAdmin_Form->key_field
 				= $oAdmin_Form->default_order_field
 				= $aRow['name'];
+				
+			$bSetPK = TRUE;
 		}
 		$oAdmin_Form_Field = new Sql_Table_View_Field();
 		$oAdmin_Form_Field->id = $key;

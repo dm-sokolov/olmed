@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Company
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Company_Department_Controller_Delete extends Admin_Form_Action_Controller
 {
@@ -20,7 +20,7 @@ class Company_Department_Controller_Delete extends Admin_Form_Action_Controller
 	 */
 	public function execute($sOperation = NULL)
 	{
-		if (!is_null($sOperation) && $sOperation == 'deleteDepartment')
+		if (!is_null($sOperation) && $sOperation == 'deleteDepartment' && $this->_object->id)
 		{
 			Core_Entity::factory('Company_Department', $this->_object->id)->markDeleted();
 		}

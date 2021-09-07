@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Crm
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Crm_Project_Entity_View extends Admin_Form_Controller_View
 {
@@ -109,9 +109,11 @@ class Crm_Project_Entity_View extends Admin_Form_Controller_View
 		// Устанавливаем ограничения на источники
 		$oAdmin_Form_Controller->setDatasetConditions();
 
+		$oAdmin_Form_Controller->setDatasetLimits();
+
 		$aDatasets = $oAdmin_Form_Controller->getDatasets();
 
-		$crm_project_id = Core_Array::getGet('crm_project_id', 0);
+		$crm_project_id = Core_Array::getGet('crm_project_id', 0, 'int');
 
 		$aEntities = $aDatasets[0]->load();
 		?>
@@ -230,7 +232,7 @@ class Crm_Project_Entity_View extends Admin_Form_Controller_View
 								}
 							}
 
-							$iDeltaTime  = time() - $iEventCreationTimestamp;
+							$iDeltaTime = time() - $iEventCreationTimestamp;
 
 							// ФИО создателя дела, если оным не является текущий сотрудник
 							if (!$userIsEventCreator && !is_null($oEventCreator))
@@ -324,11 +326,11 @@ class Crm_Project_Entity_View extends Admin_Form_Controller_View
 													: '';
 
 												// $path = '/admin/crm/project/entity/index.php';
-												$additionalParams = "hostcms[checked][0][{$oEntity->id}]=1&crm_project_id={$crm_project_id}&parentWindowId={$windowId}";
+												$additionalParams = "hostcms[checked][0][{$oEntity->id}]=1&crm_project_id={$crm_project_id}";
 
-												$href = $oAdmin_Form_Controller->getAdminActionLoadHref($entityPath, $oAdmin_Form_Action->name, NULL, 0, $oEntity->id, $additionalParams, 10, 1, NULL, NULL, 'list');
+												$href = $oAdmin_Form_Controller->getAdminActionLoadHref($entityPath, $oAdmin_Form_Action->name, NULL, 0, intval($oEntity->id), $additionalParams, 10, 1, NULL, NULL, 'list');
 
-												$onclick =  "$.modalLoad({path: '{$entityPath}', action: 'edit', operation: 'modal', additionalParams: '{$additionalParams}', windowId: '{$windowId}'}); return false";
+												$onclick = "$.modalLoad({path: '{$entityPath}', action: 'edit', operation: 'modal', additionalParams: '{$additionalParams}', windowId: '{$windowId}'}); return false";
 
 												?><a onclick="<?php echo htmlspecialchars($onclick)?>" href="<?php echo htmlspecialchars($href)?>" title="<?php echo htmlspecialchars($name)?>"><i class="<?php echo htmlspecialchars($oAdmin_Form_Action->icon)?>"></i></a><?php
 											}
@@ -357,9 +359,9 @@ class Crm_Project_Entity_View extends Admin_Form_Controller_View
 											$path = '/admin/crm/project/entity/index.php';
 											$additionalParams = "type={$oEntity->type}&entity_id={$oEntity->id}&crm_project_id={$crm_project_id}";
 
-											$href = $oAdmin_Form_Controller->getAdminActionLoadHref($path, $oAdmin_Form_Action->name, NULL, 0, $oEntity->id, $additionalParams, 10, 1, NULL, NULL, 'entity');
+											$href = $oAdmin_Form_Controller->getAdminActionLoadHref($path, $oAdmin_Form_Action->name, NULL, 0, intval($oEntity->id), $additionalParams, 10, 1, NULL, NULL, 'entity');
 
-											$onclick = $oAdmin_Form_Controller->getAdminActionLoadAjax($path, $oAdmin_Form_Action->name, NULL, 0, $oEntity->id, $additionalParams, 10, 1, NULL, NULL, 'entity');
+											$onclick = $oAdmin_Form_Controller->getAdminActionLoadAjax($path, $oAdmin_Form_Action->name, NULL, 0, intval($oEntity->id), $additionalParams, 10, 1, NULL, NULL, 'entity');
 
 											// Добавляем установку метки для чекбокса и строки + добавлем уведомление, если необходимо
 											if ($oAdmin_Form_Action->confirm)

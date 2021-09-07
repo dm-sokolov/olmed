@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Event
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Event_Type_Model extends Core_Entity
 {
@@ -18,7 +18,7 @@ class Event_Type_Model extends Core_Entity
 	 * @var array
 	 */
 	protected $_hasMany = array(
-		'event' =>  array()
+		'event' => array()
 	);
 
 	/**
@@ -140,6 +140,21 @@ class Event_Type_Model extends Core_Entity
 			->set('event_type_id', 0)
 			->where('event_type_id', '=', $this->id)
 			->execute();
+			
+		if (Core::moduleIsActive('bot'))
+		{
+			$oModule = Core_Entity::factory('Module')->getByPath('event');
+
+			if ($oModule)
+			{
+				$aBot_Modules = Bot_Controller::getBotModules($oModule->id, 1, $this->id);
+
+				foreach ($aBot_Modules as $oBot_Module)
+				{
+					$oBot_Module->delete();
+				}
+			}
+		}
 
 		return parent::delete($primaryKey);
 	}

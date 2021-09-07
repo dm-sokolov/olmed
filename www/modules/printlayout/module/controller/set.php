@@ -106,7 +106,7 @@ class Printlayout_Module_Controller_Set extends Admin_Form_Action_Controller
 					->onclick(
 						//'$("#' . $newWindowId . '").parents(".modal").remove(); '
 						'bootbox.hideAll(); '
-						. $this->_Admin_Form_Controller->getAdminSendForm(NULL, 'apply')
+						. $this->_Admin_Form_Controller->getAdminSendForm(array('operation' => 'apply'))
 					)
 					->controller($this->_Admin_Form_Controller);
 

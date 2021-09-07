@@ -35,9 +35,9 @@ class Core_File
 	 * Moves an uploaded file to a new location
 	 * @param string $source Path to the source file.
 	 * @param string $destination The destination path.
-	 * @param int $chmod The mode parameter consists of three octal number components specifying access, e.g. 0644
+	 * @param int $mode The mode parameter consists of three octal number components specifying access, e.g. 0644
 	 */
-	static public function moveUploadedFile($source, $destination, $chmod = CHMOD_FILE)
+	static public function moveUploadedFile($source, $destination, $mode = CHMOD_FILE)
 	{
 		if (is_uploaded_file($source))
 		{
@@ -48,7 +48,7 @@ class Core_File
 
 			if (move_uploaded_file($source, $destination))
 			{
-				chmod($destination, $chmod);
+				chmod($destination, $mode);
 			}
 			else
 			{
@@ -67,10 +67,10 @@ class Core_File
 	 * Copies file
 	 * @param string $source The source path.
 	 * @param string $destination The destination path.
-	 * @param int $chmod The mode parameter consists of three octal number components specifying access, e.g. 0644
+	 * @param int $mode The mode parameter consists of three octal number components specifying access, e.g. 0644
 	 * @return bool
 	 */
-	static public function copy($source, $destination, $chmod = CHMOD_FILE)
+	static public function copy($source, $destination, $mode = CHMOD_FILE)
 	{
 		if (is_file($source))
 		{
@@ -81,7 +81,7 @@ class Core_File
 			{
 				if (copy($source, $destination))
 				{
-					chmod($destination, $chmod);
+					chmod($destination, $mode);
 					return TRUE;
 				}
 				else
@@ -147,15 +147,15 @@ class Core_File
 	 * Copy or move uploaded file
 	 * @param string $source The source path.
 	 * @param string $destination The destination path.
-	 * @param int $chmod The mode parameter consists of three octal number components specifying access, e.g. 0644
+	 * @param int $mode The mode parameter consists of three octal number components specifying access, e.g. 0644
 	 * @see Core_File::moveUploadedFile()
 	 * @see Core_File::copy()
 	 */
-	static public function upload($source, $destination, $chmod = CHMOD_FILE)
+	static public function upload($source, $destination, $mode = CHMOD_FILE)
 	{
 		return is_uploaded_file($source)
-			? self::moveUploadedFile($source, $destination, $chmod)
-			: self::copy($source, $destination, $chmod);
+			? self::moveUploadedFile($source, $destination, $mode)
+			: self::copy($source, $destination, $mode);
 	}
 
 	/**
@@ -341,9 +341,9 @@ class Core_File
 	 * Binary-safe file write
 	 * @param string $fileName Path to the file.
 	 * @param string $content The string that is to be written.
-	 * @param int $chmod The mode parameter consists of three octal number components specifying access, e.g. 0644
+	 * @param int $mode The mode parameter consists of three octal number components specifying access, e.g. 0644
 	 */
-	static public function write($fileName, $content, $chmod = CHMOD_FILE)
+	static public function write($fileName, $content, $mode = CHMOD_FILE)
 	{
 		if (($handle = @fopen($fileName, 'w')) && flock($handle, LOCK_EX))
 		{
@@ -359,7 +359,7 @@ class Core_File
 			flock($handle, LOCK_UN);
 			fclose($handle);
 
-			@chmod($fileName, $chmod);
+			@chmod($fileName, $mode);
 			return TRUE;
 		}
 		else
@@ -402,10 +402,10 @@ class Core_File
 	/**
 	 * Makes directory
 	 * @param string $pathname The directory path.
-	 * @param int $chmod The mode parameter consists of three octal number components specifying access, e.g. 0644
+	 * @param int $mode The mode parameter consists of three octal number components specifying access, e.g. 0644
 	 * @param int $recursive Allows the creation of nested directories specified in the pathname. Defaults to FALSE.
 	 */
-	static public function mkdir($pathname, $chmod = CHMOD, $recursive = FALSE)
+	static public function mkdir($pathname, $mode = CHMOD, $recursive = FALSE)
 	{
 		clearstatcache();
 
@@ -413,9 +413,9 @@ class Core_File
 		{
 			umask(0);
 
-			if (@mkdir($pathname, $chmod, $recursive))
+			if (@mkdir($pathname, $mode, $recursive))
 			{
-				chmod($pathname, $chmod);
+				chmod($pathname, $mode);
 			}
 			else
 			{
@@ -787,7 +787,7 @@ class Core_File
 	 * - $param['small_image_name'] оригинальное имя файла малого изображения
 	 * - $param['large_image_target'] путь к создаваемому файлу большого изображения
 	 * - $param['small_image_target'] путь к создаваемому файлу малого изображения
-	 * - $param['create_small_image_from_large'] использовать большое изображение для создания малого (true - использовать (по умолчанию), FALSE - не использовать)
+	 * - $param['create_small_image_from_large'] использовать большое изображение для создания малого (TRUE - использовать (по умолчанию), FALSE - не использовать)
 	 * - $param['large_image_max_width'] значение максимальной ширины большого изображения
 	 * - $param['large_image_max_height'] значение максимальной высоты большого изображения
 	 * - $param['small_image_max_width'] значение максимальной ширины малого изображения
@@ -795,14 +795,13 @@ class Core_File
 	 * - $param['watermark_file_path'] путь к файлу с "водяным знаком", если водяной знак не должен накладываться, не передавайте этот параметр
 	 * - $param['watermark_position_x'] позиция "водяного знака" по оси X
 	 * - $param['watermark_position_y'] позиция "водяного знака" по оси Y
-	 * - $param['large_image_watermark'] наложить "водяной знак" на большое изображение (true - наложить (по умолчанию), FALSE - не наложить)
-	 * - $param['small_image_watermark'] наложить "водяной знак" на малое изображение (true - наложить (по умолчанию), FALSE - не наложить)
-	 * - $param['large_image_isset'] существует ли большое изображение (true - существует, FALSE - не существует (по умолчанию))
-	 * - $param['large_image_preserve_aspect_ratio'] сохранять пропорции изображения для большого изображения (true - по умолчанию)
-	 * - $param['small_image_preserve_aspect_ratio'] сохранять пропорции изображения для большого изображения (true - по умолчанию)
+	 * - $param['large_image_watermark'] наложить "водяной знак" на большое изображение (TRUE - наложить (по умолчанию), FALSE - не наложить)
+	 * - $param['small_image_watermark'] наложить "водяной знак" на малое изображение (TRUE - наложить (по умолчанию), FALSE - не наложить)
+	 * - $param['large_image_preserve_aspect_ratio'] сохранять пропорции изображения для большого изображения (TRUE - по умолчанию)
+	 * - $param['small_image_preserve_aspect_ratio'] сохранять пропорции изображения для большого изображения (TRUE - по умолчанию)
 	 * @return array $result
-	 * - $result['large_image'] = true в случае успешного создания большого изображения, FALSE - в противном случае
-	 * - $result['small_image'] = true в случае успешного создания малого изображения, FALSE - в противном случае
+	 * - $result['large_image'] = TRUE в случае успешного создания большого изображения, FALSE - в противном случае
+	 * - $result['small_image'] = TRUE в случае успешного создания малого изображения, FALSE - в противном случае
 	 * @hostcms-event Core_File.onBeforeAdminUpload
 	 * @hostcms-event Core_File.onAfterAdminUpload
 	 */
@@ -957,11 +956,6 @@ class Core_File
 			? $param['small_image_preserve_aspect_ratio']
 			: TRUE;
 
-		// Существовало ли раньше большое изображение
-		$large_image_isset = isset($param['large_image_isset'])
-			? $param['large_image_isset']
-			: FALSE;
-
 		$aCore_Config = Core::$mainConfig;
 
 		// Задан файл-источник большого изображения
@@ -1069,14 +1063,12 @@ class Core_File
 			}
 			else
 			{
-				$large_image_created = FALSE;
-				$small_image_created = FALSE;
+				$large_image_created = $small_image_created = FALSE;
 			}
 		}
 		else
 		{
-			$large_image_created = FALSE;
-			$small_image_created = FALSE;
+			$large_image_created = $small_image_created = FALSE;
 		}
 
 		// Задано малое изображение и при этом не задано создание малого изображения

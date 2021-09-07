@@ -54,7 +54,7 @@ class Schedule_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 
 		$oMainTab->delete($this->getField('interval'));
 
-		$aInterval =  $this->_object->getInterval();
+		$aInterval = $this->_object->getInterval();
 
 		$oMainRow1
 			->add(Admin_Form_Entity::factory('Input')

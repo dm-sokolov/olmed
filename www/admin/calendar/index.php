@@ -6,7 +6,7 @@
  * @subpackage Calendar
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2019 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 require_once('../../bootstrap.php');
 
@@ -29,8 +29,7 @@ $oAdmin_Form_Controller
 // Добавление события
 if (!is_null(Core_Array::getRequest('addEntity')) && $moduleId = intval(Core_Array::getRequest('moduleId')))
 {
-	$oModule = Core_Entity::factory('Module', $moduleId);
-
+	$oModule = Core_Entity::factory('Module', $moduleId)->loadModule();
 	if (method_exists($oModule->Core_Module, 'calendarAddEvent'))
 	{
 		$eventId = intval(Core_Array::getRequest('eventId'));

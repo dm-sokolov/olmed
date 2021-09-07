@@ -18,7 +18,7 @@ class Company_Activity_Model extends Core_Entity
 	 * @var array
 	 */
 	protected $_hasMany = array(
-		'dms_document' =>  array()
+		'dms_document' => array()
 	);
 
 	/**

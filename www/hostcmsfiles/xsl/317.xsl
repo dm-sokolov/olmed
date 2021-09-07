@@ -37,7 +37,7 @@
 			<!-- Проверяем задан ли путь к файлу большого изображения -->
 			<xsl:choose>
 				<xsl:when test="image_large!=''">
-					<div id="gallery">
+					<div id="gallery" class="d-flex">
 						<a href="{dir}{image_large}" target="_blank" data-fancybox="">
 							<img src="{dir}{image_small}" align="left" class="mr-4 mb-4" />
 						</a>

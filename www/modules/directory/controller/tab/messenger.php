@@ -77,13 +77,13 @@ class Directory_Controller_Tab_Messenger extends Directory_Controller_Tab
 				Admin_Form_Entity::factory('Checkbox')
 					->divAttr(array('class' => 'col-xs-3 col-sm-2 no-padding margin-top-23'))
 					->name($this->prefix . 'messenger_public' . $sNameSuffix)
-					->checked($iMessengerPublic ? $iMessengerPublic : NULL)
-					->value($iMessengerPublic)
+					->value(1)
+					->checked($iMessengerPublic ? $iMessengerPublic : FALSE)
 					->caption(Core::_('Directory_Messenger.messenger_public'))
 			);
 			
 			// Для нового свойства добавляет скрытое поле, хранящее состояние чекбокса
-			if (!$oUser_Directory_Messenger)
+			/*if (!$oUser_Directory_Messenger)
 			{
 				$oRowElements->add(
 					Core::factory('Core_Html_Entity_Input')
@@ -91,9 +91,82 @@ class Directory_Controller_Tab_Messenger extends Directory_Controller_Tab
 						->value(0)
 						->name($this->prefix . 'messenger_public_value' . $sNameSuffix)
 				);
-			}
+			}*/
 		}
 
 		return $oRowElements;
+	}
+	
+	public function applyObjectProperty($Admin_Form_Controller, $object)
+	{
+		$windowId = $Admin_Form_Controller->getWindowId();
+
+		$prefix = preg_replace('/[^A-Za-z0-9_-]/', '', $this->prefix);
+		
+		// Мессенджеры, установленные значения
+		$aDirectory_Messenger = $object->Directory_Messengers->findAll(FALSE);
+		foreach ($aDirectory_Messenger as $oDirectory_Messenger)
+		{
+			$sMessenger_Address = Core_Array::getPost("{$prefix}messenger_username#{$oDirectory_Messenger->id}", NULL, 'trim');
+
+			if (!empty($sMessenger_Address))
+			{
+				$oDirectory_Messenger
+					->directory_messenger_type_id(Core_Array::getPost("{$prefix}messenger#{$oDirectory_Messenger->id}", 0, 'int'))
+					->public(Core_Array::getPost("{$prefix}messenger_public#{$oDirectory_Messenger->id}", 0, 'int'))
+					->value($sMessenger_Address)
+					->save();
+			}
+			else
+			{
+				// Удаляем пустую строку с полями
+				ob_start();
+				Core::factory('Core_Html_Entity_Script')
+					->value("$.deleteFormRow($(\"#{$windowId} select[name='{$prefix}messenger#{$oDirectory_Messenger->id}']\").closest('.row').find('.btn-delete').get(0));")
+					->execute();
+				$Admin_Form_Controller->addMessage(ob_get_clean());
+
+				$oDirectory_Messenger->delete();
+			}
+		}
+
+		// Мессенджеры, новые значения
+		$aMessengerAddresses = Core_Array::getPost("{$prefix}messenger_username", array());
+		$aMessengers = Core_Array::getPost("{$prefix}messenger", array());
+		$aMessengerPublic = Core_Array::getPost("{$prefix}messenger_public", array());
+
+		if (is_array($aMessengerAddresses) && count($aMessengerAddresses))
+		{
+			$i = 0;
+			foreach ($aMessengerAddresses as $key => $sMessenger_Address)
+			{
+				$sMessenger_Address = trim($sMessenger_Address);
+
+				if (!empty($sMessenger_Address))
+				{
+					$oDirectory_Messenger = Core_Entity::factory('Directory_Messenger')
+						->directory_messenger_type_id(Core_Array::get($aMessengers, $key, 0, 'int'))
+						->public(Core_Array::get($aMessengerPublic, $key, 0, 'int'))
+						->value($sMessenger_Address)
+						->save();
+
+					$object->add($oDirectory_Messenger);
+
+					ob_start();
+					Core::factory('Core_Html_Entity_Script')
+						->value("$(\"#{$windowId} select[name='{$prefix}messenger\\[\\]']\").eq({$i}).prop('name', '{$prefix}messenger#{$oDirectory_Messenger->id}').closest('.row').find('.btn-delete').removeClass('hide');
+						$(\"#{$windowId} input[name='{$prefix}messenger_username\\[\\]']\").eq({$i}).prop('name', '{$prefix}messenger_username#{$oDirectory_Messenger->id}');
+						$(\"#{$windowId} input[name='{$prefix}messenger_public\\[\\]']\").eq({$i}).prop('name', '{$prefix}messenger_public#{$oDirectory_Messenger->id}');
+						")
+						->execute();
+
+					$Admin_Form_Controller->addMessage(ob_get_clean());
+				}
+				else
+				{
+					$i++;
+				}
+			}
+		}
 	}
 }

@@ -28,7 +28,7 @@ class Cloud_Handler_Google_Controller extends Cloud_Controller
 		$aConfig = Core_Config::instance()->get('cloud_config', array());
 
 		isset($aConfig['drivers'])
-			&&  $this->_config = Core_Array::get($aConfig['drivers'], 'google');
+			&& $this->_config = Core_Array::get($aConfig['drivers'], 'google');
 
 		$this->chunkSize = Core_Array::get($this->_config, 'chunk');
 
@@ -549,7 +549,7 @@ class Cloud_Handler_Google_Controller extends Cloud_Controller
 					$sDirectory = $this->dirId;
 				}
 
-				$aMetadata  = array(
+				$aMetadata = array(
 					'name' => !is_null($sDestinationFileName)
 						? $sDestinationFileName
 						: basename($sSourcePath),

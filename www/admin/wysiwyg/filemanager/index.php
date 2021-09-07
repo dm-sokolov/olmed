@@ -27,7 +27,6 @@ $oAdmin_Form_Controller
 	->pageTitle(Core::_('Wysiwyg_Filemanager.title'));
 
 // Корневая директория для пользователя
-//$oUser_Group = Core_Auth::getCurrentUser()->User_Group;
 $oUser = Core_Auth::getCurrentUser();
 $root_dir = ltrim(Core_File::pathCorrection($oUser->root_dir), DIRECTORY_SEPARATOR);
 
@@ -45,8 +44,6 @@ if ($cdir == '')
 $cdir = Core_File::pathCorrection($cdir);
 $cdir = substr($cdir, 0, strrpos($cdir, DIRECTORY_SEPARATOR)) . DIRECTORY_SEPARATOR;
 
-//$cdir = trim($cdir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-
 if (strlen(Core_Array::getRequest('dir')))
 {
 	$cdir = Core_File::pathCorrection($cdir)
@@ -58,21 +55,33 @@ elseif (is_null($cdir)/* || $cdir == DIRECTORY_SEPARATOR*/) // при выбор
 	$cdir = $root_dir;
 }
 
-// Save current cdir
-strlen($cdir) && $_SESSION['filemanager_cdir'] = $cdir;
-
 // Строка пути НЕ начинается относительно корневого пути
 if (strlen($root_dir) > 0 && mb_strpos(trim($cdir, DIRECTORY_SEPARATOR), trim($root_dir, DIRECTORY_SEPARATOR)) !== 0)
 {
-	$oAdmin_Answer = Core_Skin::instance()->answer();
+	$bAJAX = Core_Array::getRequest('_', FALSE);
 
-	$oAdmin_Answer
-		->ajax(Core_Array::getRequest('_', FALSE))
-		->message(Core_Message::get(Core::_('Wysiwyg_Filemanager.denied_dir'), 'error'))
-		->title(Core::_('Wysiwyg_Filemanager.denied_dir'))
-		->execute();
-	exit();
+	if ($bAJAX)
+	{
+		$oAdmin_Answer = Core_Skin::instance()->answer();
+
+		$oAdmin_Answer
+			->ajax($bAJAX)
+			->message(Core_Message::get(Core::_('Wysiwyg_Filemanager.denied_dir'), 'error'))
+			->title(Core::_('Wysiwyg_Filemanager.denied_dir'))
+			->execute();
+		exit();
+	}
+	else
+	{
+		$cdir = $root_dir;
+
+		$cdir = Core_File::pathCorrection($cdir);
+		$cdir = substr($cdir, 0, strrpos($cdir, DIRECTORY_SEPARATOR)) . DIRECTORY_SEPARATOR;
+	}
 }
+
+// Save current cdir
+strlen($cdir) && $_SESSION['filemanager_cdir'] = $cdir;
 
 $oAdmin_Form_Controller->addExternalReplace('{cdir}', rawurlencode($cdir));
 
@@ -138,6 +147,8 @@ $oCore_Html_Entity_Form_File = Core::factory('Core_Html_Entity_Form')
 	->class('margin-top-40 margin-bottom-20')
 	// Load file
 	->add($oMainTabs);
+	
+$windowId = $oAdmin_Form_Controller->getWindowId();	
 
 $oMainTab
 	->add(
@@ -152,7 +163,7 @@ $oMainTab
 	->add(Admin_Form_Entity::factory('Code')->html('
 		<script type="text/javascript">
 			$(function() {
-				$("#dropzone").dropzone({
+				$("#' . $windowId . ' #dropzone").dropzone({
 					url: "/admin/wysiwyg/filemanager/index.php?hostcms[action]=uploadFile&hostcms[checked][1][0]=1&cdir=' . rawurlencode($cdir) .'",
 					parallelUploads: ' . $aConfig['parallelUploads'] . ',
 					maxFilesize: ' . $aConfig['maxFilesize'] . ',

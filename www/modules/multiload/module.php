@@ -9,11 +9,13 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
 * @date
 */
 
-class MultiLoad_Module extends Core_Module{	/**
+class MultiLoad_Module extends Core_Module
+{
+	/**
 	 * Module version
 	 * @var string
 	 */
-	public $version = '1.1.3';
+	public $version = '1.1.4';
 	public $version_number = 7;
 	private $_module_id = 2;
 	private $_internal_name = "multiload";
@@ -25,13 +27,24 @@ class MultiLoad_Module extends Core_Module{	/**
 	 * Module date
 	 * @var date
 	 */
-	public $date = '2020-06-23';
+	public $date = '2021-06-23';
 	/**
 	 * Constructor.
-	 */	public function __construct()	{
+	 */
+	public function __construct()
+	{
 		parent::__construct();
-		$this->menu = array(			array(				'sorting' => 260,				'block' => 2,
-				'ico' => 'fa fa-th-large',				'name' => $this->_admin_name,				'href' => "/admin/" . $this->_internal_name . "/index.php",				'onclick' => "$.adminLoad({path: '/admin/" . $this->_internal_name . "/index.php'}); return false"			)		);
+
+		$this->menu = array(
+			array(
+				'sorting' => 260,
+				'block' => 2,
+				'ico' => 'fa fa-th-large',
+				'name' => $this->_admin_name,
+				'href' => "/admin/" . $this->_internal_name . "/index.php",
+				'onclick' => "$.adminLoad({path: '/admin/" . $this->_internal_name . "/index.php'}); return false"
+			)
+		);
 
 		$this->_module_path = CMS_FOLDER . "/modules/{$this->_internal_name}/";
 
@@ -48,7 +61,8 @@ class MultiLoad_Module extends Core_Module{	/**
 		Core_Skin::instance()->addJs("/admin/{$this->_internal_name}/jquery-upload/js/jquery.fileupload-video.js");
 		Core_Skin::instance()->addJs("/admin/{$this->_internal_name}/jquery-upload/js/jquery.fileupload-validate.js");
 		Core_Skin::instance()->addJs("/admin/{$this->_internal_name}/jquery-upload/js/jquery.fileupload-ui.js");
-		Core_Skin::instance()->addJs("/admin/{$this->_internal_name}/jquery-upload/js/main.js");	}
+		Core_Skin::instance()->addJs("/admin/{$this->_internal_name}/jquery-upload/js/main.js");
+	}
 
 	public function install()
 	{

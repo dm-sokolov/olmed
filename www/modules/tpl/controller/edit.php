@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Tpl
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2018 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Tpl_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 {
@@ -86,7 +86,8 @@ class Tpl_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 				$oTextarea_Tpl = Admin_Form_Entity::factory('Textarea');
 
 				$oTmpOptions = $oTextarea_Tpl->syntaxHighlighterOptions;
-				$oTmpOptions['mode'] = 'smarty';
+				// $oTmpOptions['mode'] = 'smarty';
+				$oTmpOptions['mode'] = 'ace/mode/smarty';
 
 				$tplContent = $object->id
 					? $this->_object->loadTplFile()
@@ -263,7 +264,7 @@ class Tpl_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 
 					$this->_object->saveLngConfigFile($sLng, $content);
 				}
-				
+
 				// clear entire compile directory
 				$oTpl_Processor = Tpl_Processor::instance();
 				$oTpl_Processor->clearCompiledTemplate();

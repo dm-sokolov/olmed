@@ -6,7 +6,7 @@
  * @subpackage Event
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 return array(
 	'model_name' => 'Типы дел',
@@ -22,7 +22,7 @@ return array(
 	'failed' => 'Название проваленного результата',
 	'icon' => 'Иконка',
 	'default' => 'По умолчанию',
-	'edit_success'  => 'Информация о типе дел изменена!',
+	'edit_success' => 'Информация о типе дел изменена!',
 	'copy_success' => 'Тип дел успешно скопирован!',
 	'markDeleted_success' => 'Тип дел успешено удален!',
 	'setDefault_success' => 'Тип дел по умолчанию установлен.',

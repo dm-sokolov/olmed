@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Bot
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Bot_Module_Controller_Add extends Admin_Form_Action_Controller
 {
@@ -58,5 +58,12 @@ class Bot_Module_Controller_Add extends Admin_Form_Action_Controller
 			: 0;
 
 		$oBot_Module->save();
+
+		$countBotModules = $oBot_Modules->getCount(FALSE);
+
+		$windowId = $this->_Admin_Form_Controller->getWindowId();
+
+		// Изменяем на вкладке значение числа ботов
+		$this->addContent('<script>var oTabBots = $("#' . $windowId .'").closest(".tab-pane"), tabBotsId = oTabBots.attr("id"), tabBotsBadge = oTabBots.parent(".tab-content").prev().find("a[href=#" + tabBotsId + "] span.badge"); tabBotsBadge.length && tabBotsBadge.text("' . $countBotModules . '");</script>');
 	}
 }

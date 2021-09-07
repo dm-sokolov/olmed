@@ -23,7 +23,14 @@
 			dataLayer.push({'event': 'form<xsl:value-of select="@id" />.sendMS'});
 			});*/
 			$('#form<xsl:value-of select="@id" />').validate({
-			focusInvalid: true,
+				 onfocusout: function(element) { 
+        // if ($(element).attr("name") == "email") {
+        //     var pattern = /^\b[A-Z0-9._%-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b$/i
+        //     var value = $(element).val()
+        //     if 
+        // }
+        $(element).valid(); 
+    },
 			errorClass: "input_error",
 			submitHandler: function(form) {
 			let d = $(form).serialize();
@@ -53,8 +60,8 @@
 			});
 		</script>
 		
-		<form name="form{@id}" id="form{@id}" class="validate" action="./" method="post" enctype="multipart/form-data">
-			<div class="form-row">
+		<form name="form{@id}" id="form{@id}" class="validate mb-3 " action="./" method="post" enctype="multipart/form-data">
+			<div class="form-row align-items-xl-center">
 				<xsl:choose>
 					<xsl:when test="success/node() and success = 1">
 						<div><xsl:value-of disable-output-escaping="yes" select="substring-after(description, '&lt;!-- pagebreak --&gt;')" /></div>
@@ -92,14 +99,29 @@
 						<!-- Вывод списка полей формы 0-го уровня -->
 						<xsl:apply-templates select="form_field" />
 						
-						<div class="col-sm-4">
+						<div class="col-lg d-flex align-items-end">
 							<button name="{button_name}" value="{button_value}" type="submit" class="form-control btn btn-primary">
-								<xsl:value-of disable-output-escaping="yes" select="button_value" /> <img src="/i/ico-subs.png" />
+								<xsl:value-of disable-output-escaping="yes" select="button_value" />
 							</button>
 						</div>
 					</xsl:otherwise>
 				</xsl:choose>
-			</div>
+			</div><script type="text/javascript">
+						<xsl:comment>
+							<xsl:text disable-output-escaping="yes">
+								<![CDATA[
+								$(document).ready(function() {
+								
+								$(".autofocus-btn").each(function () {
+									$(this).click(function() {
+										$(".autofocus").focus()
+									})
+								})
+								});
+								]]>
+							</xsl:text>
+						</xsl:comment>
+					</script>
 		</form>
 	</xsl:template>
 	
@@ -120,7 +142,7 @@
 		<!-- Не скрытое поле и не надпись -->
 		<xsl:if test="type != 7 and type != 8">
 			
-			<div class="col-sm-4">
+			<div class="col-lg form-group">
 				<xsl:variable name="name">
 					<xsl:choose>
 						<xsl:when test="description!=''">
@@ -132,12 +154,13 @@
 					</xsl:choose>
 					
 					<xsl:if test="obligatory = 1">
-						<xsl:text> *</xsl:text>
+						<xsl:text>:</xsl:text>
 					</xsl:if>
 				</xsl:variable>
 				<!-- Текстовые поля -->
 				<xsl:if test="type = 0 or type = 1 or type = 2 or type = 16 or type = 18">
-					<input id="form_field_{@id}" type="text" name="{name}" value="{value}" size="{size}" class="form-control" placeholder="{$name}">
+					<input id="form_field_{@id}" type="text" name="{name}" value="{value}" size="{size}" class="form-control" >
+						
 						<xsl:choose>
 							<!-- Поле для ввода пароля -->
 							<xsl:when test="type = 1">
@@ -161,19 +184,38 @@
 						<xsl:if test="obligatory = 1">
 							<xsl:attribute name="class">form-control required</xsl:attribute>
 							<xsl:attribute name="minlength">1</xsl:attribute>
-							<xsl:attribute name="title">Заполните поле <xsl:value-of select="$name" /></xsl:attribute>
+							<xsl:attribute name="title"><xsl:choose>
+									<xsl:when test="name = 'fio'">Напишите имя</xsl:when>
+									<xsl:when test="name = 'phone'">Напишите номер телефона</xsl:when>
+									<xsl:when test="name = 'vrach'">Выберите врача</xsl:when>
+							</xsl:choose></xsl:attribute>
 						</xsl:if>
 						<xsl:if test="name = 'phone'">
 							<xsl:attribute name="type">tel</xsl:attribute>
 						</xsl:if>
 					</input>
+					<label for="{name}" class="absolute-label"><xsl:value-of select="$name"/></label>
 					<xsl:if test="name = 'phone'">
 						<script type="text/javascript">
 							<xsl:comment>
 								<xsl:text disable-output-escaping="yes">
 									<![CDATA[
 									$(document).ready(function() {
-									$("input[type='tel']").mask("+7 (999) 999-99-99", {placeholder:"_"});
+									$("input[type='tel']").mask("+7 (999) 999-99-99", {placeholder:"_", completed: function() {
+									$(this).removeClass("error")
+									$(this).next(".error").hide()
+									}
+									});
+									$(".form-control").each(function() {
+		var input = $(this)
+		$(this).on("blur", function() {
+			if ($(this).val().length) {
+				$(this).addClass("val")
+			} else {
+				$(this).removeClass("val")
+			}
+		})
+	})
 									});
 									]]>
 								</xsl:text>

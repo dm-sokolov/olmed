@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Lead
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Lead_Step_Model extends Core_Entity
 {
@@ -54,5 +54,22 @@ class Lead_Step_Model extends Core_Entity
 		// $this->Deal_Step_Users->deleteAll(FALSE);
 
 		return parent::delete($primaryKey);
+	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event lead_step.onBeforeGetRelatedSite
+	 * @hostcms-event lead_step.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Lead->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
 	}
 }

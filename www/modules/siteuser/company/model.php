@@ -586,10 +586,27 @@ class Siteuser_Company_Model extends Core_Entity
 					'<span class="user-name">' . $imgLink . '</span>' . '
 				</div>
 				<div class="ticket-time col-lg-4 col-xs-12">
-					' . ( isset($aDirectory_Phones[0]) ? ('<span class="time">' . htmlspecialchars($aDirectory_Phones[0]->value) .  '</span>') : '') . '
+					' . ( isset($aDirectory_Phones[0]) ? ('<span class="time">' . htmlspecialchars($aDirectory_Phones[0]->value) . '</span>') : '') . '
 				</div>
 				<div class="ticket-state bg-palegreen">' . $nameLink . '</div>
 			</div>
 		</li>';
+	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event siteuser.onBeforeGetRelatedSite
+	 * @hostcms-event siteuser.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Siteuser->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
 	}
 }

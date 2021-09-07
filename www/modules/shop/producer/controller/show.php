@@ -46,6 +46,7 @@ class Shop_Producer_Controller_Show extends Core_Controller
 		'page',
 		'total',
 		'pattern',
+		'patternExpressions',
 		'patternParams',
 		'dirsList',
 	);
@@ -98,6 +99,10 @@ class Shop_Producer_Controller_Show extends Core_Controller
 		$this->_aSiteuserGroups = $this->_getSiteuserGroups();
 
 		$this->pattern = rawurldecode($this->getEntity()->Structure->getPath()) . 'producers/({path})(page-{page}/)';
+		
+		$this->patternExpressions = array(
+			'page' => '\d+',
+		);
 	}
 
 	/**
@@ -286,7 +291,7 @@ class Shop_Producer_Controller_Show extends Core_Controller
 
 		$oShop = $this->getEntity();
 
-		$Core_Router_Route = new Core_Router_Route($this->pattern);
+		$Core_Router_Route = new Core_Router_Route($this->pattern, $this->patternExpressions);
 		$this->patternParams = $matches = $Core_Router_Route->applyPattern(Core::$url['path']);
 
 		if (isset($matches['page']) && $matches['page'] > 1)

@@ -18,8 +18,8 @@ class Lead_Status_Model extends Core_Entity
 	 * @var array
 	 */
 	protected $_hasMany = array(
-		'lead' =>  array(),
-		'lead_step' =>  array()
+		'lead' => array(),
+		'lead_step' => array()
 	);
 
 	/**
@@ -127,6 +127,38 @@ class Lead_Status_Model extends Core_Entity
 			->where('lead_status_id', '=', $this->id)
 			->execute();
 
+		if (Core::moduleIsActive('bot'))
+		{
+			$oModule = Core_Entity::factory('Module')->getByPath('lead');
+
+			if ($oModule)
+			{
+				$aBot_Modules = Bot_Controller::getBotModules($oModule->id, 0, $this->id);
+
+				foreach ($aBot_Modules as $oBot_Module)
+				{
+					$oBot_Module->delete();
+				}
+			}
+		}
+
 		return parent::delete($primaryKey);
+	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event lead_status.onBeforeGetRelatedSite
+	 * @hostcms-event lead_status.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
 	}
 }

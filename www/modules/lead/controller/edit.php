@@ -174,19 +174,21 @@ class Lead_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 			$i++;
 		}
 
+		$windowId = $this->_Admin_Form_Controller->getWindowId();
+
 		$sWizard .= '</ul>
 			</div></div>
 			<script>
 				$(function() {
-					$(".lead-status-step-wizard ul.steps li").on("click", function(){
-						$(".lead-status-step-wizard ul.steps li").each(function(){
+					$("#' . $windowId . ' .lead-status-step-wizard ul.steps li").on("click", function(){
+						$("#' . $windowId . ' .lead-status-step-wizard ul.steps li").each(function(){
 							$(this)
 								.removeClass("active")
 								.removeClass("previous");
 						});
 
 						$(this).addClass("active");
-						$("input[name=lead_status_id]").val($(this).data("id"));
+						$("#' . $windowId . ' input[name=lead_status_id]").val($(this).data("id"));
 
 						$(this).prevUntil("ul.steps").addClass("previous");
 
@@ -211,15 +213,15 @@ class Lead_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 							post[id] = 1;
 							post["lead_status_id"] = lead_status_id;
 
-							$.adminLoad({path: "/admin/lead/index.php", action: "morphLead", operation: operation, post: post, additionalParams: "", windowId: "' . $this->_Admin_Form_Controller->getWindowId() . '"});
+							$.adminLoad({path: "/admin/lead/index.php", action: "morphLead", operation: operation, post: post, additionalParams: "", windowId: "' . $windowId . '"});
 						}
 					});
 
-					$(".lead-status-step-wizard ul.steps li.active").prevUntil("ul.steps").addClass("previous");
+					$("#' . $windowId . ' .lead-status-step-wizard ul.steps li.active").prevUntil("ul.steps").addClass("previous");
 
-					var jFirstStatus = $(".lead-status-step-wizard ul.steps li:first-child");
-					jFirstStatus.length && $("input[name=lead_status_id]").val() == 0
-						? $("input[name=lead_status_id]").val(jFirstStatus.data("id"))
+					var jFirstStatus = $("#' . $windowId . ' .lead-status-step-wizard ul.steps li:first-child");
+					jFirstStatus.length && $("#' . $windowId . ' input[name=lead_status_id]").val() == 0
+						? $("#' . $windowId . ' input[name=lead_status_id]").val(jFirstStatus.data("id"))
 						: 0;
 				});
 			</script>
@@ -312,8 +314,8 @@ class Lead_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 			$oMainRow6
 				->add(
 					 Admin_Form_Entity::factory('Script')
-						->value('$("#shop_id").val($("#select_shop_id").val()); $("#select_shop_id").on("change", function (){
-								$("#shop_id").val($(this).val());
+						->value('$("#' . $windowId . ' #shop_id").val($("#' . $windowId . ' #select_shop_id").val()); $("#' . $windowId . ' #select_shop_id").on("change", function (){
+								$("#' . $windowId . ' #shop_id").val($(this).val());
 							});'
 						)
 				);
@@ -488,7 +490,7 @@ class Lead_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 				<?php
 				Admin_Form_Entity::factory('Div')
 					->controller($this->_Admin_Form_Controller)
-					->id("lead-notes")
+					->id("{$windowId}-lead-notes")
 					->add(
 						$this->_object->id
 							? $this->_addLeadNotes()
@@ -506,7 +508,7 @@ class Lead_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 					<div id="items" class="tab-pane">
 					<?php
 					Admin_Form_Entity::factory('Div')
-						->id("lead-shop-items")
+						->id("{$windowId}-lead-shop-items")
 						->add(
 							$this->_object->id
 								? $this->_addLeadShopItems()
@@ -562,7 +564,7 @@ class Lead_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 		<script>
 		$(function (){
 			setTimeout(function () {
-				$('.scroll-history-<?php echo $this->_object->id?>').slimscroll({
+				$('#<?php echo $windowId?> .scroll-history-<?php echo $this->_object->id?>').slimscroll({
 						height: '<?php echo $height?>',
 						color: 'rgba(0, 0, 0, 0.3)',
 						size: '5px'
@@ -584,17 +586,21 @@ class Lead_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 
 	protected function _addLeadNotes()
 	{
+		$windowId = $this->_Admin_Form_Controller->getWindowId();
+
 		return Admin_Form_Entity::factory('Script')
 			->value("$(function (){
-				$.adminLoad({ path: '/admin/lead/note/index.php', additionalParams: 'lead_id=" . $this->_object->id . "', windowId: 'lead-notes' });
+				$.adminLoad({ path: '/admin/lead/note/index.php', additionalParams: 'lead_id=" . $this->_object->id . "', windowId: '{$windowId}-lead-notes' });
 			});");
 	}
 
 	protected function _addLeadShopItems()
 	{
+		$windowId = $this->_Admin_Form_Controller->getWindowId();
+
 		return Admin_Form_Entity::factory('Script')
 			->value("$(function (){
-				$.adminLoad({ path: '/admin/lead/shop/item/index.php', additionalParams: 'lead_id=" . $this->_object->id . "', windowId: 'lead-shop-items' });
+				$.adminLoad({ path: '/admin/lead/shop/item/index.php', additionalParams: 'lead_id=" . $this->_object->id . "', windowId: '{$windowId}-lead-shop-items' });
 			});");
 	}
 
@@ -641,311 +647,10 @@ class Lead_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 			$this->_Admin_Form_Controller->addMessage(ob_get_clean());
 		}
 
-		// Электронные адреса, установленные значения
-		$aLead_Directory_Emails = $object->Lead_Directory_Emails->findAll();
-		foreach ($aLead_Directory_Emails as $oLead_Directory_Email)
-		{
-			$oDirectory_Email = $oLead_Directory_Email->Directory_Email;
-
-			$sEmail = trim(Core_Array::getPost("email#{$oDirectory_Email->id}"));
-
-			if (!empty($sEmail))
-			{
-				$oDirectory_Email
-					->directory_email_type_id(intval(Core_Array::getPost("email_type#{$oDirectory_Email->id}", 0)))
-					->public(intval(Core_Array::getPost("email_public#{$oDirectory_Email->id}", 0)))
-					->value($sEmail)
-					->save();
-			}
-			else
-			{
-				// Удаляем пустую строку с полями
-				ob_start();
-				Core::factory('Core_Html_Entity_Script')
-					->value("$.deleteFormRow($(\"#{$windowId} select[name='email_type#{$oDirectory_Email->id}']\").closest('.row').find('.btn-delete111').get(0));")
-					->execute();
-
-				$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-				$oLead_Directory_Email->Directory_Email->delete();
-			}
-		}
-
-		// Электронные адреса, новые значения
-		$aEmails = Core_Array::getPost('email', array());
-		$aEmail_Types = Core_Array::getPost('email_type', array());
-		$aEmail_Public = Core_Array::getPost('email_public', array());
-
-		if (is_array($aEmails) && count($aEmails))
-		{
-			$i = 0;
-			foreach ($aEmails as $key => $sEmail)
-			{
-				$sEmail = trim($sEmail);
-
-				if (!empty($sEmail))
-				{
-					$oDirectory_Email = Core_Entity::factory('Directory_Email')
-						->directory_email_type_id(intval(Core_Array::get($aEmail_Types, $key)))
-						->public(intval(Core_Array::get($aEmail_Public, $key)))
-						->value($sEmail)
-						->save();
-
-					$object->add($oDirectory_Email);
-
-					ob_start();
-					Core::factory('Core_Html_Entity_Script')
-						->value("$(\"#{$windowId} select[name='email_type\\[\\]']\").eq({$i}).prop('name', 'email_type#{$oDirectory_Email->id}').closest('.row').find('.btn-delete').removeClass('hide');
-						$(\"#{$windowId} input[name='email\\[\\]']\").eq({$i}).prop('name', 'email#{$oDirectory_Email->id}');
-						$(\"#{$windowId} input[name='email_public\\[\\]']\").eq({$i}).prop('name', 'email_public#{$oDirectory_Email->id}');
-						")
-						->execute();
-
-					$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-				}
-				else
-				{
-					$i++;
-				}
-			}
-		}
-
-		// Телефоны, установленные значения
-		$aLead_Directory_Phones = $object->Lead_Directory_Phones->findAll();
-
-		foreach ($aLead_Directory_Phones as $oLead_Directory_Phone)
-		{
-			$oDirectory_Phone = $oLead_Directory_Phone->Directory_Phone;
-
-			$sPhone = trim(Core_Array::getPost("phone#{$oDirectory_Phone->id}"));
-
-			if (!empty($sPhone))
-			{
-				$oDirectory_Phone
-					->directory_phone_type_id(intval(Core_Array::getPost("phone_type#{$oDirectory_Phone->id}", 0)))
-					->public(intval(Core_Array::getPost("phone_public#{$oDirectory_Phone->id}", 0)))
-					->value($sPhone)
-					->save();
-			}
-			else
-			{
-				// Удаляем пустую строку с полями
-				ob_start();
-				Core::factory('Core_Html_Entity_Script')
-					->value("$.deleteFormRow($(\"#{$windowId} select[name='phone_type#{$oDirectory_Phone->id}']\").closest('.row').find('.btn-delete').get(0));")
-					->execute();
-				$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-
-				$oLead_Directory_Phone->Directory_Phone->delete();
-			}
-		}
-
-		// Телефоны, новые значения
-		$aPhones = Core_Array::getPost('phone', array());
-		$aPhone_Types = Core_Array::getPost('phone_type', array());
-		$aPhone_Public = Core_Array::getPost('phone_public', array());
-
-		if (is_array($aPhones) && count($aPhones))
-		{
-			$i = 0;
-			foreach ($aPhones as $key => $sPhone)
-			{
-				$sPhone = trim($sPhone);
-
-				if (!empty($sPhone))
-				{
-					$oDirectory_Phone = Core_Entity::factory('Directory_Phone')
-						->directory_phone_type_id(intval(Core_Array::get($aPhone_Types, $key)))
-						->public(intval(Core_Array::get($aPhone_Public, $key)))
-						->value($sPhone)
-						->save();
-
-					$object->add($oDirectory_Phone);
-
-					ob_start();
-					Core::factory('Core_Html_Entity_Script')
-						->value("$(\"#{$windowId} select[name='phone_type\\[\\]']\").eq({$i}).prop('name', 'phone_type#{$oDirectory_Phone->id}').closest('.row').find('.btn-delete').removeClass('hide');
-						$(\"#{$windowId} input[name='phone\\[\\]']\").eq({$i}).prop('name', 'phone#{$oDirectory_Phone->id}');
-						$(\"#{$windowId} input[name='phone_public\\[\\]']\").eq({$i}).prop('name', 'phone_public#{$oDirectory_Phone->id}');
-						")
-						->execute();
-
-					$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-				}
-				else
-				{
-					$i++;
-				}
-			}
-		}
-
-		// Cайты, установленные значения
-		$aLead_Directory_Websites = $object->Lead_Directory_Websites->findAll();
-
-		foreach ($aLead_Directory_Websites as $oLead_Directory_Website)
-		{
-			$oDirectory_Website = $oLead_Directory_Website->Directory_Website;
-
-			$sWebsite_Address = trim(Core_Array::getPost("website_address#{$oDirectory_Website->id}"));
-
-			if (!empty($sWebsite_Address))
-			{
-				$aUrl = @parse_url($sWebsite_Address);
-
-				// Если не был указан протокол, или
-				// указанный протокол некорректен для url
-				!array_key_exists('scheme', $aUrl)
-					&& $sWebsite_Address = 'http://' . $sWebsite_Address;
-
-				$oDirectory_Website
-					->description(strval(Core_Array::getPost("website_description#{$oDirectory_Website->id}")))
-					->public(intval(Core_Array::getPost("website_public#{$oDirectory_Website->id}")))
-					->value($sWebsite_Address)
-					->save();
-			}
-			else
-			{
-				// Удаляем пустую строку с полями
-				ob_start();
-				Core::factory('Core_Html_Entity_Script')
-					->value("$.deleteFormRow($(\"#{$windowId} input[name='website_address#{$oDirectory_Website->id}']\").closest('.row').find('.btn-delete').get(0));")
-					->execute();
-
-				$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-				$oLead_Directory_Website->Directory_Website->delete();
-			}
-		}
-
-		// Сайты, новые значения
-		$aWebsite_Addresses = Core_Array::getPost('website_address', array());
-		$aWebsite_Names = Core_Array::getPost('website_description', array());
-		$aWebsite_Public = Core_Array::getPost('website_public', array());
-
-		if (is_array($aWebsite_Addresses) && count($aWebsite_Addresses))
-		{
-			$i = 0;
-			foreach ($aWebsite_Addresses as $key => $sWebsite_Address)
-			{
-				$sWebsite_Address = trim($sWebsite_Address);
-
-				if (!empty($sWebsite_Address))
-				{
-					$aUrl = @parse_url($sWebsite_Address);
-
-					// Если не был указан протокол, или
-					// указанный протокол некорректен для url
-					!array_key_exists('scheme', $aUrl)
-						&& $sWebsite_Address = 'http://' . $sWebsite_Address;
-
-					$oDirectory_Website = Core_Entity::factory('Directory_Website')
-						->public(intval(Core_Array::get($aWebsite_Public, $key)))
-						->description(Core_Array::get($aWebsite_Names, $key))
-						->value($sWebsite_Address);
-
-					$object->add($oDirectory_Website);
-
-					ob_start();
-					Core::factory('Core_Html_Entity_Script')
-						->value("$(\"#{$windowId} input[name='website_address\\[\\]']\").eq({$i}).prop('name', 'website_address#{$oDirectory_Website->id}').closest('.row').find('.btn-delete').removeClass('hide');
-						$(\"#{$windowId} input[name='website_description\\[\\]']\").eq({$i}).prop('name', 'website_description#{$oDirectory_Website->id}');
-						$(\"#{$windowId} input[name='website_public\\[\\]']\").eq({$i}).prop('name', 'website_public#{$oDirectory_Website->id}');
-						")
-						->execute();
-
-					$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-				}
-				else
-				{
-					$i++;
-				}
-			}
-		}
-
-		// Адреса, установленные значения
-		$aLead_Directory_Addresses = $object->Lead_Directory_Addresses->findAll();
-
-		foreach ($aLead_Directory_Addresses as $oLead_Directory_Address)
-		{
-			$oDirectory_Address = $oLead_Directory_Address->Directory_Address;
-
-			$sAddress = trim(Core_Array::getPost("address#{$oDirectory_Address->id}"));
-			$sCountry = strval(Core_Array::getPost("address_country#{$oDirectory_Address->id}"));
-			$sPostcode = strval(Core_Array::getPost("address_postcode#{$oDirectory_Address->id}"));
-			$sCity = strval(Core_Array::getPost("address_city#{$oDirectory_Address->id}"));
-
-			if (strlen($sAddress) || strlen($sCountry) || strlen($sPostcode) || strlen($sCity))
-			{
-				$oDirectory_Address
-					->directory_address_type_id(intval(Core_Array::getPost("address_type#{$oDirectory_Address->id}", 0)))
-					->public(intval(Core_Array::getPost("address_public#{$oDirectory_Address->id}", 0)))
-					->country($sCountry)
-					->postcode($sPostcode)
-					->city($sCity)
-					->value($sAddress)
-					->save();
-			}
-			else
-			{
-				// Удаляем пустую строку с полями
-				ob_start();
-				Core::factory('Core_Html_Entity_Script')
-					->value("$.deleteFormRow($(\"#{$windowId} select[name='address_type#{$oDirectory_Address->id}']\").closest('.row').find('.btn-delete').get(0));")
-					->execute();
-				$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-
-				$oLead_Directory_Address->Directory_Address->delete();
-			}
-		}
-
-		//Адреса, новые значения
-		$aAddresses = Core_Array::getPost('address', array());
-		$aAddress_Types = Core_Array::getPost('address_type', array());
-		$aAddress_Country = Core_Array::getPost('address_country', array());
-		$aAddress_Postcode = Core_Array::getPost('address_postcode', array());
-		$aAddress_City = Core_Array::getPost('address_city', array());
-		$aAddress_Public = Core_Array::getPost('address_public', array());
-
-		if (is_array($aAddresses) && count($aAddresses))
-		{
-			$i = 0;
-			foreach ($aAddresses as $key => $sAddress)
-			{
-				$sAddress = trim($sAddress);
-				$sCountry = strval(Core_Array::get($aAddress_Country, $key));
-				$sPostcode = strval(Core_Array::get($aAddress_Postcode, $key));
-				$sCity = strval(Core_Array::get($aAddress_City, $key));
-
-				if (strlen($sAddress) || strlen($sCountry) || strlen($sPostcode) || strlen($sCity))
-				{
-					$oDirectory_Address = Core_Entity::factory('Directory_Address')
-						->directory_address_type_id(intval(Core_Array::get($aAddress_Types, $key)))
-						->public(intval(Core_Array::get($aAddress_Public, $key)))
-						->country($sCountry)
-						->postcode($sPostcode)
-						->city($sCity)
-						->value($sAddress)
-						->save();
-
-					$object->add($oDirectory_Address);
-
-					ob_start();
-					Core::factory('Core_Html_Entity_Script')
-						->value("$(\"#{$windowId} select[name='address_type\\[\\]']\").eq({$i}).prop('name', 'address_type#{$oDirectory_Address->id}').closest('.row').find('.btn-delete').removeClass('hide');
-						$(\"#{$windowId} input[name='address\\[\\]']\").eq({$i}).prop('name', 'address#{$oDirectory_Address->id}');
-						$(\"#{$windowId} input[name='address_public\\[\\]']\").eq({$i}).prop('name', 'address_public#{$oDirectory_Address->id}');
-						$(\"#{$windowId} input[name='address_country\\[\\]']\").eq({$i}).prop('name', 'address_country#{$oDirectory_Address->id}');
-						$(\"#{$windowId} input[name='address_postcode\\[\\]']\").eq({$i}).prop('name', 'address_postcode#{$oDirectory_Address->id}');
-						$(\"#{$windowId} input[name='address_city\\[\\]']\").eq({$i}).prop('name', 'address_city#{$oDirectory_Address->id}');
-						")
-						->execute();
-
-					$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-				}
-				else
-				{
-					$i++;
-				}
-			}
-		}
+		Directory_Controller_Tab::instance('address')->applyObjectProperty($this->_Admin_Form_Controller, $this->_object);
+		Directory_Controller_Tab::instance('email')->applyObjectProperty($this->_Admin_Form_Controller, $this->_object);
+		Directory_Controller_Tab::instance('phone')->applyObjectProperty($this->_Admin_Form_Controller, $this->_object);
+		Directory_Controller_Tab::instance('website')->applyObjectProperty($this->_Admin_Form_Controller, $this->_object);
 
 		if ($bAddLead || !$bAddLead && !is_null($oCurrentLeadStatus) && $oCurrentLeadStatus->id != $this->_object->lead_status_id)
 		{
@@ -974,9 +679,12 @@ class Lead_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 	 */
 	public function execute($operation = NULL)
 	{
+		// $windowId = $this->_Admin_Form_Controller->getWindowId();
+
+		// Всегда id_content
 		$sJsRefresh = '<script>
-		if ($(".kanban-board").length && typeof _windowSettings != \'undefined\') {
-			$(\'.btn-view-selector #kanban\').click();
+		if ($("#id_content .kanban-board").length && typeof _windowSettings != \'undefined\') {
+			$("#id_content .btn-view-selector #kanban").click();
 		}
 		</script>';
 

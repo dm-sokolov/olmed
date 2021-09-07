@@ -27,8 +27,8 @@ $oAdmin_Form_Controller
 	->module(Core_Module::factory($sModule))
 	->setUp()
 	->path($sAdminFormAction)
-	->title(Core::_('Shop_Order_Status.show_order_status_link'))
-	->pageTitle(Core::_('Shop_Order_Status.show_order_status_link'));
+	->title(Core::_('Shop_Order_Status.title'))
+	->pageTitle(Core::_('Shop_Order_Status.title'));
 
 // Меню формы
 $oAdmin_Form_Entity_Menus = Admin_Form_Entity::factory('Menus');
@@ -88,7 +88,7 @@ if ($iShopDirId)
 
 // Добавляем крошку на текущую форму
 $oAdmin_Form_Entity_Breadcrumbs->add(Admin_Form_Entity::factory('Breadcrumb')
-	->name(Core::_('Shop_Order_Status.show_order_status_link'))
+	->name(Core::_('Shop_Order_Status.title'))
 	->href($oAdmin_Form_Controller->getAdminLoadHref($oAdmin_Form_Controller->getPath(), NULL, NULL, $sAdditionalParam = "&shop_dir_id=" . intval(Core_Array::getGet('shop_dir_id', 0))))
 	->onclick($oAdmin_Form_Controller->getAdminLoadAjax($oAdmin_Form_Controller->getPath(), NULL, NULL, $sAdditionalParam)));
 

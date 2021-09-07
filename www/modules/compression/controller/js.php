@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Compression
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Compression_Controller_Js extends Compression_Controller
 {
@@ -21,14 +21,22 @@ class Compression_Controller_Js extends Compression_Controller
 		return $this;
 	}
 
+	/**
+	 * Get path of the cache dir for the JS with CMS_FOLDER
+	 * @return string
+	 */
 	public function getJsDirPath()
 	{
-		return CMS_FOLDER . 'hostcmsfiles' . DIRECTORY_SEPARATOR . 'js' . DIRECTORY_SEPARATOR;
+		return CMS_FOLDER . Core::$mainConfig['compressionJsDirectory'];
 	}
 
+	/**
+	 * Get href of the cache dir for the JS
+	 * @return string
+	 */
 	public function getJsDirHref()
 	{
-		return '/hostcmsfiles/js/';
+		return '/' . Core::$mainConfig['compressionJsDirectory'];
 	}
 
 	public function getPath()

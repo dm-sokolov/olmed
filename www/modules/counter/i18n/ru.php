@@ -18,20 +18,20 @@ return array(
 	'crawler' => 'Поисковый бот',
 	'crawler_summary' => 'Сводная статистика',
 	'crawler_pages' => 'Посещенные страницы',
-	
+
 	'useragents' => 'Пользовательские агенты',
 
 	'os' => 'Операционные системы',
 	'devices' => 'Устройства',
 	'browsers' => 'Браузеры',
 	'displays' => 'Разрешение экрана',
-	
+
 	'page' => 'Популярность страниц',
 	'referrer' => 'Ссылающиеся страницы',
 	'ip' => 'IP-адреса',
 	'searchsystem' => 'Поисковые системы',
 	'searchquery' => 'Поисковые фразы',
-	
+
 	'sessions' => '<acronym title="Начальное значение для сессий">Сессии:</acronym>',
 	'hosts' => '<acronym title="Начальное значение для хостов">Хосты:</acronym>',
 	'hits' => '<acronym title="Начальное значение для хитов">Хиты:</acronym>',
@@ -48,14 +48,14 @@ return array(
 	'graph_new_users' => 'Новые посетители',
 
 	'tab' => 'Закладка',
-	
+
 	'widget_detailed_statistics' => 'Подробная статистика',
 	'reset' => 'Исходный вид',
 
-	
+
 	'code_title' => 'Код счетчика "%s"',
 	'other' => 'Другой',
-	
+
 	'index_all_stat' => 'Сводная статистика',
 	'index_all_stat_today' => 'Сегодня',
 	'index_all_stat_yesterday' => 'Вчера',
@@ -69,7 +69,7 @@ return array(
 	'index_all_stat_bots' => 'Поисковые боты:',
 	'index_show_counter_link' => 'Статистика посещаемости сайта',
 	'subject' => 'HostCMS: Статистика посещаемости сайта "%s"',
-	
+
 	'type_0' => 'Невидимый',
 	'type_1' => 'Счетчик 1',
 	'type_2' => 'Счетчик 2',
@@ -84,6 +84,7 @@ return array(
 	'type_11' => 'Счетчик 11',
 	'type_12' => 'Счетчик 12',
 	'type_13' => 'Счетчик 13',
-	'type_14' => 'Счетчик 14',	
-	
+	'type_14' => 'Счетчик 14',
+
+	'option_gethostbyaddr' => 'Определять имя хоста по IP'
 );

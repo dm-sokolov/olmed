@@ -768,7 +768,7 @@ class Template_Model extends Core_Entity
 				?>
 
 				<div class="hostcmsSection" id="hostcmsSection<?php echo $oTemplate_Section->id?>" style="border-color: <?php echo Core_Str::hex2rgba($oTemplate_Section->color, 0.8)?>">
-					<div class="hostcmsSectionPanel">
+					<div class="hostcmsSectionPanel" style="display: none">
 						<div class="draggable-indicator">
 							<svg width="16px" height="16px" viewBox="0 0 32 32"><rect height="4" width="4" y="4" x="4" /><rect height="4" width="4" y="12" x="4" /><rect height="4" width="4" y="4" x="12"/><rect height="4" width="4" y="12" x="12"/><rect height="4" width="4" y="4" x="20"/><rect height="4" width="4" y="12" x="20"/><rect height="4" width="4" y="4" x="28"/><rect height="4" width="4" y="12" x="28"/></svg>
 						</div>
@@ -780,7 +780,7 @@ class Template_Model extends Core_Entity
 			}
 
 			echo $oTemplate_Section->prefix;
-			
+
 			$oTemplate_Section_Libs = $oTemplate_Section->Template_Section_Libs;
 			$oTemplate_Section_Libs->queryBuilder()
 				//->where('template_section_libs.active', '=', 1)
@@ -1051,5 +1051,22 @@ class Template_Model extends Core_Entity
 		}
 
 		return $this->_i18n[$lng];
+	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event template.onBeforeGetRelatedSite
+	 * @hostcms-event template.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
 	}
 }

@@ -20,14 +20,14 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * $oSite = Core_Entity::factory('Site', 1);
  *
  * $Siteuser_List_Controller_Show = new Siteuser_List_Controller_Show(
- *    $oSite
+ * 	$oSite
  * );
  *
  * $Siteuser_List_Controller_Show
- *    ->xsl(
- *       Core_Entity::factory('Xsl')->getByName('СписокПользователейСайта')
- *    )
- *    ->show();
+ * 	->xsl(
+ * 		Core_Entity::factory('Xsl')->getByName('СписокПользователейСайта')
+ * 	)
+ * 	->show();
  * </code>
  *
  * @package HostCMS

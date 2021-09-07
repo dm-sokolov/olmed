@@ -90,6 +90,7 @@ class Siteuser_Person_Model extends Core_Entity
 		{
 			$oUser = Core_Auth::getCurrentUser();
 			$this->_preloadValues['user_id'] = is_null($oUser) ? 0 : $oUser->id;
+			$this->_preloadValues['sex'] = 2;
 		}
 	}
 
@@ -625,10 +626,27 @@ class Siteuser_Person_Model extends Core_Entity
 					'<span class="user-name">' . $imgLink . '</span>' . '
 				</div>
 				<div class="ticket-time col-lg-4 col-xs-12">
-					' . ( isset($aDirectory_Phones[0]) ? ('<span class="time">' . htmlspecialchars($aDirectory_Phones[0]->value) .  '</span>') : '') . '
+					' . ( isset($aDirectory_Phones[0]) ? ('<span class="time">' . htmlspecialchars($aDirectory_Phones[0]->value) . '</span>') : '') . '
 				</div>
 				<div class="ticket-state bg-azure">' . $nameLink . '</div>
 			</div>
 		</li>';
+	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event siteuser_person.onBeforeGetRelatedSite
+	 * @hostcms-event siteuser_person.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Siteuser->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
 	}
 }

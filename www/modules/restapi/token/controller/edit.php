@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Restapi
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Restapi_Token_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 {
@@ -30,6 +30,8 @@ class Restapi_Token_Controller_Edit extends Admin_Form_Action_Controller_Type_Ed
 
 		$oMainTab = $this->getTab('main');
 		$oAdditionalTab = $this->getTab('additional');
+		
+		$windowId = $this->_Admin_Form_Controller->getWindowId();
 
 		$oMainTab
 			->add($oMainRow1 = Admin_Form_Entity::factory('Div')->class('row'))
@@ -59,7 +61,8 @@ class Restapi_Token_Controller_Edit extends Admin_Form_Action_Controller_Type_Ed
 			->divAttr(array('class' => 'form-group col-xs-12 col-sm-6'));
 
 		$oScriptResponsibleUsers = Admin_Form_Entity::factory('Script')
-			->value('$("#user_id").select2({
+			->value('$("#' . $windowId . ' #user_id").select2({
+					dropdownParent: $("#' . $windowId . '"),
 					placeholder: "",
 					allowClear: true,
 					//multiple: true,

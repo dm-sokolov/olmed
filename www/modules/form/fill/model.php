@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Form
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Form_Fill_Model extends Core_Entity
 {
@@ -113,7 +113,7 @@ class Form_Fill_Model extends Core_Entity
 	 * Backend callback method
 	 * @return string
 	 */
-	public function statusBackend($oAdmin_Form_Field, $oAdmin_Form_Controller)
+	public function form_status_idBackend($oAdmin_Form_Field, $oAdmin_Form_Controller)
 	{
 		ob_start();
 
@@ -236,5 +236,22 @@ class Form_Fill_Model extends Core_Entity
 			->addXmlTag('datetime', Core_Date::sql2datetime($this->datetime));
 
 		return $this;
+	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event form_fill.onBeforeGetRelatedSite
+	 * @hostcms-event form_fill.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Form->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
 	}
 }

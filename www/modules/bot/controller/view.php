@@ -89,21 +89,25 @@ class Bot_Controller_View extends Admin_Form_Controller_View
 					];
 
 					$.getMultiContent(aScripts, '/modules/skin/bootstrap/js/nestable/').done(function() {
-						$('.bot-modules .dd').nestable({
+						$('#<?php echo $windowId?> .bot-modules .dd').nestable({
 							maxDepth: 1,
 							emptyClass: ''
 						});
 
-						$('.bot-modules .dd-handle a').on('mousedown', function (e) {
-							e.stopPropagation();
-						});
+						$('#<?php echo $windowId?> .bot-modules .dd-handle a')
+							.on('mousedown', function (e) {
+								e.stopPropagation();
+							})
+							.on('touchend', function () {
+								$(this).click();
+							});
 
 						$bChange = true;
 
-						$('.bot-modules .dd').on('change', function() {
+						$('#<?php echo $windowId?> .bot-modules .dd').on('change', function() {
 							$aIds = [];
 
-							$.each($('.bot-modules li.dd-item'), function(i, object){
+							$.each($('#<?php echo $windowId?> .bot-modules li.dd-item'), function(i, object){
 								$aIds.push($(object).data('id'));
 							});
 
@@ -132,12 +136,12 @@ class Bot_Controller_View extends Admin_Form_Controller_View
 						success: function(result){
 							if (result.status == 'success')
 							{
-								$('li[data-id = ' + bot_module_id + ']').append(result.html);
+								$('#<?php echo $windowId?> li[data-id = ' + bot_module_id + ']').append(result.html);
 
-								$('#settingsModal' + bot_module_id).modal('show');
+								$('#<?php echo $windowId?> #settingsModal' + bot_module_id).modal('show');
 
-								$('#settingsModal' + bot_module_id).on('hidden.bs.modal', function (e) {
-									$('#settingsModal' + bot_module_id)
+								$('#<?php echo $windowId?> #settingsModal' + bot_module_id).on('hidden.bs.modal', function (e) {
+									$('#<?php echo $windowId?> #settingsModal' + bot_module_id)
 										.removeTinyMCE()
 										.remove();
 								});
@@ -149,11 +153,11 @@ class Bot_Controller_View extends Admin_Form_Controller_View
 				{
 					$.ajax({
 						url: '/admin/bot/module/index.php',
-						data: { 'save_settings': 1, 'data': $('.bot-modules-form').serialize(), 'bot_module_id': bot_module_id },
+						data: { 'save_settings': 1, 'data': $('#<?php echo $windowId?> .bot-modules-form').serialize(), 'bot_module_id': bot_module_id },
 						dataType: 'json',
 						type: 'POST',
 						success: function(result){
-							$('#settingsModal' + bot_module_id).modal('hide');
+							$('#<?php echo $windowId?> #settingsModal' + bot_module_id).modal('hide');
 
 							setTimeout(function(){
 								$('body').removeClass('modal-open');
@@ -201,6 +205,7 @@ class Bot_Controller_View extends Admin_Form_Controller_View
 							<div class="dd">
 								<ol class="dd-list">
 									<li class="dd-item bordered-default" style="border-color: <?php echo htmlspecialchars($oClass->getColor())?> !important;" data-id="<?php echo $oBot_Module->id?>" data-sorting="<?php echo $oBot_Module->sorting?>">
+										<input type="checkbox" id="check_0_<?php echo $oBot_Module->id?>" class="hidden">
 										<div class="dd-handle">
 											<div id="<?php echo $oBot_Module->id?>" class="form-horizontal">
 												<div class="form-group no-margin-bottom">

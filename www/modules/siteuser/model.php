@@ -460,6 +460,7 @@ class Siteuser_Model extends Core_Entity
 		$this->Siteuser_People->deleteAll(FALSE);
 		$this->Siteuser_Companies->deleteAll(FALSE);
 		$this->Siteuser_Users->deleteAll(FALSE);
+		$this->Siteuser_Emails->deleteAll(FALSE);
 
 		// Maillist
 		if (Core::moduleIsActive('maillist'))
@@ -649,38 +650,92 @@ class Siteuser_Model extends Core_Entity
 		{
 			$oProperty = $oPropertyValue->Property;
 
-			// List
-			if ($oProperty->type == 3 && Core::moduleIsActive('list'))
+			if ($oProperty->indexing)
 			{
-				if ($oPropertyValue->value != 0)
+				// List
+				if ($oProperty->type == 3 && Core::moduleIsActive('list'))
 				{
-					$oList_Item = $oPropertyValue->List_Item;
-					$oList_Item->id && $oSearch_Page->text .= htmlspecialchars($oList_Item->value) . ' ' . htmlspecialchars($oList_Item->description) . ' ';
-				}
-			}
-			// Informationsystem
-			elseif ($oProperty->type == 5 && Core::moduleIsActive('informationsystem'))
-			{
-				if ($oPropertyValue->value != 0)
-				{
-					$oInformationsystem_Item = $oPropertyValue->Informationsystem_Item;
-					if ($oInformationsystem_Item->id)
+					if ($oPropertyValue->value != 0)
 					{
-						$oSearch_Page->text .= htmlspecialchars($oInformationsystem_Item->name) . ' ';
+						$oList_Item = $oPropertyValue->List_Item;
+						$oList_Item->id && $oSearch_Page->text .= htmlspecialchars($oList_Item->value) . ' ' . htmlspecialchars($oList_Item->description) . ' ';
 					}
 				}
+				// Informationsystem
+				elseif ($oProperty->type == 5 && Core::moduleIsActive('informationsystem'))
+				{
+					if ($oPropertyValue->value != 0)
+					{
+						$oInformationsystem_Item = $oPropertyValue->Informationsystem_Item;
+						if ($oInformationsystem_Item->id)
+						{
+							$oSearch_Page->text .= htmlspecialchars($oInformationsystem_Item->name) . ' ';
+						}
+					}
+				}
+				// Other type
+				elseif ($oProperty->type != 2 && $oProperty->type != 10)
+				{
+					$oSearch_Page->text .= htmlspecialchars($oPropertyValue->value) . ' ';
+				}
 			}
-			// Other type
-			elseif ($oProperty->type != 2 && $oProperty->type != 10)
+		}
+
+		if (Core::moduleIsActive('field'))
+		{
+			$aField_Values = Field_Controller_Value::getFieldsValues($this->getFieldIDs(), $this->id);
+			foreach ($aField_Values as $oField_Value)
 			{
-				$oSearch_Page->text .= htmlspecialchars($oPropertyValue->value) . ' ';
+				// List
+				if ($oField_Value->Field->type == 3 && Core::moduleIsActive('list'))
+				{
+					if ($oField_Value->value != 0)
+					{
+						$oList_Item = $oField_Value->List_Item;
+						$oList_Item->id && $oSearch_Page->text .= htmlspecialchars($oList_Item->value) . ' ' . htmlspecialchars($oList_Item->description) . ' ';
+					}
+				}
+				// Informationsystem
+				elseif ($oField_Value->Field->type == 5 && Core::moduleIsActive('informationsystem'))
+				{
+					if ($oField_Value->value != 0)
+					{
+						$oInformationsystem_Item = $oField_Value->Informationsystem_Item;
+						if ($oInformationsystem_Item->id)
+						{
+							$oSearch_Page->text .= htmlspecialchars($oInformationsystem_Item->name) . ' ' . $oInformationsystem_Item->description . ' ' . $oInformationsystem_Item->text . ' ';
+						}
+					}
+				}
+				// Shop
+				elseif ($oField_Value->Field->type == 12 && Core::moduleIsActive('shop'))
+				{
+					if ($oField_Value->value != 0)
+					{
+						$oShop_Item = $oField_Value->Shop_Item;
+						if ($oShop_Item->id)
+						{
+							$oSearch_Page->text .= htmlspecialchars($oShop_Item->name) . ' ' . $oShop_Item->description . ' ' . $oShop_Item->text . ' ';
+						}
+					}
+				}
+				// Wysiwyg
+				elseif ($oField_Value->Field->type == 6)
+				{
+					$oSearch_Page->text .= htmlspecialchars(strip_tags($oField_Value->value)) . ' ';
+				}
+				// Other type
+				elseif ($oField_Value->Field->type != 2)
+				{
+					$oSearch_Page->text .= htmlspecialchars($oField_Value->value) . ' ';
+				}
 			}
 		}
 
 		$oSiteAlias = $this->Site->getCurrentAlias();
 		if ($oSiteAlias)
 		{
-			$oSearch_Page->url = 'http://' . $oSiteAlias->name . '/' . $this->getPath();
+			$oSearch_Page->url = ($this->Site->https ? 'https://' : 'http://') . $oSiteAlias->name . '/' . $this->getPath();
 		}
 		else
 		{
@@ -1105,6 +1160,7 @@ class Siteuser_Model extends Core_Entity
 		$oShop_Siteuser_Transactions = $this->Shop_Siteuser_Transactions;
 		$oShop_Siteuser_Transactions->queryBuilder()
 			->where('active', '=', 1)
+			->where('deleted', '=', 0)
 			->where('shop_id', '=', $oShop->id);
 
 		return $oShop_Siteuser_Transactions->findAll(FALSE);
@@ -1121,6 +1177,7 @@ class Siteuser_Model extends Core_Entity
 			->from('shop_siteuser_transactions')
 			->where('shop_id', '=', $oShop->id)
 			->where('siteuser_id', '=', $this->id)
+			->where('deleted', '=', 0)
 			->where('active', '=', 1)
 			->execute()->asAssoc()->current();
 
@@ -1433,7 +1490,7 @@ class Siteuser_Model extends Core_Entity
 				if (is_null($oDirectory_Email_Type))
 				{
 					$oDirectory_Email_Type = Core_Entity::factory('Directory_Email_Type');
-					$oDirectory_Email_Type->name =  Core::_('Directory_Email_Type.default_name');
+					$oDirectory_Email_Type->name = Core::_('Directory_Email_Type.default_name');
 					$oDirectory_Email_Type->save();
 				}
 
@@ -1724,7 +1781,7 @@ class Siteuser_Model extends Core_Entity
 
 		$aShop_Discountcards = $oShop->Shop_Discountcards->getAllBySiteuser_id($this->id);
 
-		if (isset($aShop_Discountcards[0]))
+		if (isset($aShop_Discountcards[0]) && $aShop_Discountcards[0]->active)
 		{
 			$oShop_Discountcard = $aShop_Discountcards[0];
 
@@ -1780,5 +1837,22 @@ class Siteuser_Model extends Core_Entity
 		}
 
 		return parent::__set($property, $value);
+	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event siteuser.onBeforeGetRelatedSite
+	 * @hostcms-event siteuser.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
 	}
 }

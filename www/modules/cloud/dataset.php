@@ -14,12 +14,6 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
 class Cloud_Dataset extends Admin_Form_Dataset
 {
 	/**
-	 * Dataset objects list
-	 * @var array
-	 */
-	protected $_objects = array();
-
-	/**
 	 * Get count of finded objects
 	 * @return int
 	 */
@@ -45,13 +39,7 @@ class Cloud_Dataset extends Admin_Form_Dataset
 	 * @param int $primaryKey ID
 	 * @return object
 	 */
-	public function getObject($primaryKey)
-	{
-		/*!count($this->_objects) && $this->_getWorkingHours();
-		return isset($this->_objects[$primaryKey])
-			? $this->_objects[$primaryKey]
-			: $this->_newObject();*/
-	}
+	public function getObject($primaryKey){}
 
 	/**
 	 * Get new object

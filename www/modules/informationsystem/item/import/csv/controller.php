@@ -2107,8 +2107,9 @@ class Informationsystem_Item_Import_Csv_Controller extends Core_Servant_Properti
 	{
 		if (is_null($this->_aTags))
 		{
-			$aTags = Core_Entity::factory('Tag')->findAll(FALSE);
+			$this->_aTags = array();
 
+			$aTags = Core_Entity::factory('Tag')->findAll(FALSE);
 			foreach ($aTags as $oTag)
 			{
 				$this->_aTags[$oTag->id] = $oTag->name;

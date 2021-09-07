@@ -5,7 +5,7 @@
  * @package HostCMS
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 require_once('../../../../bootstrap.php');
 
@@ -51,8 +51,6 @@ $additionalParams = Core_Str::escapeJavascriptVariable(
 	str_replace(array('"'), array('&quot;'), $oAdmin_Form_Controller->additionalParams)
 );
 
-// var_dump($additionalParams);
-
 // Меню формы
 $oAdmin_Form_Entity_Menus = Admin_Form_Entity::factory('Menus');
 
@@ -65,7 +63,7 @@ $oAdmin_Form_Entity_Menus
 			->name(Core::_('Crm_Project.add_event'))
 			->icon('fa fa-plus')
 			->onclick(
-				"$.modalLoad({path: '/admin/event/index.php', action: 'edit', operation: 'modal', additionalParams: 'hostcms[checked][0][0]=1&{$additionalParams}&parentWindowId={$windowId}', windowId: '{$windowId}'}); return false"
+				"$.modalLoad({path: '/admin/event/index.php', action: 'edit', operation: 'modal', additionalParams: 'hostcms[checked][0][0]=1&{$additionalParams}', windowId: '{$windowId}'}); return false"
 			)
 	);
 }
@@ -77,7 +75,7 @@ if (Core::moduleIsActive('deal'))
 			->name(Core::_('Crm_Project.add_deal'))
 			->icon('fa fa-plus')
 			->onclick(
-				"$.modalLoad({path: '/admin/deal/index.php', action: 'edit', operation: 'modal', additionalParams: 'hostcms[checked][0][0]=1&{$additionalParams}&parentWindowId={$windowId}', windowId: '{$windowId}'}); return false"
+				"$.modalLoad({path: '/admin/deal/index.php', action: 'edit', operation: 'modal', additionalParams: 'hostcms[checked][0][0]=1&{$additionalParams}', windowId: '{$windowId}'}); return false"
 			)
 	);
 }
@@ -87,7 +85,7 @@ $oAdmin_Form_Entity_Menus->add(
 		->name(Core::_('Crm_Project.add_note'))
 		->icon('fa fa-plus')
 		->onclick(
-			"$.modalLoad({path: '/admin/crm/project/note/index.php', action: 'edit', operation: 'modal', additionalParams: 'hostcms[checked][0][0]=1&{$additionalParams}&parentWindowId={$windowId}', windowId: '{$windowId}'}); return false"
+			"$.modalLoad({path: '/admin/crm/project/note/index.php', action: 'edit', operation: 'modal', additionalParams: 'hostcms[checked][0][0]=1&{$additionalParams}', windowId: '{$windowId}'}); return false"
 		)
 );
 

@@ -464,11 +464,14 @@ class Form_Controller_Show extends Core_Controller
 
 							for ($i = 0; $i < $iCount; $i++)
 							{
-								$aToUpload[] = array(
-									'size' => $value['size'][$i],
-									'name' => $value['name'][$i],
-									'tmp_name' => $value['tmp_name'][$i]
-								);
+								if ($value['size'][$i] > 0)
+								{
+									$aToUpload[] = array(
+										'size' => $value['size'][$i],
+										'name' => $value['name'][$i],
+										'tmp_name' => $value['tmp_name'][$i]
+									);
+								}
 							}
 						}
 

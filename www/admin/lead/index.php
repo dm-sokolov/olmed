@@ -89,6 +89,10 @@ if (Core_Array::getPost('id') && (Core_Array::getPost('target_id') || Core_Array
 			}
 
 			$aJSON['status'] = 'success';
+			$aJSON['lead_id'] = $lead_id;
+			$aJSON['window_id'] = $oAdmin_Form_Controller->getWindowId();
+			
+			
 		}
 		else
 		{

@@ -10,124 +10,126 @@
 	<!-- СписокСотрудниковNEW -->
 	<xsl:variable name="group" select="/informationsystem/group"/>
 	<xsl:variable name="city"> в Екатеринбурге</xsl:variable>
+	<xsl:variable name="infosys_url" select="/informationsystem/informationsystem_group/url"></xsl:variable>
 	
 	<xsl:template match="/">
 		<xsl:apply-templates select="informationsystem"/>
 	</xsl:template>
 	
 	<xsl:template match="informationsystem">
-		
-		<!-- Если в находимся корне - выводим название информационной системы -->
-		<xsl:choose>
-			<xsl:when test="$group = 0">
-				<h1><xsl:value-of select="name"/><xsl:value-of select="$city" /></h1>
-				<!-- Описание выводится при отсутствии фильтрации по тэгам -->
-				<xsl:if test="count(tag) = 0 and page = 0 and description != ''">
-					<div><xsl:value-of disable-output-escaping="yes" select="description"/></div>
-				</xsl:if>
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:if test="other_name/node()">
-					<h2><xsl:value-of disable-output-escaping="yes" select="other_name" /></h2>
-				</xsl:if>
-				<xsl:if test="not(other_name/node())">
-					<h1><xsl:value-of select=".//informationsystem_group[@id=$group]/name"/><xsl:value-of select="$city" /></h1>
-				</xsl:if>
-				<!-- Описание выводим только на первой странице -->
-				<xsl:if test="page = 0 and .//informationsystem_group[@id=$group]/description != ''">
-					<div><xsl:value-of disable-output-escaping="yes" select=".//informationsystem_group[@id=$group]/description"/></div>
-				</xsl:if>
-			</xsl:otherwise>
-		</xsl:choose>
-		
-		<!-- Отображение подгрупп данной группы, только если подгруппы есть и не идет фильтра по меткам -->
-		<xsl:if test="count(tag) = 0 and count(.//informationsystem_group[parent_id=$group]) &gt; 0">
-			<div class="list-group list-specialist">
-				<xsl:apply-templates select=".//informationsystem_group[parent_id=$group]" />
-			</div>
-		</xsl:if>
-		
-		<!-- Отображение записи информационной системы -->
-		<div class="row">
-			<xsl:apply-templates select="informationsystem_item"/>
-		</div>
-		
-		<!-- Строка ссылок на другие страницы информационной системы -->
-		<xsl:if test="ОтображатьСсылкиНаСледующиеСтраницы=1">
-			<div>
-				<!-- Ссылка, для которой дописываются суффиксы page-XX/ -->
-				<xsl:variable name="link">
-					<xsl:value-of select="/informationsystem/url"/>
-					<xsl:if test="$group != 0">
-						<xsl:value-of select="/informationsystem//informationsystem_group[@id = $group]/url"/>
+		<div class="worker">
+			<!-- Если в находимся корне - выводим название информационной системы -->
+			<xsl:choose>
+				<xsl:when test="$group = 0">
+					<h1><xsl:value-of select="name"/><xsl:value-of select="$city" /></h1>
+					<!-- Описание выводится при отсутствии фильтрации по тэгам -->
+					<xsl:if test="count(tag) = 0 and page = 0 and description != ''">
+						<div><xsl:value-of disable-output-escaping="yes" select="description"/></div>
 					</xsl:if>
-				</xsl:variable>
-				
-				<xsl:if test="total &gt; 0 and limit &gt; 0">
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:if test="other_name/node()">
+						<h2><xsl:value-of disable-output-escaping="yes" select="other_name" /></h2>
+					</xsl:if>
+					<xsl:if test="not(other_name/node())">
+						<h1><xsl:value-of select=".//informationsystem_group[@id=$group]/name"/><xsl:value-of select="$city" /></h1>
+					</xsl:if>
+					<!-- Описание выводим только на первой странице -->
+					<xsl:if test="page = 0 and .//informationsystem_group[@id=$group]/description != ''">
+						<div><xsl:value-of disable-output-escaping="yes" select=".//informationsystem_group[@id=$group]/description"/></div>
+					</xsl:if>
+				</xsl:otherwise>
+			</xsl:choose>
+			
+			<!-- Отображение подгрупп данной группы, только если подгруппы есть и не идет фильтра по меткам -->
+			<xsl:if test="count(tag) = 0 and count(.//informationsystem_group[parent_id=$group]) &gt; 0">
+				<div class="list-group list-specialist">
+					<xsl:apply-templates select=".//informationsystem_group[parent_id=$group]" />
+				</div>
+			</xsl:if>
+			
+			<!-- Отображение записи информационной системы -->
+			<ul>
+				<xsl:apply-templates select="informationsystem_item"/>
+			</ul>
+			
+			<!-- Строка ссылок на другие страницы информационной системы -->
+			<xsl:if test="ОтображатьСсылкиНаСледующиеСтраницы=1">
+				<div>
+					<!-- Ссылка, для которой дописываются суффиксы page-XX/ -->
+					<xsl:variable name="link">
+						<xsl:value-of select="/informationsystem/url"/>
+						<xsl:if test="$group != 0">
+							<xsl:value-of select="/informationsystem//informationsystem_group[@id = $group]/url"/>
+						</xsl:if>
+					</xsl:variable>
 					
-					<xsl:variable name="count_pages" select="ceiling(total div limit)"/>
-					
-					<xsl:variable name="visible_pages" select="5"/>
-					
-					<xsl:variable name="real_visible_pages"><xsl:choose>
-							<xsl:when test="$count_pages &lt; $visible_pages"><xsl:value-of select="$count_pages"/></xsl:when>
-							<xsl:otherwise><xsl:value-of select="$visible_pages"/></xsl:otherwise>
-					</xsl:choose></xsl:variable>
-					
-					<!-- Считаем количество выводимых ссылок перед текущим элементом -->
-					<xsl:variable name="pre_count_page"><xsl:choose>
-							<xsl:when test="page - (floor($real_visible_pages div 2)) &lt; 0">
-								<xsl:value-of select="page"/>
-							</xsl:when>
-							<xsl:when test="($count_pages - page - 1) &lt; floor($real_visible_pages div 2)">
-								<xsl:value-of select="$real_visible_pages - ($count_pages - page - 1) - 1"/>
-							</xsl:when>
-							<xsl:otherwise>
-								<xsl:choose>
-									<xsl:when test="round($real_visible_pages div 2) = $real_visible_pages div 2">
-										<xsl:value-of select="floor($real_visible_pages div 2) - 1"/>
-									</xsl:when>
-									<xsl:otherwise>
-										<xsl:value-of select="floor($real_visible_pages div 2)"/>
-									</xsl:otherwise>
-								</xsl:choose>
-							</xsl:otherwise>
-					</xsl:choose></xsl:variable>
-					
-					<!-- Считаем количество выводимых ссылок после текущего элемента -->
-					<xsl:variable name="post_count_page"><xsl:choose>
-							<xsl:when test="0 &gt; page - (floor($real_visible_pages div 2) - 1)">
-								<xsl:value-of select="$real_visible_pages - page - 1"/>
-							</xsl:when>
-							<xsl:when test="($count_pages - page - 1) &lt; floor($real_visible_pages div 2)">
-								<xsl:value-of select="$real_visible_pages - $pre_count_page - 1"/>
-							</xsl:when>
-							<xsl:otherwise>
-								<xsl:value-of select="$real_visible_pages - $pre_count_page - 1"/>
-							</xsl:otherwise>
-					</xsl:choose></xsl:variable>
-					
-					<xsl:variable name="i"><xsl:choose>
-							<xsl:when test="page + 1 = $count_pages"><xsl:value-of select="page - $real_visible_pages + 1"/></xsl:when>
-							<xsl:when test="page - $pre_count_page &gt; 0"><xsl:value-of select="page - $pre_count_page"/></xsl:when>
-							<xsl:otherwise>0</xsl:otherwise>
-					</xsl:choose></xsl:variable>
-					
-					<p>
-						<xsl:call-template name="for">
-							<xsl:with-param name="limit" select="limit"/>
-							<xsl:with-param name="page" select="page"/>
-							<xsl:with-param name="items_count" select="total"/>
-							<xsl:with-param name="i" select="$i"/>
-							<xsl:with-param name="post_count_page" select="$post_count_page"/>
-							<xsl:with-param name="pre_count_page" select="$pre_count_page"/>
-							<xsl:with-param name="visible_pages" select="$real_visible_pages"/>
-						</xsl:call-template>
-					</p>
-					<div style="clear: both"></div>
-				</xsl:if>
-			</div>
-		</xsl:if>
+					<xsl:if test="total &gt; 0 and limit &gt; 0">
+						
+						<xsl:variable name="count_pages" select="ceiling(total div limit)"/>
+						
+						<xsl:variable name="visible_pages" select="5"/>
+						
+						<xsl:variable name="real_visible_pages"><xsl:choose>
+								<xsl:when test="$count_pages &lt; $visible_pages"><xsl:value-of select="$count_pages"/></xsl:when>
+								<xsl:otherwise><xsl:value-of select="$visible_pages"/></xsl:otherwise>
+						</xsl:choose></xsl:variable>
+						
+						<!-- Считаем количество выводимых ссылок перед текущим элементом -->
+						<xsl:variable name="pre_count_page"><xsl:choose>
+								<xsl:when test="page - (floor($real_visible_pages div 2)) &lt; 0">
+									<xsl:value-of select="page"/>
+								</xsl:when>
+								<xsl:when test="($count_pages - page - 1) &lt; floor($real_visible_pages div 2)">
+									<xsl:value-of select="$real_visible_pages - ($count_pages - page - 1) - 1"/>
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:choose>
+										<xsl:when test="round($real_visible_pages div 2) = $real_visible_pages div 2">
+											<xsl:value-of select="floor($real_visible_pages div 2) - 1"/>
+										</xsl:when>
+										<xsl:otherwise>
+											<xsl:value-of select="floor($real_visible_pages div 2)"/>
+										</xsl:otherwise>
+									</xsl:choose>
+								</xsl:otherwise>
+						</xsl:choose></xsl:variable>
+						
+						<!-- Считаем количество выводимых ссылок после текущего элемента -->
+						<xsl:variable name="post_count_page"><xsl:choose>
+								<xsl:when test="0 &gt; page - (floor($real_visible_pages div 2) - 1)">
+									<xsl:value-of select="$real_visible_pages - page - 1"/>
+								</xsl:when>
+								<xsl:when test="($count_pages - page - 1) &lt; floor($real_visible_pages div 2)">
+									<xsl:value-of select="$real_visible_pages - $pre_count_page - 1"/>
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:value-of select="$real_visible_pages - $pre_count_page - 1"/>
+								</xsl:otherwise>
+						</xsl:choose></xsl:variable>
+						
+						<xsl:variable name="i"><xsl:choose>
+								<xsl:when test="page + 1 = $count_pages"><xsl:value-of select="page - $real_visible_pages + 1"/></xsl:when>
+								<xsl:when test="page - $pre_count_page &gt; 0"><xsl:value-of select="page - $pre_count_page"/></xsl:when>
+								<xsl:otherwise>0</xsl:otherwise>
+						</xsl:choose></xsl:variable>
+						
+						<p>
+							<xsl:call-template name="for">
+								<xsl:with-param name="limit" select="limit"/>
+								<xsl:with-param name="page" select="page"/>
+								<xsl:with-param name="items_count" select="total"/>
+								<xsl:with-param name="i" select="$i"/>
+								<xsl:with-param name="post_count_page" select="$post_count_page"/>
+								<xsl:with-param name="pre_count_page" select="$pre_count_page"/>
+								<xsl:with-param name="visible_pages" select="$real_visible_pages"/>
+							</xsl:call-template>
+						</p>
+						<div style="clear: both"></div>
+					</xsl:if>
+				</div>
+			</xsl:if>
+		</div>
 	</xsl:template>
 	
 	<!-- Шаблон выводит ссылки подгруппы информационного элемента -->
@@ -141,28 +143,27 @@
 
 <!-- Шаблон вывода информационного элемента -->
 <xsl:template match="informationsystem_item">
-	<div class="specialist-item col-sm-6 mb-4">
-		<div class="row">
-			<div class="specialist-photo col-lg-5">
-				<xsl:if test="image_small!=''">
-					<a class="specialist-img d-block rounded" href="{url}" style="background-image:url('{dir}{image_small}');"></a>
-				</xsl:if>
-			</div>
-			<div class="specialist-info col-lg-7">
-				<div class="h5">
-					<a href="{url}"><xsl:value-of select="name"/></a>
-				</div>
-				<xsl:if test="description != ''">
-					<div class="mb-3 font-italic"><xsl:value-of disable-output-escaping="yes" select="description"/></div>
-				</xsl:if>
-				<xsl:variable name="doctor" select="name"></xsl:variable>
-				<button class="btn btn-primary" onclick="$.showXslTemplate('/callback/', 86, 357, ' ', '{$doctor}'); return false;">Запись к врачу</button>
-			</div>
+	<li>
+		<div class="worker__left">
+			<xsl:if test="image_small!=''">
+				<div class="worker__image" style="background-image: url('{dir}{image_small}')"></div>
+			</xsl:if>
 		</div>
-	</div>
-	<xsl:if test="position() mod 2 = 0 and position() != last()">
-		<div class="w-100"></div>
-	</xsl:if>
+		<div class="worker__right">
+			<h3>
+				<a href="{url}"><xsl:value-of select="name"/></a>
+			</h3>
+			<xsl:if test="description != ''">
+				<div class="worker__description"><xsl:value-of disable-output-escaping="yes" select="description"/></div>
+			</xsl:if>
+			<xsl:if test="not(contains($infosys_url, 'administraciya'))">
+				<div class="worker__button">
+					<xsl:variable name="doctor" select="name"></xsl:variable>
+				<button onclick="$.showXslTemplate('/callback/', 86, 357, ' ', '{$doctor}'); return false;"><span>Запись к врачу</span></button>
+				</div>
+			</xsl:if>
+		</div>
+	</li>
 </xsl:template>
 
 <!-- Цикл для вывода строк ссылок -->

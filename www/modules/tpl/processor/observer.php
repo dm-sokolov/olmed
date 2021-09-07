@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Tpl
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2018 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Tpl_Processor_Observer
 {
@@ -43,7 +43,8 @@ class Tpl_Processor_Observer
 		if (Core::checkPanel() && Core_Array::getSession('HOSTCMS_SHOW_XML'))
 		{
 			$oTplPanel = Core::factory('Core_Html_Entity_Div')
-				->class('hostcmsPanel');
+				->class('hostcmsPanel')
+				->style('display: none');
 
 			$oTplSubPanel = Core::factory('Core_Html_Entity_Div')
 				->class('hostcmsSubPanel hostcmsXsl')

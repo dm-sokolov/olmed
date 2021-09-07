@@ -58,6 +58,25 @@ class Sql_Table_View_Dataset extends Admin_Form_Dataset
 	}
 
 	/**
+	 * Check if entity conditions consist of where
+	 * @return boolean
+	 */
+	protected function _issetWhere()
+	{
+		$issetWhere = FALSE;
+		foreach ($this->_conditions as $condition)
+		{
+			if (isset($condition['where']))
+			{
+				$issetWhere = TRUE;
+				break;
+			}
+		}
+
+		return $issetWhere;
+	}
+
+	/**
 	 * Get FOUND_ROWS
 	 * @return int
 	 */
@@ -80,27 +99,38 @@ class Sql_Table_View_Dataset extends Admin_Form_Dataset
 	 */
 	protected function _getTotalCountByCount()
 	{
-		$queryBuilder = $this->_entity
-			->queryBuilder()
-			->clearSelect()
-			->clearOrderBy()
-			->select(array('COUNT(*)', 'count'))
-			->from($this->_tableName)
-			->limit(1)
-			->offset(0)
-			->asAssoc();
+		$aSql_Tables = Core_DataBase::instance()->asObject('Sql_Table_Entity')->getTablesSchema($this->_tableName);
 
-		$Core_DataBase = $queryBuilder->execute();
-
-		$row = $Core_DataBase->current();
-
-		// Warning
-		if (Core_Array::getRequest('debug'))
+		if ($aSql_Tables[0]->table_rows < 100000 || $this->_issetWhere())
 		{
-			echo '<p><b>getCount Query</b>: <pre>', $Core_DataBase->getLastQuery(), '</pre></p>';
+			$queryBuilder = $this->_entity
+				->queryBuilder()
+				->clearSelect()
+				->clearOrderBy()
+				->select(array('COUNT(*)', 'count'))
+				->from($this->_tableName)
+				->limit(1)
+				->offset(0)
+				->asAssoc();
+
+			$Core_DataBase = $queryBuilder->execute();
+
+			$row = $Core_DataBase->current();
+
+			// Warning
+			if (Core_Array::getRequest('debug'))
+			{
+				echo '<p><b>getCount Query</b>: <pre>', $Core_DataBase->getLastQuery(), '</pre></p>';
+			}
+
+			$count = $row['count'];
+		}
+		else
+		{
+			$count = $aSql_Tables[0]->table_rows;
 		}
 
-		return $row['count'];
+		return $count;
 	}
 
 	/**
@@ -118,21 +148,6 @@ class Sql_Table_View_Dataset extends Admin_Form_Dataset
 		}
 
 		return $this->_count;
-	}
-
-	/**
-	 * Dataset objects list
-	 * @var array
-	 */
-	protected $_objects = array();
-
-	/**
-	 * Get objects
-	 * @return array
-	 */
-	public function getObjects()
-	{
-		return $this->_objects;
 	}
 
 	/**

@@ -12,7 +12,7 @@ return array(
 	'company_department_id' => 'Відділ',
 	'parent_id' => 'Батьківське місце',
 	'responsible_user_id' => 'Відповідальний',
-	'edit_success'  => 'Інформація про місця змінена!',
+	'edit_success' => 'Інформація про місця змінена!',
 	'markDeleted_success' => 'Місце успішний видалено!',
 	'delete_success' => 'Елемент видалений!',
 	'undelete_success' => 'Елемент відновлено!',

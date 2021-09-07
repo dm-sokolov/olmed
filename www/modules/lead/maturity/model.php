@@ -18,7 +18,7 @@ class Lead_Maturity_Model extends Core_Entity
 	 * @var array
 	 */
 	protected $_hasMany = array(
-		'lead' =>  array()
+		'lead' => array()
 	);
 
 	/**
@@ -79,5 +79,22 @@ class Lead_Maturity_Model extends Core_Entity
 			->execute();
 
 		return parent::delete($primaryKey);
+	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event lead_maturity.onBeforeGetRelatedSite
+	 * @hostcms-event lead_maturity.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
 	}
 }

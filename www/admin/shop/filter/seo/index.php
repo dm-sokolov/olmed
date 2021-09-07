@@ -23,6 +23,8 @@ $shop_group_id = intval(Core_Array::getGet('shop_group_id', 0));
 
 $oShop = Core_Entity::factory('Shop')->find($shop_id);
 
+$shop_filter_seo_dir_id = Core_Array::getGet('shop_filter_seo_dir_id', 0);
+
 // Контроллер формы
 $oAdmin_Form_Controller = Admin_Form_Controller::create($oAdmin_Form);
 $oAdmin_Form_Controller
@@ -264,6 +266,16 @@ $oAdmin_Form_Entity_Menus->add(
 		->name(Core::_('Admin_Form.add'))
 		->icon('fa fa-plus')
 		->href(
+			$oAdmin_Form_Controller->getAdminActionLoadHref($oAdmin_Form_Controller->getPath(), 'edit', NULL, 1, 0)
+		)
+		->onclick(
+			$oAdmin_Form_Controller->getAdminActionLoadAjax($oAdmin_Form_Controller->getPath(), 'edit', NULL, 1, 0)
+		)
+)->add(
+	Admin_Form_Entity::factory('Menu')
+		->name(Core::_('Shop_Filter_Seo_Dir.title'))
+		->icon('fa fa-plus')
+		->href(
 			$oAdmin_Form_Controller->getAdminActionLoadHref($oAdmin_Form_Controller->getPath(), 'edit', NULL, 0, 0)
 		)
 		->onclick(
@@ -361,6 +373,28 @@ $oAdmin_Form_Entity_Breadcrumbs->add(Admin_Form_Entity::factory('Breadcrumb')
 	->href($oAdmin_Form_Controller->getAdminLoadHref($oAdmin_Form_Controller->getPath(), NULL, NULL, $additionalParams))
 	->onclick($oAdmin_Form_Controller->getAdminLoadAjax($oAdmin_Form_Controller->getPath(), NULL, NULL, $additionalParams)));
 
+if ($shop_filter_seo_dir_id)
+{
+	$oShop_Filter_Seo_Dir = Core_Entity::factory('Shop_Filter_Seo_Dir', $shop_filter_seo_dir_id);
+
+	$aBreadcrumbs = array();
+
+	do
+	{
+		$aBreadcrumbs[] = Admin_Form_Entity::factory('Breadcrumb')
+			->name($oShop_Filter_Seo_Dir->name)
+			->href($oAdmin_Form_Controller->getAdminLoadHref($sAdminFormAction, NULL, NULL, "shop_id={$shop_id}&shop_group_id={$shop_group_id}&shop_filter_seo_dir_id={$oShop_Filter_Seo_Dir->id}"))
+			->onclick($oAdmin_Form_Controller->getAdminLoadAjax($sAdminFormAction, NULL, NULL, "shop_id={$shop_id}&shop_group_id={$shop_group_id}&shop_filter_seo_dir_id={$oShop_Filter_Seo_Dir->id}"));
+	} while ($oShop_Filter_Seo_Dir = $oShop_Filter_Seo_Dir->getParent());
+
+	$aBreadcrumbs = array_reverse($aBreadcrumbs);
+
+	foreach ($aBreadcrumbs as $oBreadcrumb)
+	{
+		$oAdmin_Form_Entity_Breadcrumbs->add($oBreadcrumb);
+	}
+}
+
 $oAdmin_Form_Controller->addEntity($oAdmin_Form_Entity_Breadcrumbs);
 
 // Действие редактирования
@@ -413,6 +447,13 @@ if ($oAdminFormActionDeleteCondition && $oAdmin_Form_Controller->getAction() == 
 	$oAdmin_Form_Controller->addAction($Shop_Filter_Seo_Property_Controller_Delete);
 }
 
+$oAdmin_Form_Dataset = new Admin_Form_Dataset_Entity(Core_Entity::factory('Shop_Filter_Seo_Dir'));
+$oAdmin_Form_Dataset->changeField('active', 'type', 1);
+$oAdmin_Form_Dataset->changeField('shop_producer_id', 'type', 1);
+$oAdmin_Form_Dataset->addCondition(array('where' => array('shop_id', '=', $shop_id)));
+$oAdmin_Form_Dataset->addCondition(array('where' => array('parent_id', '=', $shop_filter_seo_dir_id )));
+$oAdmin_Form_Controller->addDataset($oAdmin_Form_Dataset);
+
 // Источник данных 0
 $oAdmin_Form_Dataset = new Admin_Form_Dataset_Entity(
 	Core_Entity::factory('Shop_Filter_Seo')
@@ -442,7 +483,8 @@ if (isset($oAdmin_Form_Controller->request['admin_form_filter_1556'])
 }
 
 $oAdmin_Form_Dataset
-	->addCondition(array('where' => array('shop_filter_seos.shop_id', '=', $oShop->id)));
+	->addCondition(array('where' => array('shop_filter_seos.shop_id', '=', $oShop->id)))
+	->addCondition(array('where' => array('shop_filter_seos.shop_filter_seo_dir_id', '=', $shop_filter_seo_dir_id)));
 
 // Список значений для фильтра и поля
 $oAdmin_Form_Dataset

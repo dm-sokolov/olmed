@@ -211,7 +211,7 @@ class Lead_Model extends Core_Entity
 							$statusClass = '';
 					}
 
-					$darkerColor = Core_Str::hex2darker($oLead_Status->color, 0.25);
+					$darkerColor = Core_Str::hex2darker($oLead_Status->color, 0.1);
 
 					$css .= '.lead-stage-wrapper #lead-stage-' . $oLead_Status->id . '.active { background-color: ' . htmlspecialchars($oLead_Status->color) . '; border-color: ' . $darkerColor . ' !important; }';
 					?>
@@ -223,13 +223,15 @@ class Lead_Model extends Core_Entity
 
 			<?php
 			$css .= '</style>';
+
+			$windowId = $oAdmin_Form_Controller->getWindowId();
 			?>
 
 			<script>
 				$(function() {
 					$.leadStatusBar(<?php echo $this->id?>, '<?php echo $oAdmin_Form_Controller->getWindowId()?>');
 
-					$('.lead-stage-wrapper-<?php echo $this->id?> .lead-stage').on('mouseover', function(e){
+					$('#<?php echo $windowId?> .lead-stage-wrapper-<?php echo $this->id?> .lead-stage').on('mouseover', function(e){
 						var jParent = $(this).parents('.lead-stage-wrapper'),
 							jNameDiv = jParent.prev();
 
@@ -241,7 +243,7 @@ class Lead_Model extends Core_Entity
 						}
 					});
 
-					$('.lead-stage-wrapper-<?php echo $this->id?> .lead-stage').on('mouseout', function(){
+					$('#<?php echo $windowId?> .lead-stage-wrapper-<?php echo $this->id?> .lead-stage').on('mouseout', function(){
 						var jParent = $(this).parents('.lead-stage-wrapper'),
 							jNameDiv = jParent.prev();
 
@@ -806,5 +808,22 @@ class Lead_Model extends Core_Entity
 		$this->Lead_Events->deleteAll(FALSE);
 
 		return parent::delete($primaryKey);
+	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event lead.onBeforeGetRelatedSite
+	 * @hostcms-event lead.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
 	}
 }

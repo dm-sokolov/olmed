@@ -23,13 +23,20 @@ class Xsl_Module extends Core_Module
 	 * Module date
 	 * @var date
 	 */
-	public $date = '2021-02-16';
+	public $date = '2021-08-23';
 
 	/**
 	 * Module name
 	 * @var string
 	 */
 	protected $_moduleName = 'xsl';
+
+	protected $_options = array(
+		'formatOutput' => array(
+			'type' => 'checkbox',
+			'default' => TRUE
+		)
+	);
 
 	/**
 	 * Get Module's Menu
@@ -50,7 +57,7 @@ class Xsl_Module extends Core_Module
 
 		return parent::getMenu();
 	}
-	
+
 	/**
 	 * Функция обратного вызова для поисковой индексации
 	 *

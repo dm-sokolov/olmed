@@ -104,7 +104,6 @@ do {
 	}
 	array_shift($d);
 } while(count($d) > 1);
-
 if (((~Core::convert64b32(Core_Array::get(Core::$config->get('core_hostcms'), 'hostcms'))) & 1176341605) && !Core_Array::get(Core::$url, 'key'))
 {
 	Core_Router::add('key_not_found', '()')
