@@ -1,0 +1,649 @@
+<?php
+    if(strpos($_SERVER['REQUEST_URI'], '/index.php') !== FALSE)	{
+    		header("Location: /", TRUE, 301);
+    				exit();	}
+?>
+<!DOCTYPE HTML>
+<html lang="ru" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title><?php Core_Page::instance()->showTitle()?></title>
+    <meta name="description" content="<?php Core_Page::instance()->showDescription()?>"/>
+    <meta name="keywords" content="<?php Core_Page::instance()->showKeywords()?>"/>
+    <meta content="text/html; charset=<?php echo SITE_CODING?>" http-equiv="Content-Type"/>
+    <meta name="mailru-domain" content="Y8Y7ERif2lmDZcfx"/>
+    <meta name="wmail-verification" content="9c60df02b3ca8311076b732bed5d4675"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <?php echo Core_Registry::instance()->get('linki'); ?>    <!-- -->    <?php	Core_Page::instance()		->
+    prependCss('/css/fonts.css') ->prependCss('/css/font-awesome.min.css') ->prependCss('/css/jquery.fancybox.css')
+    ->prependCss('/css/owl.theme.default.css') ->prependCss('/css/owl.carousel.css') ->prependCss('/css/bootstrap.css')
+    ->showCss(); ?>    <?php Core_Browser::check()?>
+    <link rel="shortcut icon" href="/favicon.ico"/>
+    <?php	Core_Page::instance()		->prependJs('/hostcmsfiles/main.js') ->prependJs('/js/jquery.fancybox.js')
+    ->prependJs('/js/owl.carousel.js') ->prependJs('/js/jquery.maskedinput.min.js')
+    ->prependJs('/hostcmsfiles/jquery/jquery.validate.js') ->prependJs('/js/bootstrap.js')
+    ->prependJs('/js/popper.min.js') ->prependJs('/js/jquery-3.2.1.min.js') ->showJs();
+    ?>    <?php include('js/ghead.js'); ?>
+
+    <!-- Rating@Mail.ru counter -->
+    <script type="text/javascript">        var _tmr = window._tmr || (window._tmr = []);
+    _tmr.push({id: "3126082", type: "pageView", start: (new Date()).getTime(), pid: "USER_ID"});
+    (function (d, w, id) {
+        if (d.getElementById(id)) return;
+        var ts = d.createElement("script");
+        ts.type = "text/javascript";
+        ts.async = true;
+        ts.id = id;
+        ts.src = "https://top-fwz1.mail.ru/js/code.js";
+        var f = function () {
+            var s = d.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(ts, s);
+        };
+        if (w.opera == "[object Opera]") {
+            d.addEventListener("DOMContentLoaded", f, false);
+        } else {
+            f();
+        }
+    })(document, window, "topmailru-code");    </script>
+    <noscript>
+        <div><img src="https://top-fwz1.mail.ru/counter?id=3126082;js=na"
+                  style="border:0;position:absolute;left:-9999px;" alt="Top.Mail.Ru"/></div>
+    </noscript>    <!-- //Rating@Mail.ru counter -->
+
+    <!-- Североуральск Facebook Pixel Code -->
+    <script>
+        !function (f, b, e, v, n, t, s) {
+            if (f.fbq) return;
+            n = f.fbq = function () {
+                n.callMethod ?
+                    n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+            };
+            if (!f._fbq) f._fbq = n;
+            n.push = n;
+            n.loaded = !0;
+            n.version = '2.0';
+            n.queue = [];
+            t = b.createElement(e);
+            t.async = !0;
+            t.src = v;
+            s = b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t, s)
+        }(window, document, 'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '146982733386621');
+        fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+                   src="https://www.facebook.com/tr?id=146982733386621&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Facebook Pixel Code -->
+
+    <!--Олмед общий пиксель Facebook Pixel Code -->
+    <script>
+        !function (f, b, e, v, n, t, s) {
+            if (f.fbq) return;
+            n = f.fbq = function () {
+                n.callMethod ?
+                    n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+            };
+            if (!f._fbq) f._fbq = n;
+            n.push = n;
+            n.loaded = !0;
+            n.version = '2.0';
+            n.queue = [];
+            t = b.createElement(e);
+            t.async = !0;
+            t.src = v;
+            s = b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t, s)
+        }(window, document, 'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '175822173782192');
+        fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+                   src="https://www.facebook.com/tr?id=175822173782192&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Facebook Pixel Code -->
+
+    <!-- ВК стратеги -->
+    <script type="text/javascript">!function () {
+        var t = document.createElement("script");
+        t.type = "text/javascript", t.async = !0, t.src = "https://vk.com/js/api/openapi.js?168", t.onload = function () {
+            VK.Retargeting.Init("VK-RTRG-533753-48Z7o"), VK.Retargeting.Hit()
+        }, document.head.appendChild(t)
+    }();</script>
+    <noscript><img src="https://vk.com/rtrg?p=VK-RTRG-533753-48Z7o" style="position:fixed; left:-999px;" alt=""/>
+    </noscript>
+    <!-- ВК стратеги -->
+
+    <!-- ВК Клик ру_Североуральс -->
+    <script type="text/javascript">!function () {
+        var t = document.createElement("script");
+        t.type = "text/javascript", t.async = !0, t.src = "https://vk.com/js/api/openapi.js?169", t.onload = function () {
+            VK.Retargeting.Init("VK-RTRG-956769-3Vehu"), VK.Retargeting.Hit()
+        }, document.head.appendChild(t)
+    }();</script>
+    <noscript><img src="https://vk.com/rtrg?p=VK-RTRG-956769-3Vehu" style="position:fixed; left:-999px;" alt=""/>
+    </noscript>
+    <!-- ВК Клик ру_Североуральс -->
+
+</head>
+<body><?php include('js/gbody.js'); ?><?php	$oSwitcher = new Kad_Admin_Switcher();	$oSwitcher->execute();?>
+<header>
+    <div class="container">
+        <div class="row header">
+            <div class="col-md-6 col-lg-3">
+                <div class="logo-box mt-1 text-center"><a href="/" title="ОЛМЕД - медицинский центр"> <img
+                        src="/i/logo.png" alt="ОЛМЕД — медицинский центр" class="img-fluid"/> </a></div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="city-box px-2">
+                    <div class="mb-1 text-center text-sm-left">Ваш город:</div>
+                    <?php							Core::factory('Core_Html_Entity_Select')								->
+                    options(Core_Page::instance()->config['cities']) ->class('form-control') ->value(Core::$url['host'])
+                    ->onchange("window.location.href='http://' + this.options[this.selectedIndex].value") ->execute();
+                    ?>
+                    <div class="text-center text-lg-left"><a href="/contacts/#av"
+                                                             class="px-1 px-sm-0"><?php echo Core_Page::instance()->
+                        config['address'] ?></a> <br class="d-none d-sm-inline"/> <a href="/contacts/#ug"
+                                                                                     class="px-1 px-sm-0"><?php echo Core_Page::instance()->
+                        config['address2'] ?></a></div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="phone-box text-center text-lg-left">
+                    <div>Записывайтесь по телефону:</div>
+                    <div class="h4"><a
+                            href="tel:<?php echo str_replace(array(' ', '(', ')', '-'), '', Core_Page::instance()->config['phone']) ?>"
+                            rel="nofollow" class="callibri_phone"><?php echo Core_Page::instance()->config['phone']
+                        ?></a><br/> <a
+                            href="tel:<?php echo str_replace(array(' ', '(', ')'), '', Core_Page::instance()->config['phone2']) ?>"
+                            rel="nofollow"><?php echo Core_Page::instance()->config['phone2'] ?></a></div>
+                    <div class="mango-callback"
+                         data-settings='{"type":"", "id": "MTAwMTI1MzI=","autoDial" : "0", "lang" : "ru-ru", "host":"widgets.mango-office.ru/", "errorMessage": "В данный момент наблюдаются технические проблемы и совершение звонка невозможно"}'>
+                        <button class="button-widget-open btn" id="mango-widget-btn">Заказать звонок</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="mode-box text-center text-lg-left">
+                    <div>Часы работы:</div>
+                    <div class="h4"><?php echo Core_Page::instance()->config['mode'] ?></div>
+                    <div>
+                        <button class="btn"
+                                onclick="$.showXslTemplate('/callback/', <?php echo Core_Page::instance()->config['formId2'] ?>, 298); return false;">
+                            Записаться на прием
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container mb-3"><?php $Structure_Controller_Show = new Structure_Controller_Show(Core_Entity::factory('Site', CURRENT_SITE));$Structure_Controller_Show->
+        xsl(Core_Entity::factory('Xsl')->getByName('ВерхнееМенюNEW'))->menu(Core_Page::instance()->config['menuId'])->level(1)->show();
+        ?>
+    </div>
+</header>
+<?php		Core_Page::instance()->execute();?>
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-3">
+                <div class="logo-box mb-1 text-center text-sm-left"><a href="/" title="ОЛМЕД - медицинский центр"> <img
+                        src="/i/logo.png" alt="ОЛМЕД — медицинский центр" class="img-fluid"/> </a></div>
+                <div class="social-box text-center mb-1">
+                    <?php
+                    							// Social button
+                    														$Structure_Controller_Show = new Structure_Controller_Show(
+                    																						Core_Entity::factory('Site', CURRENT_SITE));
+                    																													$Structure_Controller_Show
+                    																																					->
+                    xsl(Core_Entity::factory('Xsl')->getByName('SocialButtonNEW'))
+                    ->menu(Core_Page::instance()->config['menuId2']) ->showProperties(TRUE) ->show(); ?>
+                </div>
+                <div class="text-center text-sm-left"></div>
+            </div>
+            <div class="col-sm-6">
+                <div class="row justify-content-md-center">
+                    <div class="col-sm-5 text-center text-sm-left">
+                        <?php
+                        								// Популярные услуги футер
+                        																$Informationsystem_Controller_Show = new Informationsystem_Controller_Show(
+                        																									Core_Entity::factory('Informationsystem', Core_Page::instance()
+                        																									->
+                        config['informationsystemId2']) ); $Informationsystem_Controller_Show ->xsl(
+                        Core_Entity::factory('Xsl')->getByName('ПопулярныеУслугиФутерNEW') )
+                        ->groupsForbiddenTags(array('description','seo_title','seo_description','seo_keywords'))
+                        ->group(0) ->groupsProperties(FALSE) ->limit(0) ->calculateTotal(FALSE);
+                        $Informationsystem_Controller_Show ->informationsystemGroups() ->queryBuilder() ->limit(7);
+                        $Informationsystem_Controller_Show->show(); ?>
+                    </div>
+                    <div class="col-sm-5 text-center text-sm-left">
+                        <?php
+                        								// Полезная информация футер
+                        																$Structure_Controller_Show = new Structure_Controller_Show(
+                        																									Core_Entity::factory('Site', CURRENT_SITE));
+                        																																	$Structure_Controller_Show
+                        																																										->
+                        xsl(Core_Entity::factory('Xsl')->getByName('ПолезнаяИнформацияФутерNEW'));
+                        $Structure_Controller_Show ->structure() ->queryBuilder() ->limit(7);
+                        $Structure_Controller_Show->show(); ?>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="address-box text-center text-sm-left"><strong>ООО "ОЛМЕД-СЕВЕРОУРАЛЬСК"
+                    &copy; <?php echo date('Y');?></strong><br/>
+                    <br/><strong>Адреса:</strong><br/>
+                    г. <?php echo Core_Page::instance()->config['cities'][Core::$url['host']]
+                    ?>, <?php echo Core_Page::instance()->config['address'] ?><br/>
+                    <!--г. <?php echo Core_Page::instance()->config['cities'][Core::$url['host']]
+                    ?>, <?php echo Core_Page::instance()->config['address2'] ?>-->
+                    <br/> <strong>Телефон:</strong> <a
+                            href="tel:<?php echo str_replace(array(' ', '(', ')', '-'), '', Core_Page::instance()->config['phone']) ?>"
+                            rel="nofollow" class="callibri_phone"><?php echo Core_Page::instance()->config['phone']
+                        ?></a><br/><br/> <strong>Режим
+                        работы:</strong><br/>                    <?php echo str_replace('<br />', ', ',
+                    Core_Page::instance()->config['mode']) ?>
+                </div>
+            </div>
+        </div>
+        <div class="text-center">
+            <div>Копирование, тиражирование, а равно иное использование материалов, размещенных на сайте
+                https://sevural.mcolmed.ru/
+                возможно только с письменного разрешения Правообладателя.
+            </div>
+            <small></small></div>
+    </div>
+</footer>
+
+<!-- calltouch -->
+<script type="text/javascript">
+    (function (w, d, n, c) {
+        w.CalltouchDataObject = n;
+        w[n] = function () {
+            w[n]["callbacks"].push(arguments)
+        };
+        if (!w[n]["callbacks"]) {
+            w[n]["callbacks"] = []
+        }
+        w[n]["loaded"] = false;
+        if (typeof c !== "object") {
+            c = [c]
+        }
+        w[n]["counters"] = c;
+        for (var i = 0; i < c.length; i += 1) {
+            p(c[i])
+        }
+
+        function p(cId) {
+            var a = d.getElementsByTagName("script")[0], s = d.createElement("script"), i = function () {
+                a.parentNode.insertBefore(s, a)
+            };
+            s.type = "text/javascript";
+            s.async = true;
+            s.src = "https://mod.calltouch.ru/init.js?id=" + cId;
+            if (w.opera == "[object Opera]") {
+                d.addEventListener("DOMContentLoaded", i, false)
+            } else {
+                i()
+            }
+        }
+    })(window, document, "ct", "ilsqtswp");
+</script>
+<!-- calltouch -->
+
+<!-- calltouch callback fix -->
+<script>
+    var ct_cb_style = document.createElement('style');
+    ct_cb_style.id = 'ct_custom_style';
+    ct_cb_style.innerHTML = '#CalltouchWidgetFrame{height:0px!important;width:0px!important;}';
+    document.getElementsByTagName('head')[0].appendChild(ct_cb_style);
+    var on_show_widget = function (event) {
+        console.log('widget show: ', event);
+        if (!!ct_cb_style && !!ct_cb_style.parentNode) {
+            ct_cb_style.parentNode.removeChild(ct_cb_style);
+        }
+    }
+    var on_close_widget = function (event) {
+        console.log('widget close: ', event);
+        if (!document.getElementById('ct_custom_style')) {
+            document.getElementsByTagName('head')[0].appendChild(ct_cb_style);
+        }
+    }
+    window.ct('modules', 'widgets', 'subscribeToEvent', [
+        {
+            object: 'form', action: 'show', callback: function (event) {
+                on_show_widget(event);
+            }
+        },
+        {
+            object: 'form', action: 'close', callback: function (event) {
+                on_close_widget(event);
+            }
+        },
+        {
+            object: 'widget-button', action: 'show', callback: function (event) {
+                on_close_widget(event);
+            }
+        }
+    ]);
+
+    Element.prototype.matches || (Element.prototype.matches = Element.prototype.matchesSelector || Element.prototype.webkitMatchesSelector || Element.prototype.mozMatchesSelector || Element.prototype.msMatchesSelector), Element.prototype.closest || (Element.prototype.closest = function (e) {
+        for (var t = this; t;) {
+            if (t.matches(e)) return t;
+            t = t.parentElement
+        }
+        return null
+    });
+    var events = ['mousedown', 'click', 'touchend'];
+    events.forEach(function (ev) {
+        document.addEventListener(ev, function (e) {
+            if (e.target.closest('#mango-widget-btn, .b24-widget-button-callback')) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                window.Calltouch.Callback.onClickCallButton();
+            }
+        });
+    });
+</script>
+<!-- calltouch callback fix -->
+
+<!-- calltouch requests -->
+<script>
+    jQuery(document).on('click', 'form [type="submit"]:not(.b24-form [type="submit"])', function () {
+        var m = jQuery(this).closest('form');
+        var fio = m.find('input[name="fio"],input[name="name"]').val();
+        var phone = m.find('input[type="tel"],input[placeholder*="телефон"]').val();
+        var mail = m.find('input[type="email"],input[placeholder*="mail"]').val();
+        var ct_site_id = '44006';
+        var sub = 'Заявка с ' + location.hostname;
+        var ct_data = {
+            fio: fio,
+            phoneNumber: phone,
+            email: mail,
+            subject: sub,
+            requestUrl: location.href,
+            sessionId: window.call_value
+        };
+        var ct_valid = !!phone || !!mail;
+        if (!!m.valid) {
+            ct_valid = m.valid();
+        }
+        console.log(ct_data, ct_valid);
+        if ((!!phone || !!mail) && ct_valid && !window.ct_snd_flag) {
+            window.ct_snd_flag = 1;
+            setTimeout(function () {
+                window.ct_snd_flag = 0;
+            }, 40000);
+            jQuery.ajax({
+                url: 'https://api.calltouch.ru/calls-service/RestAPI/requests/' + ct_site_id + '/register/',
+                dataType: 'json', type: 'POST', data: ct_data, async: false
+            });
+        }
+    });
+</script>
+
+<script type='text/javascript'>
+    var _ctreq_jivo = function (sub) {
+        var sid = '44006';
+        var jc = jivo_api.getContactInfo();
+        var fio = '';
+        var phone = '';
+        var email = '';
+        if (!!jc.client_name) {
+            fio = jc.client_name;
+        }
+        if (!!jc.phone) {
+            phone = jc.phone;
+        }
+        if (!!jc.email) {
+            email = jc.email;
+        }
+        var ct_data = {
+            fio: fio,
+            phoneNumber: phone,
+            email: email,
+            subject: sub,
+            requestUrl: location.href,
+            sessionId: window.call_value
+        };
+        var request = window.ActiveXObject ? new ActiveXObject("Microsoft.XMLHTTP") : new XMLHttpRequest();
+        var post_data = Object.keys(ct_data).reduce(function (a, k) {
+            if (!!ct_data[k]) {
+                a.push(k + '=' + encodeURIComponent(ct_data[k]));
+            }
+            return a
+        }, []).join('&');
+        var url = 'https://api.calltouch.ru/calls-service/RestAPI/' + sid + '/requests/orders/register/';
+        request.open("POST", url, true);
+        request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        request.send(post_data);
+    }
+    window.jivo_onIntroduction = function () {
+        _ctreq_jivo('JivoSite посетитель оставил контакты');
+    }
+    window.jivo_onCallStart = function () {
+        _ctreq_jivo('JivoSite обратный звонок');
+    }
+    window.jivo_onOfflineFormSubmit = function () {
+        _ctreq_jivo('JivoSite оффлайн заявка');
+    }
+    window.jivo_onMessageSent = function () {
+        ct('goal', 'jivo_ms');
+    }
+</script>
+
+<script type="text/javascript">
+    var _ctreq = function (data) {
+        var sid = '44006';
+        var request = window.ActiveXObject ? new ActiveXObject("Microsoft.XMLHTTP") : new XMLHttpRequest();
+        var post_data = Object.keys(data).reduce(function (a, k) {
+            if (!!data[k]) {
+                a.push(k + '=' + encodeURIComponent(data[k]));
+            }
+            return a
+        }, []).join('&');
+        var url = 'https://api.calltouch.ru/calls-service/RestAPI/' + sid + '/requests/orders/register/';
+        request.open("POST", url, true);
+        request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        request.send(post_data);
+    };
+    window.addEventListener('b24:form:submit', function (e) {
+        var form = event.detail.object;
+        if (form.validated) {
+            var fio = '';
+            var phone = '';
+            var email = '';
+            var comment = '';
+            form.getFields().forEach(function (el) {
+                if (el.name == 'LEAD_NAME' || el.name == 'CONTACT_NAME') {
+                    fio = el.value();
+                }
+                if (el.name == 'LEAD_PHONE' || el.name == 'CONTACT_PHONE') {
+                    phone = el.value();
+                }
+                if (el.name == 'LEAD_EMAIL' || el.name == 'CONTACT_EMAIL') {
+                    email = el.value();
+                }
+                if (el.name == 'LEAD_COMMENTS' || el.name == 'DEAL_COMMENTS ') {
+                    comment = el.value();
+                }
+            });
+            var sub = 'Заявка с формы Bitrix24 ' + location.hostname;
+            var ct_data = {
+                fio: fio,
+                phoneNumber: phone,
+                email: email,
+                comment: comment,
+                subject: sub,
+                requestUrl: location.href,
+                sessionId: window.call_value
+            };
+            console.log(ct_data);
+            if (!!phone || !!email) _ctreq(ct_data);
+        }
+    });
+</script>
+<script>
+    window.addEventListener('onBitrixLiveChat', function (event) {
+        var widget = event.detail.widget;
+        widget.subscribe({
+            type: BX.LiveChatWidget.SubscriptionType.every, callback: function (ev) {
+                if (ev.type == BX.LiveChatWidget.SubscriptionType.userMessage) {
+                    if (!window.ct_snd_flag && !!window.ct) {
+                        ct('goal', 'b24chat');
+                        window.ct_snd_flag = 1;
+                    }
+                }
+                if (ev.type == BX.LiveChatWidget.SubscriptionType.userForm) {
+                    var sid = 44006;
+                    var fio = '';
+                    var phone = '';
+                    var email = '';
+                    if (!!ev.data && !!ev.data.fields && !!ev.data.fields.name) {
+                        fio = ev.data.fields.name;
+                    }
+                    if (!!ev.data && !!ev.data.fields && !!ev.data.fields.phone) {
+                        phone = ev.data.fields.phone;
+                    }
+                    if (!!ev.data && !!ev.data.fields && !!ev.data.fields.email) {
+                        email = ev.data.fields.email;
+                    }
+                    var ct_data = {};
+                    ct_data.phoneNumber = phone;
+                    ct_data.fio = fio;
+                    ct_data.email = email;
+                    ct_data.requestUrl = location.href;
+                    ct_data.sessionId = window.call_value;
+                    ct_data.subject = 'Чат Bitrix24 ' + location.hostname;
+                    var request = window.ActiveXObject ? new ActiveXObject("Microsoft.XMLHTTP") : new XMLHttpRequest();
+                    var post_data = Object.keys(ct_data).reduce(function (a, k) {
+                        if (!!ct_data[k]) {
+                            a.push(k + '=' + encodeURIComponent(ct_data[k]));
+                        }
+                        return a
+                    }, []).join('&');
+                    var url = 'https://api.calltouch.ru/calls-service/RestAPI/' + sid + '/requests/orders/register/';
+                    request.open("POST", url, true);
+                    request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                    request.send(post_data);
+                }
+            }
+        });
+    });
+</script>
+<!-- calltouch requests -->
+
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript"> (function (d, w, c) {
+    (w[c] = w[c] || []).push(function () {
+        try {
+            w.yaCounter20420221 = new Ya.Metrika2({
+                id: 20420221,
+                clickmap: true,
+                trackLinks: true,
+                accurateTrackBounce: true,
+                webvisor: true
+            });
+        } catch (e) {
+        }
+    });
+    var n = d.getElementsByTagName("script")[0], s = d.createElement("script"), f = function () {
+        n.parentNode.insertBefore(s, n);
+    };
+    s.type = "text/javascript";
+    s.async = true;
+    s.src = "https://mc.yandex.ru/metrika/tag.js";
+    if (w.opera == "[object Opera]") {
+        d.addEventListener("DOMContentLoaded", f, false);
+    } else {
+        f();
+    }
+})(document, window, "yandex_metrika_callbacks2"); </script>
+<noscript>
+    <div><img src="https://mc.yandex.ru/watch/20420221" style="position:absolute; left:-9999px;" alt=""/></div>
+</noscript> <!-- /Yandex.Metrika counter -->
+<script>    (function (w, d, u) {
+    var s = d.createElement('script');
+    s.async = true;
+    s.src = u + '?' + (Date.now() / 60000 | 0);
+    var h = d.getElementsByTagName('script')[0];
+    h.parentNode.insertBefore(s, h);
+})(window, document, 'https://cdn.bitrix24.ru/b5578677/crm/tag/call.tracker.js');</script>
+<script type="text/javascript">!function () {
+    var t = document.createElement("script");
+    t.type = "text/javascript", t.async = !0, t.src = "https://vk.com/js/api/openapi.js?162", t.onload = function () {
+        VK.Retargeting.Init("VK-RTRG-413381-9Hup0"), VK.Retargeting.Hit()
+    }, document.head.appendChild(t)
+}();</script>
+<noscript><img src="https://vk.com/rtrg?p=VK-RTRG-413381-9Hup0" style="position:fixed; left:-999px;" alt=""/></noscript>
+<!-- Rating Mail.ru counter -->
+<script type="text/javascript">    var _tmr = window._tmr || (window._tmr = []);
+_tmr.push({id: "3143268", type: "pageView", start: (new Date()).getTime(), pid: "USER_ID"});
+(function (d, w, id) {
+    if (d.getElementById(id)) return;
+    var ts = d.createElement("script");
+    ts.type = "text/javascript";
+    ts.async = true;
+    ts.id = id;
+    ts.src = "https://top-fwz1.mail.ru/js/code.js";
+    var f = function () {
+        var s = d.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(ts, s);
+    };
+    if (w.opera == "[object Opera]") {
+        d.addEventListener("DOMContentLoaded", f, false);
+    } else {
+        f();
+    }
+})(document, window, "topmailru-code");</script>
+<noscript>
+    <div><img src="https://top-fwz1.mail.ru/counter?id=3143268;js=na" style="border:0;position:absolute;left:-9999px;"
+              alt="Top.Mail.Ru"/></div>
+</noscript><!-- //Rating Mail.ru counter -->
+<script>    window._txq = window._txq || [];
+var s = document.createElement('script');
+s.type = 'text/javascript';
+s.async = true;
+s.src = '//st.hybrid.ai/txsp.js';
+(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(s);
+_txq.push(['createPixel', '5da93b114d506e6e088135ce']);
+_txq.push(['track', 'PageView']);</script>
+
+<!-- Yandex.Metrika Североуральск counter -->
+<script type="text/javascript">
+    (function (m, e, t, r, i, k, a) {
+        m[i] = m[i] || function () {
+            (m[i].a = m[i].a || []).push(arguments)
+        };
+        m[i].l = 1 * new Date();
+        k = e.createElement(t), a = e.getElementsByTagName(t)[0], k.async = 1, k.src = r, a.parentNode.insertBefore(k, a)
+    })
+    (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+
+    ym(53914477, "init", {
+        clickmap: true,
+        trackLinks: true,
+        accurateTrackBounce: true,
+        webvisor: true
+    });
+</script>
+<noscript>
+    <div><img src="https://mc.yandex.ru/watch/53914477" style="position:absolute; left:-9999px;" alt=""/></div>
+</noscript>
+<!-- /Yandex.Metrika counter -->
+
+<!--Виджет Битрикс -->
+<script>
+    (function (w, d, u) {
+        var s = d.createElement('script');
+        s.async = true;
+        s.src = u + '?' + (Date.now() / 60000 | 0);
+        var h = d.getElementsByTagName('script')[0];
+        h.parentNode.insertBefore(s, h);
+    })(window, document, 'https://cdn.bitrix24.ru/b5578677/crm/site_button/loader_1_vpjoxf.js');
+</script>
+
+</body>
+</html>

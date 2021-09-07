@@ -1,0 +1,197 @@
+<div class="container">
+	<?php
+		$object = Core_Page::instance()->object;
+		$informationsystem = TRUE;
+
+		if(is_object($object) && get_class($object) == 'Informationsystem_Controller_Show' && $object->group)
+		{
+			$groupId = $object->group;
+
+			$oInformationsystem_Group = Core_Entity::factory('Informationsystem_Group', $groupId);
+			$oProperty = Core_Entity::factory('Property', Core_Page::instance()->config['propertyId']);
+
+			$aPropertyValues = $oProperty->getValues($oInformationsystem_Group->id);
+
+			if(isset($aPropertyValues[0]) && $aPropertyValues[0]->file)
+			{
+				$src = $oInformationsystem_Group->getGroupHref() . $aPropertyValues[0]->file;
+
+				echo '<div id="mainSlider" class="owl-carousel owl-theme main-slider">';
+				echo '<div class="item"><img src="'. $src .'" /></div>';
+				echo '</div>';
+
+				$informationsystem = FALSE;
+			}
+		}
+
+		// Акции на главной
+		if($informationsystem)
+		{
+			$Informationsystem_Controller_Show = new Informationsystem_Controller_Show(
+				Core_Entity::factory('Informationsystem', Core_Page::instance()->config['informationsystemId3'])
+			);
+                                  
+			$Informationsystem_Controller_Show
+				->xsl(
+					Core_Entity::factory('Xsl')->getByName('АкцииНаГлавнойNEW')
+				)
+				->groupsMode('none')
+				//->itemsForbiddenTags(array('text'))
+				->group(FALSE)
+				->limit(10)
+				->itemsProperties(TRUE)
+				->calculateTotal(FALSE)
+				->show();
+		}
+	?>
+</div>
+<div class="container">
+	<?php
+		// Услуги на главной
+		$Informationsystem_Controller_Show = new Informationsystem_Controller_Show(
+			Core_Entity::factory('Informationsystem', Core_Page::instance()->config['informationsystemId2'])
+		);
+
+		$Informationsystem_Controller_Show
+			->xsl(
+				Core_Entity::factory('Xsl')->getByName('УслугиНаГлавнойNEW')
+			)
+			->groupsForbiddenTags(array('description','seo_title','seo_description','seo_keywords')) 
+			->group(0)
+			->groupsProperties(array('98'))
+			->limit(0)
+			->calculateTotal(FALSE);
+                        $Informationsystem_Controller_Show
+                   ->informationsystemGroups()
+                   ->queryBuilder()   
+                   ->where('name', 'NOT IN', array('Акции', 'Вакансии', 'Поликлиника'));                      
+                   $Informationsystem_Controller_Show->show();  
+	?>
+</div>
+<div class="container mb-4">
+	<?php
+		Core_Page::instance()->execute();
+	?>
+</div>
+<div class="sign-up-box">
+	<div class="container">
+		<div class="row no-gutters">
+			<div class="col-sm-5">
+				<div class="h3">Запишитесь на прием</div>
+				<div>Заполните форму и наш специалист Вам назначит время:</div>
+			</div>
+			<div class="col-sm-7">
+				<div id="formBox<?php echo Core_Page::instance()->config['formId3'] ?>">
+					<?php
+						$Form_Controller_Show = new Form_Controller_Show(
+							Core_Entity::factory('Form', Core_Page::instance()->config['formId3'])
+						);
+
+						$Form_Controller_Show
+							->xsl(
+								Core_Entity::factory('Xsl')->getByName('ОтобразитьФормуИнлайн')
+							)
+							->show();
+					?>
+				</div>
+<div class="text-center"><a href="/personalnie-dannie/" target="_blank" class="text-white">Политика обработки персональных данных</a></div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="container">
+	<?php
+		// Преимущества на главной
+		$Informationsystem_Controller_Show = new Informationsystem_Controller_Show(
+			Core_Entity::factory('Informationsystem', Core_Page::instance()->config['informationsystemId6'])
+		);
+
+		$Informationsystem_Controller_Show
+			->xsl(
+				Core_Entity::factory('Xsl')->getByName('ПреимуществаНаГлавной')
+			)
+			->groupsForbiddenTags(array('text')) 
+			->group(FALSE)
+			->limit(4)
+			->calculateTotal(FALSE)
+			->show();
+	?>
+</div>
+<div class="schedule-box">
+	<div class="container">
+		<div class="row no-gutters">
+			<div class="col-sm-7">
+				<div class="h3">Узнайте расписание интересующего вас направления</div>
+				<div>В расписании Вы можете выбрать удобное для вас время:</div>
+			</div>
+			<div class="col-sm-5 text-right">
+				<a href="/schedule-vrechey/" class="btn btn-primary">Расписание приема врачей <img src="/i/ico-schedule.png" /></a>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="container">
+	<?php
+		// Отзывы на главной
+		Core_Event::attach('informationsystem_item.onBeforeRedeclaredGetXml', array('Informationsystem_Item_Observer', 'onBeforeRedeclaredGetXml'));
+
+		$Informationsystem_Controller_Show = new Informationsystem_Controller_Show(
+			Core_Entity::factory('Informationsystem', Core_Page::instance()->config['informationsystemId5'])
+		);
+
+		$Informationsystem_Controller_Show
+			->xsl(
+					Core_Entity::factory('Xsl')->getByName('ОтзывыНаГлавнойNEW')
+			)
+			->groupsMode('none')
+			->group(FALSE)
+			->itemsPropertiesList(FALSE)
+			->itemsProperties(TRUE)
+			->itemsForbiddenTags(array('text'))
+			->limit(6)
+			->calculateTotal(FALSE)
+			->show();
+
+		Core_Event::detach('informationsystem_item.onBeforeRedeclaredGetXml', array('Informationsystem_Item_Observer', 'onBeforeRedeclaredGetXml'));
+	?>
+</div>
+</div>
+<div class="container">
+	<?php
+		// Лицензии на главной
+		$Informationsystem_Controller_Show = new Informationsystem_Controller_Show(
+			Core_Entity::factory('Informationsystem', Core_Page::instance()->config['informationsystemId4'])
+		);
+
+		$Informationsystem_Controller_Show
+			->xsl(
+				Core_Entity::factory('Xsl')->getByName('ЛицензииНаГлавнойNEW')
+			)
+			->groupsMode('none')
+			->group(FALSE)
+			->itemsForbiddenTags(array('text','description'))
+			->limit(20)
+			->calculateTotal(FALSE)
+			->show();
+	?>
+</div>
+<div class="container">
+	<?php
+		// Пресса на главной
+		$Informationsystem_Controller_Show = new Informationsystem_Controller_Show(
+			Core_Entity::factory('Informationsystem', Core_Page::instance()->config['informationsystemId'])
+		);
+
+		$Informationsystem_Controller_Show
+			->xsl(
+				Core_Entity::factory('Xsl')->getByName('ПрессаНаГлавнойNEW')
+			)
+			->groupsMode('none')
+			->group(FALSE)
+			->itemsForbiddenTags(array('text','description'))
+			->itemsProperties(TRUE)
+			->limit(6)
+			->calculateTotal(FALSE)
+			->show();
+	?>
+</div>
