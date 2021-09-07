@@ -25,7 +25,20 @@ class Form_Fill_Export_Controller
 	 */
 	private $_aCurrentData = array();
 
+	/**
+	 * @var array
+	 */
 	protected $_aForm_Fields = array();
+
+	/**
+	 * @var array
+	 */
+	protected $_aForm_Fields_List = array();
+
+	/**
+	 * @var array
+	 */
+	protected $_aForm_Field_Dir_Tree = array();
 
 	/**
 	 * Constructor.
@@ -35,21 +48,59 @@ class Form_Fill_Export_Controller
 	{
 		$this->_Form = $oForm;
 
-		$this->_aForm_Fields = $this->_Form->Form_Fields->findAll();
+		$aForm_Fields = $this->_Form->Form_Fields->findAll(FALSE);
+		foreach ($aForm_Fields as $oForm_Field)
+		{
+			$this->_aForm_Fields[$oForm_Field->form_field_dir_id][] = $oForm_Field;
+		}
+
+		$aForm_Field_Dirs = $this->_Form->Form_Field_Dirs->findAll(FALSE);
+		foreach ($aForm_Field_Dirs as $oForm_Field_Dir)
+		{
+			$this->_aForm_Field_Dir_Tree[$oForm_Field_Dir->parent_id][] = $oForm_Field_Dir;
+		}
+
+		$this->_createFormFieldList(0);
 
 		$aTmp = array(
 			'"' . Core::_('Form_Fill_Export.id') . '"',
 			'"' . Core::_('Form_Fill_Export.datetime') . '"',
 			'"' . Core::_('Form_Fill_Export.ip') . '"',
-			'"' . Core::_('Form_Fill_Export.read') . '"'
+			'"' . Core::_('Form_Fill_Export.read') . '"',
+			'"' . Core::_('Form_Fill_Export.status') . '"'
 		);
 
-		foreach ($this->_aForm_Fields as $oForm_Field)
+		foreach ($this->_aForm_Fields_List as $oForm_Field)
 		{
 			$aTmp[] = $oForm_Field->caption;
 		}
 
 		$this->_aCurrentData[] = $aTmp;
+	}
+
+	/**
+	 * Create list of fields depends on the tree and sorting
+	 * @return self
+	 */
+	protected function _createFormFieldList($dir_id)
+	{
+		if (isset($this->_aForm_Field_Dir_Tree[$dir_id]))
+		{
+			foreach ($this->_aForm_Field_Dir_Tree[$dir_id] as $subDir)
+			{
+				$this->_createFormFieldList($subDir->id);
+			}
+		}
+
+		if (isset($this->_aForm_Fields[$dir_id]))
+		{
+			foreach ($this->_aForm_Fields[$dir_id] as $oForm_Field)
+			{
+				$this->_aForm_Fields_List[] = $oForm_Field;
+			}
+		}
+
+		return $this;
 	}
 
 	/**
@@ -93,13 +144,18 @@ class Form_Fill_Export_Controller
 					? Core::_('Admin_Form.yes')
 					: Core::_('Admin_Form.no');
 
+				$status = $oForm_Fill->form_status_id
+					? $oForm_Fill->Form_Status->name
+					: Core::_('Admin.none');
+
 				$aForm_Fill_Fields = $oForm_Fill->Form_Fill_Fields->findAll();
 
 				$aData = array(
 					sprintf('"%s"', $this->_prepareString($oForm_Fill->id)),
 					sprintf('"%s"', $this->_prepareString(Core_Date::sql2datetime($oForm_Fill->datetime))),
 					sprintf('"%s"', $this->_prepareString($oForm_Fill->ip)),
-					sprintf('"%s"', $this->_prepareString($read))
+					sprintf('"%s"', $this->_prepareString($read)),
+					sprintf('"%s"', $this->_prepareString($status))
 				);
 
 				$aTmp = array();
@@ -108,7 +164,7 @@ class Form_Fill_Export_Controller
 					$aTmp[$oForm_Fill_Field->form_field_id] = $oForm_Fill_Field;
 				}
 
-				foreach ($this->_aForm_Fields as $oForm_Field)
+				foreach ($this->_aForm_Fields_List as $oForm_Field)
 				{
 					$value = '';
 					if (isset($aTmp[$oForm_Field->id]))

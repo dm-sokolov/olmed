@@ -28,13 +28,13 @@ class Counter_Visit_Model extends Core_Entity
 	 * @var mixed
 	 */
 	public $page = NULL;
-	
+
 	/**
 	 * Backend property
 	 * @var mixed
 	 */
 	public $referrer = NULL;
-	
+
 	/**
 	 * Backend property
 	 * @var mixed
@@ -128,7 +128,7 @@ class Counter_Visit_Model extends Core_Entity
 
 		return ob_get_clean();
 	}
-	
+
 	/**
 	 * Backend callback method
 	 * @return string
@@ -143,15 +143,15 @@ class Counter_Visit_Model extends Core_Entity
 			if ($sUseragent != '')
 			{
 				$browser = htmlspecialchars(Core_Browser::getBrowser($sUseragent));
-				
+
 				if (!is_null($browser))
 				{
 					$ico = Core_Browser::getBrowserIco($browser);
-					
+
 					!is_null($ico)
 						&& $browser = '<i class="' . $ico . '"></i> ' . $browser;
 				}
-				
+
 				echo $browser . ' ';
 
 				if (Counter_Controller::checkBot($sUseragent))
@@ -159,7 +159,7 @@ class Counter_Visit_Model extends Core_Entity
 					?><span class="label label-sm label-info"><?php echo Core::_('Counter.crawler')?></span> <?php
 				}
 			}
-			
+
 			if ($this->Counter_Session->counter_os_id)
 			{
 				?><span class="label label-sm label-success"><?php echo htmlspecialchars($this->Counter_Session->Counter_Os->os)?></span> <?php
@@ -172,5 +172,22 @@ class Counter_Visit_Model extends Core_Entity
 		}
 
 		return ob_get_clean();
+	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event counter_visit.onBeforeGetRelatedSite
+	 * @hostcms-event counter_visit.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
 	}
 }

@@ -10,7 +10,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * - contentType('text/plain') Content Type, по умолчанию 'text/plain'
  * - subject() тема письма
  * - from() адрес электронной почты отправителя, по умолчанию используется первый адрес, указанный для сайта
-  *
+ *
  * <code>
  * $Siteuser_Controller_Restore_Password = new Siteuser_Controller_Restore_Password(
  * 	$oSiteuser

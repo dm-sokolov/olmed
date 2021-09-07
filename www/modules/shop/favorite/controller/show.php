@@ -10,8 +10,13 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * - itemsProperties(TRUE|FALSE|array()) выводить значения дополнительных свойств товаров, по умолчанию FALSE. Может принимать массив с идентификаторами дополнительных свойств, значения которых необходимо вывести.
  * - itemsPropertiesList(TRUE|FALSE|array()) выводить список дополнительных свойств товаров, по умолчанию TRUE
  * - modifications(TRUE|FALSE) показывать модификации для выбранных товаров, по умолчанию FALSE
+ * - specialprices(TRUE|FALSE) показывать специальные цены для выбранных товаров, по умолчанию FALSE
+ * - commentsRating(TRUE|FALSE) показывать оценки комментариев для выбранных товаров, по умолчанию FALSE
  * - limit($limit) количество
  *
+ * Доступные свойства:
+ *
+ * - total количество товаров в избранном
  *
  * <code>
  * $Shop_Favorite_Controller_Show = new Shop_Favorite_Controller_Show(
@@ -43,6 +48,8 @@ class Shop_Favorite_Controller_Show extends Core_Controller
 		'itemsProperties',
 		'itemsPropertiesList',
 		'modifications',
+		'specialprices',
+		'commentsRating',
 		'offset',
 		'page',
 		'total',
@@ -89,12 +96,11 @@ class Shop_Favorite_Controller_Show extends Core_Controller
 				->value($this->_oSiteuser ? $this->_oSiteuser->id : 0)
 		);
 
-		$this->itemsProperties = $this->modifications = FALSE;
+		$this->itemsProperties = $this->modifications = $this->specialprices = $this->commentsRating = FALSE;
 		$this->itemsPropertiesList = TRUE;
 		$this->limit = 10;
 
 		$this->offset = $this->page = 0;
-
 
 		$this->favoriteUrl = $oShop->Structure->getPath() . 'favorite/';
 
@@ -103,7 +109,7 @@ class Shop_Favorite_Controller_Show extends Core_Controller
 
 	public function parseUrl()
 	{
-		$oShop = $this->getEntity();
+		// $oShop = $this->getEntity();
 
 		$Core_Router_Route = new Core_Router_Route($this->pattern);
 		$this->patternParams = $matches = $Core_Router_Route->applyPattern(Core::$url['path']);
@@ -191,18 +197,21 @@ class Shop_Favorite_Controller_Show extends Core_Controller
 			$this->_addItemsPropertiesList(0, $Shop_Item_Properties);
 		}
 
+		$this->total = 0;
+
 		if ($this->limit > 0)
 		{
 			$Shop_Favorite_Controller = $this->_getFavoriteController();
 
 			$aShop_Favorites = $Shop_Favorite_Controller->getAll($oShop);
 
-			$this->addEntity(
-						Core::factory('Core_Xml_Entity')
-							->name('total')
-							->value(count($aShop_Favorites))
-					);
+			$this->total = count($aShop_Favorites);
 
+			$this->addEntity(
+				Core::factory('Core_Xml_Entity')
+					->name('total')
+					->value($this->total)
+			);
 
 			$aShop_Favorites = array_slice($aShop_Favorites, $this->offset, $this->limit);
 
@@ -213,7 +222,9 @@ class Shop_Favorite_Controller_Show extends Core_Controller
 				{
 					$oShop_Favorite
 						->showXmlProperties($this->itemsProperties)
-						->showXmlModifications($this->modifications);
+						->showXmlModifications($this->modifications)
+						->showXmlSpecialprices($this->specialprices)
+						->showXmlCommentsRating($this->commentsRating);
 
 					$this->addEntity($oShop_Favorite->clearEntities());
 				}

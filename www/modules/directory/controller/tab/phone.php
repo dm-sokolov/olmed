@@ -77,13 +77,13 @@ class Directory_Controller_Tab_Phone extends Directory_Controller_Tab
 				Admin_Form_Entity::factory('Checkbox')
 					->divAttr(array('class' => 'col-xs-3 col-sm-2 no-padding margin-top-23 margin-right-5'))
 					->name($this->prefix . 'phone_public' . $sNameSuffix)
-					->checked($iPhonePublic ? $iPhonePublic : NULL)
-					->value($iPhonePublic)
+					->value(1)
+					->checked($iPhonePublic ? $iPhonePublic : FALSE)
 					->caption(Core::_('Directory_Phone.phone_public'))
 			);
 
 			// Для нового свойства добавляет скрытое поле, хранящее состояние чекбокса
-			if (!$oUser_Directory_Phone)
+			/*if (!$oUser_Directory_Phone)
 			{
 				$oRowElements->add(
 					Core::factory('Core_Html_Entity_Input')
@@ -91,9 +91,82 @@ class Directory_Controller_Tab_Phone extends Directory_Controller_Tab
 						->value(0)
 						->name($this->prefix . 'phone_public_value' . $sNameSuffix)
 				);
-			}
+			}*/
 		}
 
 		return $oRowElements;
+	}
+	
+	public function applyObjectProperty($Admin_Form_Controller, $object)
+	{
+		$windowId = $Admin_Form_Controller->getWindowId();
+
+		$prefix = preg_replace('/[^A-Za-z0-9_-]/', '', $this->prefix);
+
+		// Телефоны, установленные значения
+		$aDirectory_Phones = $object->Directory_Phones->findAll(FALSE);
+		foreach ($aDirectory_Phones as $oDirectory_Phone)
+		{
+			$sPhone = Core_Array::getPost("{$prefix}phone#{$oDirectory_Phone->id}", NULL, 'trim');
+
+			if (!empty($sPhone))
+			{
+				$oDirectory_Phone
+					->directory_phone_type_id(Core_Array::getPost("{$prefix}phone_type#{$oDirectory_Phone->id}", 0, 'int'))
+					->public(Core_Array::getPost("{$prefix}phone_public#{$oDirectory_Phone->id}", 0, 'int'))
+					->value($sPhone)
+					->save();
+			}
+			else
+			{
+				// Удаляем пустую строку с полями
+				ob_start();
+				Core::factory('Core_Html_Entity_Script')
+					->value("$.deleteFormRow($(\"#{$windowId} select[name='{$prefix}phone_type#{$oDirectory_Phone->id}']\").closest('.row').find('.btn-delete').get(0));")
+					->execute();
+				$Admin_Form_Controller->addMessage(ob_get_clean());
+
+				$oDirectory_Phone->delete();
+			}
+		}
+
+		// Телефоны, новые значения
+		$aPhones = Core_Array::getPost($prefix . 'phone', array());
+		$aPhone_Types = Core_Array::getPost($prefix . 'phone_type', array());
+		$aPhone_Public = Core_Array::getPost($prefix . 'phone_public', array());
+
+		if (is_array($aPhones) && count($aPhones))
+		{
+			$i = 0;
+			foreach ($aPhones as $key => $sPhone)
+			{
+				$sPhone = trim($sPhone);
+
+				if (!empty($sPhone))
+				{
+					$oDirectory_Phone = Core_Entity::factory('Directory_Phone')
+						->directory_phone_type_id(Core_Array::get($aPhone_Types, $key, 0, 'int'))
+						->public(Core_Array::get($aPhone_Public, $key, 0, 'int'))
+						->value($sPhone)
+						->save();
+
+					$object->add($oDirectory_Phone);
+
+					ob_start();
+					Core::factory('Core_Html_Entity_Script')
+						->value("$(\"#{$windowId} select[name='{$prefix}phone_type\\[\\]']\").eq({$i}).prop('name', '{$prefix}phone_type#{$oDirectory_Phone->id}').closest('.row').find('.btn-delete').removeClass('hide');
+						$(\"#{$windowId} input[name='{$prefix}phone\\[\\]']\").eq({$i}).prop('name', '{$prefix}phone#{$oDirectory_Phone->id}');
+						$(\"#{$windowId} input[name='{$prefix}phone_public\\[\\]']\").eq({$i}).prop('name', '{$prefix}phone_public#{$oDirectory_Phone->id}');
+						")
+						->execute();
+
+					$Admin_Form_Controller->addMessage(ob_get_clean());
+				}
+				else
+				{
+					$i++;
+				}
+			}
+		}
 	}
 }

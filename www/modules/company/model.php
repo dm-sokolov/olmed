@@ -36,8 +36,8 @@ class Company_Model extends Core_Entity
 	 * @var array
 	 */
 	protected $_hasMany = array(
-		'company_department' =>  array(),
-		'company_site' =>  array(),
+		'company_department' => array(),
+		'company_site' => array(),
 		'shop' => array(),
 		'shop_warehouse' => array(),
 		'site' => array('through' => 'company_site'),

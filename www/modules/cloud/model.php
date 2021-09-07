@@ -104,4 +104,21 @@ class Cloud_Model extends Core_Entity
 			? htmlspecialchars($this->type)
 			: '—';
 	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event cloud.onBeforeGetRelatedSite
+	 * @hostcms-event cloud.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
+	}
 }

@@ -6,7 +6,7 @@
  * @subpackage Event
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2018 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 return array(
 	'model_name' => 'Группы дел',
@@ -18,7 +18,7 @@ return array(
 	'name' => 'Название',
 	'color' => 'Цвет',
 	'description' => 'Описание',
-	'edit_success'  => 'Информация о группе дел изменена!',
+	'edit_success' => 'Информация о группе дел изменена!',
 	'copy_success' => 'Группа дел успешно скопирована!',
 	'markDeleted_success' => 'Группа дел успешено удалена!',
 	'markDeleted_error' => 'Ошибка! Группа дел не удалена!',

@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage List
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class List_Item_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 {
@@ -106,42 +106,42 @@ class List_Item_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 				->value($this->_object->parent_id)
 				->type('hidden');
 
+			$windowId = $this->_Admin_Form_Controller->getWindowId();
+
 			$oCore_Html_Entity_Script_ListItem = Core::factory('Core_Html_Entity_Script')
 			->value("
-				$('[name = parent_name]').autocomplete({
-					  source: function(request, response) {
-
+				$('#{$windowId} [name = parent_name]').autocomplete({
+					source: function(request, response) {
 						$.ajax({
-						  url: '/admin/list/item/index.php?autocomplete=1&show_parents=1&list_id={$this->_object->list_id}',
-						  dataType: 'json',
-						  data: {
-							queryString: request.term
-						  },
-						  success: function( data ) {
-							response( data );
-						  }
+							url: '/admin/list/item/index.php?autocomplete=1&show_parents=1&list_id={$this->_object->list_id}',
+							dataType: 'json',
+							data: {
+								queryString: request.term
+							},
+							success: function(data) {
+								response(data);
+							}
 						});
-					  },
-					  minLength: 1,
-					  create: function() {
-						$(this).data('ui-autocomplete')._renderItem = function( ul, item ) {
+					},
+					minLength: 1,
+					create: function() {
+						$(this).data('ui-autocomplete')._renderItem = function(ul, item) {
 							return $('<li></li>')
 								.data('item.autocomplete', item)
 								.append($('<a>').text(item.label))
 								.appendTo(ul);
 						}
-
-						 $(this).prev('.ui-helper-hidden-accessible').remove();
-					  },
-					  select: function( event, ui ) {
-						$('[name = parent_id]').val(ui.item.id);
-					  },
-					  open: function() {
+						$(this).prev('.ui-helper-hidden-accessible').remove();
+					},
+					select: function(event, ui) {
+						$('#{$windowId} [name = parent_id]').val(ui.item.id);
+					},
+					open: function() {
 						$(this).removeClass('ui-corner-all').addClass('ui-corner-top');
-					  },
-					  close: function() {
+					},
+					close: function() {
 						$(this).removeClass('ui-corner-top').addClass('ui-corner-all');
-					  }
+					}
 				});
 			");
 
@@ -151,17 +151,26 @@ class List_Item_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 				->add($oCore_Html_Entity_Script_ListItem);
 		}
 
+		$sColorValue = ($this->_object->id && $this->getField('color')->value)
+			? $this->getField('color')->value
+			: '';
+
+		$this->getField('color')
+			->colorpicker(TRUE)
+			->value($sColorValue);
+
+		$oMainTab
+			->move($this->getField('description')->divAttr(array('class' => 'form-group col-xs-12')), $oMainRow2)
+			->move($this->getField('color')->set('data-control', 'hue')->divAttr(array('class' => 'form-group col-xs-12 col-sm-3')), $oMainRow4)
+			->move($this->getField('icon')->divAttr(array('class' => 'form-group col-xs-12 col-md-3')), $oMainRow4)
+			->move($this->getField('sorting')->divAttr(array('class' => 'form-group col-xs-12 col-md-3')), $oMainRow4)
+			->move($this->getField('active')->divAttr(array('class' => 'form-group col-xs-12 col-md-3 margin-top-21')), $oMainRow4);
+
 		$title = $this->_object->id
 			? Core::_('List_Item.edit_title', $oList->name)
 			: Core::_('List_Item.add_title', $oList->name);
 
 		$this->title($title);
-
-		$oMainTab
-			->move($this->getField('description')->divAttr(array('class' => 'form-group col-xs-12')), $oMainRow2)
-			->move($this->getField('sorting')->divAttr(array('class' => 'form-group col-xs-12 col-md-3')), $oMainRow4)
-			->move($this->getField('icon')->divAttr(array('class' => 'form-group col-xs-12 col-md-3')), $oMainRow4)
-			->move($this->getField('active')->divAttr(array('class' => 'form-group col-xs-12 col-md-3 margin-top-21')), $oMainRow4);
 
 		return $this;
 	}
@@ -299,6 +308,7 @@ class List_Item_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 						$oNewListItem->value = strval($aRow[0]);
 						$oNewListItem->description = isset($aRow[1]) && strlen($aRow[1]) ? strval($aRow[1]) : $description;
 						$oNewListItem->icon = isset($aRow[2]) && strlen($aRow[2]) ? strval($aRow[2]) : $icon;
+						$oNewListItem->path = '';
 						$oNewListItem->save();
 					}
 				}

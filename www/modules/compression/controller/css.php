@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Compression
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Compression_Controller_Css extends Compression_Controller
 {
@@ -46,21 +46,21 @@ class Compression_Controller_Css extends Compression_Controller
 	}
 
 	/**
-	 * Get path of the cache dir for CSS with CMS_FOLDER
+	 * Get path of the cache dir for the CSS with CMS_FOLDER
 	 * @return string
 	 */
 	public function getCssDirPath()
 	{
-		return CMS_FOLDER . 'hostcmsfiles' . DIRECTORY_SEPARATOR . 'css' . DIRECTORY_SEPARATOR;
+		return CMS_FOLDER . Core::$mainConfig['compressionCssDirectory'];
 	}
 
 	/**
-	 * Get href of the cache dir for CSS
+	 * Get href of the cache dir for the CSS
 	 * @return string
 	 */
 	public function getCssDirHref()
 	{
-		return '/hostcmsfiles/css/';
+		return '/' . Core::$mainConfig['compressionCssDirectory'];
 	}
 
 	/**

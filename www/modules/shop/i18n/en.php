@@ -196,4 +196,12 @@ return array(
 	'certificate_subject' => 'Subject of the letter',
 	'certificate_text' => 'Letter text',
 	'certificate_template_coupon_id' => 'Coupon ID',
+
+	'option_itemEditWarehouseLimit' => 'The number of warehouses displayed when editing an item, if there are more warehouses, then the block is not displayed',
+	'option_smallImagePrefix' => 'Prefix of small images',
+	'option_itemLargeImage' => 'Item large image pattern',
+	'option_itemSmallImage' => 'Item small image pattern',
+	'option_groupLargeImage' => 'Group large image pattern',
+	'option_groupSmallImage' => 'Group small image pattern',
+	'option_shop_item_card_xsl' => 'XSL pricetag template'
 );

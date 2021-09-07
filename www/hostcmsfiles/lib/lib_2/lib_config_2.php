@@ -64,9 +64,8 @@ if(Core_Array::getRequest('getForm') && Core_Array::getRequest('_', FALSE))
 			if ($oInformationsystem_Item->active == 0)
 			{
 				?>
-					<p>Благодарим Вас, <?php echo $author?>!
-					<br />Ваш отзыв отправлен!
-					</p>
+					<h2 class="h2 main-title mt-0">Благодарим Вас, <?php echo $author?>!</h2>
+					<p> Ваш отзыв отправлен! </p>
 				<?php
 			}
 			else

@@ -15,18 +15,17 @@ class Company_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 {
 	/**
 	 * Load object's fields when object has been set
-	 * После установки объекта загружаются данные о его полях
 	 * @param object $object
 	 * @return Company_Controller_Edit
 	 */
 	public function setObject($object)
 	{
-		$this
+		/*$this
 			->addSkipColumn('~address')
 			->addSkipColumn('~phone')
 			->addSkipColumn('~fax')
 			->addSkipColumn('~site')
-			->addSkipColumn('~email');
+			->addSkipColumn('~email');*/
 
 		parent::setObject($object);
 
@@ -72,8 +71,9 @@ class Company_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 			// GUID
 			->move($this->getField('guid'), $oAdditionalTab);
 
-		$oMainTab->move($this->getField('legal_name')->divAttr(array('class' => 'form-group col-xs-12 col-sm-6')),$oMainTabRow1);
-		$oMainTab->move($this->getField('accountant_legal_name')->divAttr(array('class' => 'form-group col-xs-12 col-sm-6')),$oMainTabRow1);
+		$oMainTab->move($this->getField('legal_name')->divAttr(array('class' => 'form-group col-xs-12 col-sm-4')),$oMainTabRow1);
+		$oMainTab->move($this->getField('accountant_legal_name')->divAttr(array('class' => 'form-group col-xs-12 col-sm-4')),$oMainTabRow1);
+		$oMainTab->move($this->getField('sorting')->divAttr(array('class' => 'form-group col-xs-12 col-sm-4')),$oMainTabRow1);
 
 		// Адреса
 		$oCompanyAddressesRow = Directory_Controller_Tab::instance('address')
@@ -125,7 +125,7 @@ class Company_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 		foreach ($aSites as $oSite)
 		{
 			$oAdmin_Form_Entity_Section->add($oCheckbox = Admin_Form_Entity::factory('Checkbox')
-				->divAttr(array('class' => 'form-group col-xs-12 col-md-6'))
+				->divAttr(array('class' => 'form-group col-xs-12 col-md-6 no-padding-left'))
 				->name('site_' . $oSite->id)
 				->caption($oSite->name)
 			);
@@ -202,299 +202,10 @@ class Company_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 
 		$windowId = $this->_Admin_Form_Controller->getWindowId();
 
-		// Адреса, установленные значения
-		$aCompany_Directory_Addresses = $this->_object->Company_Directory_Addresses->findAll();
-		foreach ($aCompany_Directory_Addresses as $oCompany_Directory_Address)
-		{
-			$oDirectory_Address = $oCompany_Directory_Address->Directory_Address;
-
-			$sAddress = trim(Core_Array::getPost("address#{$oDirectory_Address->id}"));
-			$sCountry = strval(Core_Array::getPost("address_country#{$oDirectory_Address->id}"));
-			$sPostcode = strval(Core_Array::getPost("address_postcode#{$oDirectory_Address->id}"));
-			$sCity = strval(Core_Array::getPost("address_city#{$oDirectory_Address->id}"));
-
-			if (strlen($sAddress) || strlen($sCountry) || strlen($sPostcode) || strlen($sCity))
-			{
-				$oDirectory_Address
-					->directory_address_type_id(intval(Core_Array::getPost("address_type#{$oDirectory_Address->id}", 0)))
-					->country($sCountry)
-					->postcode($sPostcode)
-					->city($sCity)
-					->value($sAddress)
-					->save();
-			}
-			else
-			{
-				// Удаляем пустую строку с полями
-				ob_start();
-				Core::factory('Core_Html_Entity_Script')
-					->value("$.deleteFormRow($(\"#{$windowId} select[name='address_type#{$oDirectory_Address->id}']\").closest('.row').find('.btn-delete').get(0));")
-					->execute();
-				$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-
-				$oCompany_Directory_Address->Directory_Address->delete();
-			}
-		}
-
-		// Адреса, новые значения
-		$aAddresses = Core_Array::getPost('address', array());
-		$aAddress_Country = Core_Array::getPost('address_country', array());
-		$aAddress_Postcode = Core_Array::getPost('address_postcode', array());
-		$aAddress_City = Core_Array::getPost('address_city', array());
-		$aAddress_Types = Core_Array::getPost('address_type', array());
-
-		if (is_array($aAddresses) && count($aAddresses))
-		{
-			$i = 0;
-			foreach ($aAddresses as $key => $sAddress)
-			{
-				$sAddress = trim($sAddress);
-				$sCountry = strval(Core_Array::get($aAddress_Country, $key));
-				$sPostcode = strval(Core_Array::get($aAddress_Postcode, $key));
-				$sCity = strval(Core_Array::get($aAddress_City, $key));
-
-				if (strlen($sAddress) || strlen($sCountry) || strlen($sPostcode) || strlen($sCity))
-				{
-					$oDirectory_Address = Core_Entity::factory('Directory_Address')
-						->directory_address_type_id(intval(Core_Array::get($aAddress_Types, $key)))
-						->country($sCountry)
-						->postcode($sPostcode)
-						->city($sCity)
-						->value($sAddress)
-						->save();
-
-					$this->_object->add($oDirectory_Address);
-
-					ob_start();
-					Core::factory('Core_Html_Entity_Script')
-						->value("$(\"#{$windowId} select[name='address_type\\[\\]']\").eq({$i}).prop('name', 'address_type#{$oDirectory_Address->id}').closest('.row').find('.btn-delete').removeClass('hide');
-						$(\"#{$windowId} input[name='address\\[\\]']\").eq({$i}).prop('name', 'address#{$oDirectory_Address->id}');
-						$(\"#{$windowId} input[name='address_country\\[\\]']\").eq({$i}).prop('name', 'address_country#{$oDirectory_Address->id}');
-						$(\"#{$windowId} input[name='address_postcode\\[\\]']\").eq({$i}).prop('name', 'address_postcode#{$oDirectory_Address->id}');
-						$(\"#{$windowId} input[name='address_city\\[\\]']\").eq({$i}).prop('name', 'address_city#{$oDirectory_Address->id}');
-						")
-						->execute();
-
-					$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-				}
-				else
-				{
-					$i++;
-				}
-			}
-		}
-
-		// Электронные адреса, установленные значения
-		$aCompany_Directory_Emails = $this->_object->Company_Directory_Emails->findAll();
-		foreach ($aCompany_Directory_Emails as $oCompany_Directory_Email)
-		{
-			$oDirectory_Email = $oCompany_Directory_Email->Directory_Email;
-
-			$sEmail = trim(Core_Array::getPost("email#{$oDirectory_Email->id}"));
-
-			if (!empty($sEmail))
-			{
-				$oDirectory_Email
-					->directory_email_type_id(intval(Core_Array::getPost("email_type#{$oDirectory_Email->id}", 0)))
-					->value($sEmail)
-					->save();
-			}
-			else
-			{
-				// Удаляем пустую строку с полями
-				ob_start();
-				Core::factory('Core_Html_Entity_Script')
-					->value("$.deleteFormRow($(\"#{$windowId} select[name='email_type#{$oDirectory_Email->id}']\").closest('.row').find('.btn-delete111').get(0));")
-					->execute();
-
-				$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-				$oCompany_Directory_Email->Directory_Email->delete();
-			}
-		}
-
-		// Электронные адреса, новые значения
-		$aEmails = Core_Array::getPost('email', array());
-		$aEmail_Types = Core_Array::getPost('email_type', array());
-
-		if (is_array($aEmails) && count($aEmails))
-		{
-			$i = 0;
-			foreach ($aEmails as $key => $sEmail)
-			{
-				$sEmail = trim($sEmail);
-
-				if (!empty($sEmail))
-				{
-					$oDirectory_Email = Core_Entity::factory('Directory_Email')
-						->directory_email_type_id(intval(Core_Array::get($aEmail_Types, $key)))
-						->value($sEmail)
-						->save();
-
-					$this->_object->add($oDirectory_Email);
-
-					//$this->_object->add($oDirectory_Email);
-
-					ob_start();
-					Core::factory('Core_Html_Entity_Script')
-						->value("$(\"#{$windowId} select[name='email_type\\[\\]']\").eq({$i}).prop('name', 'email_type#{$oDirectory_Email->id}').closest('.row').find('.btn-delete').removeClass('hide');
-						$(\"#{$windowId} input[name='email\\[\\]']\").eq({$i}).prop('name', 'email#{$oDirectory_Email->id}');")
-						->execute();
-
-					$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-				}
-				else
-				{
-					$i++;
-				}
-			}
-		}
-
-		// Телефоны, установленные значения
-		$aCompany_Directory_Phones = $this->_object->Company_Directory_Phones->findAll();
-		foreach ($aCompany_Directory_Phones as $oCompany_Directory_Phone)
-		{
-			$oDirectory_Phone = $oCompany_Directory_Phone->Directory_Phone;
-
-			$sPhone = trim(Core_Array::getPost("phone#{$oDirectory_Phone->id}"));
-
-			if (!empty($sPhone))
-			{
-				$oDirectory_Phone
-					->directory_phone_type_id(intval(Core_Array::getPost("phone_type#{$oDirectory_Phone->id}", 0)))
-					->value($sPhone)
-					->save();
-			}
-			else
-			{
-				// Удаляем пустую строку с полями
-				ob_start();
-				Core::factory('Core_Html_Entity_Script')
-					->value("$.deleteFormRow($(\"#{$windowId} select[name='phone_type#{$oDirectory_Phone->id}']\").closest('.row').find('.btn-delete').get(0));")
-					->execute();
-				$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-
-				$oCompany_Directory_Phone->Directory_Phone->delete();
-			}
-		}
-
-		// Телефоны, новые значения
-		$aPhones = Core_Array::getPost('phone', array());
-		$aPhone_Types = Core_Array::getPost('phone_type', array());
-
-		if (is_array($aPhones) && count($aPhones))
-		{
-			$i = 0;
-			foreach ($aPhones as $key => $sPhone)
-			{
-				$sPhone = trim($sPhone);
-
-				if (!empty($sPhone))
-				{
-					$oDirectory_Phone = Core_Entity::factory('Directory_Phone')
-						->directory_phone_type_id(intval(Core_Array::get($aPhone_Types, $key)))
-						->value($sPhone)
-						->save();
-
-					$this->_object->add($oDirectory_Phone);
-
-					ob_start();
-					Core::factory('Core_Html_Entity_Script')
-						->value("$(\"#{$windowId} select[name='phone_type\\[\\]']\").eq({$i}).prop('name', 'phone_type#{$oDirectory_Phone->id}').closest('.row').find('.btn-delete').removeClass('hide');
-						$(\"#{$windowId} input[name='phone\\[\\]']\").eq({$i}).prop('name', 'phone#{$oDirectory_Phone->id}');
-						")
-						->execute();
-
-					$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-				}
-				else
-				{
-					$i++;
-				}
-			}
-		}
-
-		// Cайты, установленные значения
-		$aCompany_Directory_Websites = $this->_object->Company_Directory_Websites->findAll();
-		foreach ($aCompany_Directory_Websites as $oCompany_Directory_Website)
-		{
-			$oDirectory_Website = $oCompany_Directory_Website->Directory_Website;
-
-			$sWebsite_Address = trim(Core_Array::getPost("website_address#{$oDirectory_Website->id}"));
-
-			if (!empty($sWebsite_Address))
-			{
-				$aUrl = parse_url($sWebsite_Address);
-
-				// Если не был указан протокол, или
-				// указанный протокол некорректен для url
-				!array_key_exists('scheme', $aUrl)
-					&& $sWebsite_Address = 'http://' . $sWebsite_Address;
-
-				$oDirectory_Website
-					->description(Core_Array::getPost("website_description#{$oDirectory_Website->id}"))
-					->value($sWebsite_Address)
-					->save();
-			}
-			else
-			{
-				// Удаляем пустую строку с полями
-				ob_start();
-				Core::factory('Core_Html_Entity_Script')
-					->value("$.deleteFormRow($(\"#{$windowId} input[name='website_address#{$oDirectory_Website->id}']\").closest('.row').find('.btn-delete').get(0));")
-					->execute();
-
-				$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-				$oDirectory_Website->delete();
-			}
-		}
-
-		// Сайты, новые значения
-		$aWebsite_Addresses = Core_Array::getPost('website_address', array());
-		$aWebsite_Names =  Core_Array::getPost('website_description', array());
-
-		if (is_array($aWebsite_Addresses) && count($aWebsite_Addresses))
-		{
-			$i = 0;
-
-			foreach ($aWebsite_Addresses as $key => $sWebsite_Address)
-			{
-				$sWebsite_Address = trim($sWebsite_Address);
-
-				if (!empty($sWebsite_Address))
-				{
-					$aUrl = parse_url($sWebsite_Address);
-
-					// Если не был указан протокол, или
-					// указанный протокол некорректен для url
-					!array_key_exists('scheme', $aUrl)
-						&& $sWebsite_Address = 'http://' . $sWebsite_Address;
-
-					$oDirectory_Website = Core_Entity::factory('Directory_Website')
-						->description(Core_Array::get($aWebsite_Names, $key))
-						->value($sWebsite_Address);
-
-					$this->_object->add($oDirectory_Website);
-
-					$oCompany_Directory_Website = $oDirectory_Website->Company_Directory_Websites->getByCompany_Id($this->_object->id);
-
-					//$this->_object->add($oDirectory_Email);
-
-					ob_start();
-					Core::factory('Core_Html_Entity_Script')
-						->value("$(\"#{$windowId} input[name='website_address\\[\\]']\").eq({$i}).prop('name', 'website_address#{$oCompany_Directory_Website->id}').closest('.row').find('.btn-delete').removeClass('hide');
-						$(\"#{$windowId} input[name='website_description\\[\\]']\").eq({$i}).prop('name', 'website_description#{$oCompany_Directory_Website->id}');
-
-						")
-						->execute();
-
-					$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-				}
-				else
-				{
-					$i++;
-				}
-			}
-		}
+		Directory_Controller_Tab::instance('address')->applyObjectProperty($this->_Admin_Form_Controller, $this->_object);
+		Directory_Controller_Tab::instance('email')->applyObjectProperty($this->_Admin_Form_Controller, $this->_object);
+		Directory_Controller_Tab::instance('phone')->applyObjectProperty($this->_Admin_Form_Controller, $this->_object);
+		Directory_Controller_Tab::instance('website')->applyObjectProperty($this->_Admin_Form_Controller, $this->_object);
 
 		Core_Event::notify(get_class($this) . '.onAfterRedeclaredApplyObjectProperty', $this, array($this->_Admin_Form_Controller));
 	}

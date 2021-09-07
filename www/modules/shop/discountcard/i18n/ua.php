@@ -17,6 +17,7 @@ return array(
 	'undelete_success' => 'Елемент відновлено!',
 	'markDeleted_success' => "Дані про дисконтну картку успішно видалені!",
 	'levels' => 'Рівні',
+	'types' => 'Типи зарахувань',
 	'shop_order_item_name' => 'Дисконтна картка %s',
 	'export' => 'Експорт',
 	'import' => 'Імпорт',
@@ -27,4 +28,6 @@ return array(
 	'backendWarning' => 'Для роботи дисконтних карт необхідний модуль "Клієнти", який входить до редакції "Бізнес" і "Корпорація".',
 	'backendWrongWriteoffWarning' => 'Недостатньо бонусів для списання!',
 	'backendWriteoffSuccess' => 'Бонуси списані успішно!',
+	'active' => 'Активність',
+	'changeActive_success' => 'Інформація успішно змінена'
 );

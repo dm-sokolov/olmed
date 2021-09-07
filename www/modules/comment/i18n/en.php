@@ -31,4 +31,6 @@ return array(
 	'undelete_success' => 'Item restored successfully!',
 	'ban' => 'Ban',
 	'ban_comment' => 'Blocked for comment: %s',
+	'option_gradeStep' => 'Grade Step',
+	'option_gradeLimit' => 'Grade limit',
 );

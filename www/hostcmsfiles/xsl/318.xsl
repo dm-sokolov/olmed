@@ -7,7 +7,7 @@
 	<xsl:output xmlns="http://www.w3.org/TR/xhtml1/strict" doctype-public="-//W3C//DTD XHTML 1.0 Strict//EN" encoding="utf-8" indent="yes" method="html" omit-xml-declaration="no" version="1.0" media-type="text/xml"/>
 	
 	<xsl:template match="site">
-	<a class="d-inline-block" href="/map/"><i class="fa fa-sitemap" aria-hidden="true"></i></a>
+		
 		<xsl:apply-templates select="structure" />
 	</xsl:template>
 	
@@ -27,7 +27,7 @@
 			</xsl:choose>
 		</xsl:variable>
 		
-		<a class="d-inline-block" href="{$link}" title="{seo_title}" target="_blank" rel="nofollow">
+		<a class="" href="{$link}" title="{seo_title}" target="_blank" rel="nofollow">
 			<i class="{property_value[tag_name='fa']/value}" aria-hidden="true"></i>
 		</a>
 		

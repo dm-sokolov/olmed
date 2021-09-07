@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Update
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Update_Dataset extends Admin_Form_Dataset
 {
@@ -41,17 +41,13 @@ class Update_Dataset extends Admin_Form_Dataset
 	}
 
 	/**
-	 * Dataset objects list
-	 * @var array
-	 */
-	protected $_objects = array();
-
-	/**
 	 * Load objects
 	 * @return array
 	 */
 	public function load()
 	{
+		!is_array($this->_objects) && $this->_getUpdates();
+
 		return array_slice($this->_objects, $this->_offset, $this->_limit);
 	}
 
@@ -73,7 +69,7 @@ class Update_Dataset extends Admin_Form_Dataset
 		$sDatetime = !is_null($aReturn['datetime'])
 			? strftime(DATE_TIME_FORMAT, strtotime($aReturn['datetime']))
 			: '';
-		
+
 		if ($error > 0 && $error != 5)
 		{
 			$this->_Admin_Form_Controller->addMessage(
@@ -84,7 +80,7 @@ class Update_Dataset extends Admin_Form_Dataset
 		elseif (count($this->_objects) == 0)
 		{
 			$this->_Admin_Form_Controller->addMessage(
-				Core_Message::show(Core::_('Update.isLastUpdate', $sDatetime), 'message')
+				Core_Message::show(Core::_('Update.isLastUpdate', $sDatetime))
 			);
 		}
 
@@ -96,6 +92,12 @@ class Update_Dataset extends Admin_Form_Dataset
 				Core_Date::sql2timestamp($expiration_of_support) > time()
 					? Core_Message::get(Core::_('Update.support_available', $f_expiration_of_support, $sDatetime))
 					: Core_Message::get(Core::_('Update.support_has_expired', $f_expiration_of_support, 'www.hostcms.ru', $sDatetime), 'error')
+			);
+		}
+		else
+		{
+			$this->_Admin_Form_Controller->addMessage(
+				Core_Message::get(Core::_('Update.support_unavailable'))
 			);
 		}
 

@@ -47,6 +47,8 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 
 		$oAdditionalTab->delete($this->getField('crm_project_id'));
 
+		$windowId = $this->_Admin_Form_Controller->getWindowId();
+
 		$aCrmProjectsOptions = array(' … ');
 
 		$aCrm_Projects = Core_Entity::factory('Crm_Project')->getAllBySite_id(CURRENT_SITE);
@@ -88,40 +90,39 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 
 			$oCore_Html_Entity_Script_Crm_Project = Core::factory('Core_Html_Entity_Script')
 			->value("
-				$('[name = crm_project_name]').autocomplete({
-					  source: function(request, response) {
-
+				$('#" . $windowId . " [name = crm_project_name]').autocomplete({
+					source: function(request, response) {
 						$.ajax({
-						  url: '/admin/crm/project/index.php?autocomplete=1',
-						  dataType: 'json',
-						  data: {
-							queryString: request.term
-						  },
-						  success: function( data ) {
-							response( data );
-						  }
+							url: '/admin/crm/project/index.php?autocomplete=1',
+							dataType: 'json',
+							data: {
+								queryString: request.term
+							},
+							success: function(data) {
+								response(data);
+							}
 						});
-					  },
-					  minLength: 1,
-					  create: function() {
-						$(this).data('ui-autocomplete')._renderItem = function( ul, item ) {
+					},
+					minLength: 1,
+					create: function() {
+						$(this).data('ui-autocomplete')._renderItem = function(ul, item) {
 							return $('<li></li>')
 								.data('item.autocomplete', item)
 								.append($('<a>').text(item.label))
 								.appendTo(ul);
 						}
 
-						 $(this).prev('.ui-helper-hidden-accessible').remove();
-					  },
-					  select: function( event, ui ) {
-						$('[name = crm_project_id]').val(ui.item.id);
-					  },
-					  open: function() {
+						$(this).prev('.ui-helper-hidden-accessible').remove();
+					},
+					select: function(event, ui) {
+						$('#" . $windowId . " [name = crm_project_id]').val(ui.item.id);
+					},
+					open: function() {
 						$(this).removeClass('ui-corner-all').addClass('ui-corner-top');
-					  },
-					  close: function() {
+					},
+					close: function() {
 						$(this).removeClass('ui-corner-top').addClass('ui-corner-all');
-					  }
+					}
 				});
 			");
 
@@ -423,11 +424,11 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 						$aObjects[] = array(
 							'id' => $oSiteuser_Company->id,
 							'value' => 'company_' . $oSiteuser_Company->id,
-							'name' =>  htmlspecialchars($oSiteuser_Company->name),
-							'avatar' =>  $avatar,
-							'phone' =>  $phone,
-							'email' =>  $email,
-							'type' =>  'company',
+							'name' => htmlspecialchars($oSiteuser_Company->name),
+							'avatar' => $avatar,
+							'phone' => $phone,
+							'email' => $email,
+							'type' => 'company',
 						);
 					}
 					elseif ($oEvent_Siteuser->siteuser_person_id)
@@ -450,11 +451,11 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 						$aObjects[] = array(
 							'id' => $oSiteuser_Person->id,
 							'value' => 'person_' . $oSiteuser_Person->id,
-							'name' =>  htmlspecialchars($fullName),
-							'avatar' =>  $avatar,
-							'phone' =>  $phone,
-							'email' =>  $email,
-							'type' =>  'person',
+							'name' => htmlspecialchars($fullName),
+							'avatar' => $avatar,
+							'phone' => $phone,
+							'email' => $email,
+							'type' => 'person',
 						);
 					}
 				}
@@ -575,23 +576,6 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 				}
 			}
 
-			// Завершено
-			/*$sChecked = $this->_object->completed
-				? 'checked="checked"'
-				: '';
-
-			$oMainRow9->add(
-				Admin_Form_Entity::factory('Code')
-					->html('
-						<div class="form-group col-xs-4">
-							<label>
-								<input name="completed" class="colored-success" ' . $sChecked . ' type="checkbox">
-								<span class="text">' . Core::_('Event.completed_view') . '</span>
-							</label>
-						</div>
-					')
-			);*/
-
 			// Результат
 			$oMainRow9
 				->add(
@@ -634,22 +618,13 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 			)->add(Admin_Form_Entity::factory('Script')
 				->value("
 					$(function(){
-						$('.type-states').on('click', 'label.checkbox-inline', function(e) {
+						$('#{$windowId} .type-states').on('click', 'label.checkbox-inline', function(e) {
 							e.preventDefault();
 
 							var radio = $(this).find('input[type=radio]');
-
-							if (radio.is(':checked'))
-							{
-								radio.prop('checked', false);
-							}
-							else
-							{
-								radio.prop('checked', true);
-							}
+							radio.prop('checked', !radio.is(':checked'));
 						});
-					});
-				")
+					});")
 			);
 
 			// Файлы
@@ -664,7 +639,7 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 				ob_start();
 				$icon_file = '/admin/images/icons/' . (isset(Core::$mainConfig['fileIcons'][$ext]) ? Core::$mainConfig['fileIcons'][$ext] : 'file.gif');
 
-				 Core::factory('Core_Html_Entity_Img')
+				Core::factory('Core_Html_Entity_Img')
 					->src($icon_file)
 					->class('img_line')
 					->execute();
@@ -751,18 +726,17 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 						\'/css/timeslider.css\'
 					];
 
-
 				$.getMultiContent(aScripts, \'/modules/skin/bootstrap/\').done(function() {
 					// all scripts loaded
 					setTimeout(function() {
-						var oEventStartDate = new Date(+$(\'#' . $windowId .' input[name="start"]\').parent().data("DateTimePicker").date()),
+						var oEventStartDate = new Date(+$(\'#' . $windowId . ' input[name="start"]\').parent().data("DateTimePicker").date()),
 							timeZoneOffset = (oEventStartDate.getTimezoneOffset() * 60 * 1000 * -1),
 							eventStartTime = oEventStartDate.getTime() + timeZoneOffset,
 
-							eventStopTime = eventStartTime + getDurationMilliseconds(\'' . $windowId .'\'),
+							eventStopTime = eventStartTime + getDurationMilliseconds(\'' . $windowId . '\'),
 							oCurrentTime = Date.now() + timeZoneOffset,
 							allDay = ' . ($this->_object->all_day ? 'true' : 'false') . ',
-							startTimestampRuler = eventStartTime - 3600 * (allDay ? 1 : 12)  * 1000,
+							startTimestampRuler = eventStartTime - 3600 * (allDay ? 1 : 12) * 1000,
 							cellId = "cellId",
 							dateTimeFormatString = "' . Core::$mainConfig['dateTimePickerFormat'] . '";
 
@@ -786,6 +760,7 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 								},
 							],
 							on_resize_timecell_callback: function (id, start, end) {
+
 								if (start > end)
 								{
 									start = end;
@@ -793,11 +768,11 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 
 								jTimeSlider.data("resizeTimeCell", true);
 
-								setDuration(start, end, \'' . $windowId .'\');
-								setStartAndDeadline(start - timeZoneOffset, end - timeZoneOffset, \'' . $windowId .'\');
+								setDuration(start, end, \'' . $windowId . '\');
+								setStartAndDeadline(start - timeZoneOffset, end - timeZoneOffset, \'' . $windowId . '\');
 
 								// Снимаем флажок "Весь день", если это необходимо
-								cancelAllDay(\'' . $windowId .'\');
+								cancelAllDay(\'' . $windowId . '\');
 
 								jTimeSlider.removeData("resizeTimeCell");
 							},
@@ -813,19 +788,33 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 
 									// Значение правой границы диапозона
 									stopRuler = startRuler + ruler_duration,
-									changeDelta = -1;
+									changeDelta = -1,
+									leftShift, timeCellDuration;
 
-								if (startRuler < start && (startRuler + limit) >= start)
+								if (limit >= Math.abs(start - startRuler) || start < startRuler )
 								{
-									var changeDelta = limit - (start - startRuler),
+									if (start < startRuler)
+									{
+										end += (startRuler - start);
+										start = startRuler
+									}
 
-									// Сдвиг линейки влево
+									changeDelta = limit - (start - startRuler);
+
+									// Сдвиг ползунка влево
 									leftShift = true;
 								}
-								else if (stopRuler > end && end >= (stopRuler - limit))
+								else if (limit >= Math.abs(stopRuler - end) || stopRuler < end)
 								{
+									if (end > stopRuler)
+									{
+										start -= end - stopRuler;
+										end = stopRuler;
+									}
+
 									changeDelta = limit - (stopRuler - end);
-									// Сдвиг линейки вправо
+
+									// Сдвиг ползунка вправо
 									leftShift = false;
 								}
 
@@ -841,41 +830,40 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 										clearInterval(jTimeSlider.data("repeatingIntervalId"));
 									}
 
-									var timeCellDuration = end - start;
+									timeCellDuration = end - start;
 
 									jTimeSlider.data("rulerRepeating", true);
 
 									var repeatingIntervalId = setInterval(function(){
-										var timeCell = $("#" + cellId),
+										var timeCell = $("#' . $windowId . ' #" + cellId),
 											startRuler = +jTimeSlider.data("timeslider")["options"]["start_timestamp"],
-											stopRuler = startRuler + ruler_duration;
+											stopRuler = startRuler + ruler_duration,
+											start, end, newStart, newStop, newStartTimestamp;
 
 										// Передвигаем ползунок слева направо
 										if (leftShift)
 										{
-											var	start = +timeCell.attr("start_timestamp");
+											start = +timeCell.attr("start_timestamp");
+											newStart = start - changeDelta;
+											newStop = newStart + timeCellDuration;
+											newStartTimestamp = startRuler - changeDelta;
 
 											if (start <= startRuler)
 											{
 												start = startRuler;
 											}
-
-											var newStart = start - changeDelta,
-												newStop = newStart + timeCellDuration,
-												newStartTimestamp = startRuler - changeDelta;
 										}
 										else
 										{
-											var end = +timeCell.attr("stop_timestamp");
+											end = +timeCell.attr("stop_timestamp");
+											newStop = end + changeDelta,
+											newStart = newStop - timeCellDuration,
+											newStartTimestamp = startRuler + changeDelta;
 
 											if (end >= stopRuler)
 											{
 												end = stopRuler;
 											}
-
-											var newStop = end + changeDelta,
-												newStart = newStop - timeCellDuration,
-												newStartTimestamp = startRuler + changeDelta;
 										}
 
 										var timeCellOptions = {
@@ -890,9 +878,9 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 										// Изменяем положение ползунка
 										jTimeSlider.TimeSlider("edit", timeCellOptions);
 
-										setEventStartButtons(newStart - timeZoneOffset, \'' . $windowId .'\');
+										setEventStartButtons(newStart - timeZoneOffset, \'' . $windowId . '\');
 
-										setStartAndDeadline(newStart - timeZoneOffset, newStop - timeZoneOffset, \'' . $windowId .'\');
+										setStartAndDeadline(newStart - timeZoneOffset, newStop - timeZoneOffset, \'' . $windowId . '\');
 									}, 25);
 
 									jTimeSlider.data("repeatingIntervalId", repeatingIntervalId);
@@ -904,13 +892,13 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 								}
 
 								// Устанавливаем вид кнопок быстрой установки даты
-								setEventStartButtons(start - timeZoneOffset, \'' . $windowId .'\');
+								setEventStartButtons(start - timeZoneOffset, \'' . $windowId . '\');
 
 								// Устанавливаем значения полей начала/завершения события
-								setStartAndDeadline(start - timeZoneOffset, end - timeZoneOffset, \'' . $windowId .'\');
+								setStartAndDeadline(start - timeZoneOffset, end - timeZoneOffset, \'' . $windowId . '\');
 
 								// Снимаем флажок "Весь день", если это необходимо
-								cancelAllDay(\'' . $windowId .'\');
+								cancelAllDay(\'' . $windowId . '\');
 
 								jTimeSlider.removeData("moveTimeCell");
 							}
@@ -920,12 +908,12 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 
 							var deltaMilliseconds = jTimeSlider.data("timeslider")["options"]["hours_per_ruler"] * 3600 * 1000 / $(this).width() * (event.pageX - $(this).offset().left),
 								newStartCell = +jTimeSlider.data("timeslider")["options"]["start_timestamp"] + deltaMilliseconds - timeZoneOffset,
-								newStopCell = newStartCell + getDurationMilliseconds(\'' . $windowId .'\');
+								newStopCell = newStartCell + getDurationMilliseconds(\'' . $windowId . '\');
 
-							setStartAndDeadline(newStartCell, newStopCell, \'' . $windowId .'\');
-							setEventStartButtons(newStartCell, \'' . $windowId .'\');
+							setStartAndDeadline(newStartCell, newStopCell, \'' . $windowId . '\');
+							setEventStartButtons(newStartCell, \'' . $windowId . '\');
 							// Снимаем флажок "Весь день", если это необходимо
-							cancelAllDay(\'' . $windowId .'\');
+							cancelAllDay(\'' . $windowId . '\');
 						});
 
 						function changeDurationThroughFields(event)
@@ -945,25 +933,25 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 							}
 						}
 
-						$(\'#' . $windowId .' input[name="duration"]\').on("keyup", {cellId: cellId, timeZoneOffset: timeZoneOffset, windowId: \'' . $windowId .'\'}, changeDurationThroughFields);
+						$(\'#' . $windowId . ' input[name="duration"]\').on("keyup", {cellId: cellId, timeZoneOffset: timeZoneOffset, windowId: \'' . $windowId . '\'}, changeDurationThroughFields);
 
-						$(\'#' . $windowId .' select[name="duration_type"]\').on("change", {cellId: cellId, timeZoneOffset: timeZoneOffset, windowId: \'' . $windowId .'\'}, changeDurationThroughFields);
+						$(\'#' . $windowId . ' select[name="duration_type"]\').on("change", {cellId: cellId, timeZoneOffset: timeZoneOffset, windowId: \'' . $windowId . '\'}, changeDurationThroughFields);
 
 						// Обработчик изменения даты-времени начала/завершения события
-						$(\'#' . $windowId .' input[class*="hasDatetimepicker"]\').parent().on("dp.change", function (event)
+						$(\'#' . $windowId . ' input[class*="hasDatetimepicker"]\').parent().on("dp.change", function (event)
 						{
 							var jTimeSlider = $("#' . $windowId . ' #ts");
 
 							// Не нажата кнопка быстрой установки начала события, не перемещается ползунок,
 							// не прокручивается линейка при смещении ползунка к одному из ее концов, не изменяется ширина ползунка
-							if (!($("#eventStartButtonsGroup").data("clickStartButton") || jTimeSlider.data("moveTimeCell")
+							if (!($("#' . $windowId . ' #eventStartButtonsGroup").data("clickStartButton") || jTimeSlider.data("moveTimeCell")
 								|| jTimeSlider.data("rulerRepeating") || jTimeSlider.data("resizeTimeCell")
 								|| $("#' . $windowId . ' input[name=\'all_day\']").data("clickAllDay")))
 							{
 								var inputField = $("#' . $windowId . ' input.hasDatetimepicker", this),
 									inputFieldName = inputField.attr("name"),
-									startTimeCell = +$(\'#' . $windowId .' input[name="start"]\').parent().data("DateTimePicker").date()
-									stopTimeCell = +$(\'#' . $windowId .' input[name="deadline"]\').parent().data("DateTimePicker").date(),
+									startTimeCell = +$(\'#' . $windowId . ' input[name="start"]\').parent().data("DateTimePicker").date()
+									stopTimeCell = +$(\'#' . $windowId . ' input[name="deadline"]\').parent().data("DateTimePicker").date(),
 									startTimestampRuler;
 
 								if (!startTimeCell || !stopTimeCell)
@@ -974,8 +962,8 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 
 								if (startTimeCell > stopTimeCell)
 								{
-									stopTimeCell = startTimeCell + getDurationMilliseconds(\'' . $windowId .'\');
-									setStartAndDeadline(startTimeCell, stopTimeCell, \'' . $windowId .'\');
+									stopTimeCell = startTimeCell + getDurationMilliseconds(\'' . $windowId . '\');
+									setStartAndDeadline(startTimeCell, stopTimeCell, \'' . $windowId . '\');
 								}
 
 								var	timeCellOptions = {
@@ -1011,21 +999,21 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 								jTimeSlider.TimeSlider("edit", timeCellOptions);
 
 								// Продолжительность изменена не через поле "Продолжительность" или был нажат "Весь день"
-								if(!($("#' . $windowId . ' input[name=\'all_day\']").data("clickAllDay") || $(\'#' . $windowId .' input[name="duration"]\').data("durationFieldChanged") || $(\'#' . $windowId .' select[name="duration_type"]\').data("durationFieldChanged")))
+								if(!($("#' . $windowId . ' input[name=\'all_day\']").data("clickAllDay") || $(\'#' . $windowId . ' input[name="duration"]\').data("durationFieldChanged") || $(\'#' . $windowId . ' select[name="duration_type"]\').data("durationFieldChanged")))
 								{
 									if (startTimeCell < stopTimeCell)
 									{
 										// Изменяем значение продолжительности
-										setDuration(startTimeCell, stopTimeCell, \'' . $windowId .'\');
+										setDuration(startTimeCell, stopTimeCell, \'' . $windowId . '\');
 									}
 
-									setEventStartButtons(startTimeCell, \'' . $windowId .'\');
+									setEventStartButtons(startTimeCell, \'' . $windowId . '\');
 								}
 							}
 						});
 
 						// Обработчик нажатия кнопки быстрого перехода по дням
-						$("#eventStartButtonsGroup").on("click touchstart", "[data-start-day]", function (event){
+						$("#' . $windowId . ' #eventStartButtonsGroup").on("click touchstart", "[data-start-day]", function (event){
 
 							event.preventDefault();
 
@@ -1045,8 +1033,8 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 								oCurrentDateWithoutTime = new Date(oCurrentDate.getFullYear(), oCurrentDate.getMonth(), oCurrentDate.getDate()),
 
 								// Текущая дата-время начала события
-								//oCurrentStartDate = new Date(+$("#" + cellId).attr("start_timestamp")),
-								oCurrentStartDate = new Date(+$("#" + cellId).attr("start_timestamp") - timeZoneOffset),
+								//oCurrentStartDate = new Date(+$("#' . $windowId . ' #" + cellId).attr("start_timestamp")),
+								oCurrentStartDate = new Date(+$("#' . $windowId . ' #" + cellId).attr("start_timestamp") - timeZoneOffset),
 
 								// Текущая дата начала события без времени
 								oCurrentStartDateWithoutTime = new Date(oCurrentStartDate.getFullYear(), oCurrentStartDate.getMonth(), oCurrentStartDate.getDate()),
@@ -1063,9 +1051,9 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 
 							var	newStartCell = +oCurrentDateWithoutTime + (oCurrentStartDate - oCurrentStartDateWithoutTime) + millisecondsDay * koef, // левая граница ползунка
 								newStartRuler = ($(\'#' . $windowId . ' input[name="all_day"]\').prop("checked")
-									? (+oNewStartDateWithoutTime  - 3600 * 1000)
+									? (+oNewStartDateWithoutTime - 3600 * 1000)
 									: (newStartCell - millisecondsDay / 2 )) + timeZoneOffset, //левая граница полосы прокрутки
-								newStopCell = newStartCell + getDurationMilliseconds(\'' . $windowId .'\'); //duration * durationMillisecondsKoef,
+								newStopCell = newStartCell + getDurationMilliseconds(\'' . $windowId . '\'); //duration * durationMillisecondsKoef,
 
 								timeCellOptions = {
 									"_id": cellId,
@@ -1079,19 +1067,19 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 							// Изменяем положение ползунка
 							jTimeSlider.TimeSlider("edit", timeCellOptions);
 
-							var eventStartButtonsGroup = $("#eventStartButtonsGroup");
+							var eventStartButtonsGroup = $("#' . $windowId . ' #eventStartButtonsGroup");
 
 							eventStartButtonsGroup.data("clickStartButton", true);
 
-							//setStartAndDeadline(newStartCell - timeZoneOffset, newStopCell - timeZoneOffset, \'' . $windowId .'\');
-							setStartAndDeadline(newStartCell, newStopCell, \'' . $windowId .'\');
+							//setStartAndDeadline(newStartCell - timeZoneOffset, newStopCell - timeZoneOffset, \'' . $windowId . '\');
+							setStartAndDeadline(newStartCell, newStopCell, \'' . $windowId . '\');
 
 							eventStartButtonsGroup.removeData("clickStartButton");
 						});
 
 
 
-						$(".page-body").on("mouseup touchend", function (){
+						$("#' . $windowId . ' .page-body").on("mouseup touchend", function (){
 
 									jTimeSlider.data({"timeCellMouseDown": false});
 
@@ -1131,10 +1119,9 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 						)
 
 
-						jTimeSlider.on(
-								"mousedown touchstart", "#t" + cellId, function (event){
+						jTimeSlider.on("mousedown touchstart", "#' . $windowId . ' #t" + cellId, function (event){
 
-									jTimeSlider.data({"timeCellMouseDown": true, "timeCellStartTimestamp": $("#" + cellId).attr("start_timestamp")});
+									jTimeSlider.data({"timeCellMouseDown": true, "timeCellStartTimestamp": $("#' . $windowId . ' #" + cellId).attr("start_timestamp")});
 								}
 							)
 							.on({
@@ -1161,8 +1148,8 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 								oNewTimestampStartEvent,
 								oNewTimestampEndEvent,
 								startTimestampRuler = 0,
-								oOriginalDateStartEvent = new Date($(\'#' . $windowId .' input[name="start"]\').parent().data("DateTimePicker").date()),
-								oOriginalDateEndEvent = new Date($(\'#' . $windowId .' input[name="deadline"]\').parent().data("DateTimePicker").date()),
+								oOriginalDateStartEvent = new Date($(\'#' . $windowId . ' input[name="start"]\').parent().data("DateTimePicker").date()),
+								oOriginalDateEndEvent = new Date($(\'#' . $windowId . ' input[name="deadline"]\').parent().data("DateTimePicker").date()),
 								$this = $(this);
 
 							$this.data("clickAllDay", true);
@@ -1203,7 +1190,7 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 							{
 								formatDateTimePicker = "' . Core::$mainConfig['dateTimePickerFormat'] . '";
 
-								// $(\'#' . $windowId .' input[name="start"]\').parent().data("DateTimePicker").date(new Date(oOriginalDateStartEvent.getTime() + 3600 * 1000 * 10));
+								// $(\'#' . $windowId . ' input[name="start"]\').parent().data("DateTimePicker").date(new Date(oOriginalDateStartEvent.getTime() + 3600 * 1000 * 10));
 
 								if (!jTimeSlider.data("originalTimestampStartEvent"))
 								{
@@ -1240,10 +1227,10 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 							// Изменяем положение ползунка
 							jTimeSlider.TimeSlider("edit", timeCellOptions);
 
-							setStartAndDeadline(oNewTimestampStartEvent, oNewTimestampEndEvent, \'' . $windowId .'\');
+							setStartAndDeadline(oNewTimestampStartEvent, oNewTimestampEndEvent, \'' . $windowId . '\');
 
-							$(\'#' . $windowId .' input[name="start"]\').parent().data("DateTimePicker").format(formatDateTimePicker);
-							$(\'#' . $windowId .' input[name="deadline"]\').parent().data("DateTimePicker").format(formatDateTimePicker);
+							$(\'#' . $windowId . ' input[name="start"]\').parent().data("DateTimePicker").format(formatDateTimePicker);
+							$(\'#' . $windowId . ' input[name="deadline"]\').parent().data("DateTimePicker").format(formatDateTimePicker);
 
 							$this.removeData("clickAllDay");
 						});
@@ -1267,7 +1254,7 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 		// Формирование кнопок быстрого переключения даты начала события
 		foreach ($masEventStartButtonTitle as $eventStartDate => $eventStartTitle)
 		{
-			$htmlEventStartButtons .= '<a href="#" data-start-day="' . $startDayNum . '" class="btn' . ((!$this->_object->id && !$startDayNum) || ($eventStartDate == ("'" . Core_Date::sql2date($this->_object->start) . "'")) ?  ' active' : '') . '">' . $eventStartTitle . '</a>';
+			$htmlEventStartButtons .= '<a href="#" data-start-day="' . $startDayNum . '" class="btn' . ((!$this->_object->id && !$startDayNum) || ($eventStartDate == ("'" . Core_Date::sql2date($this->_object->start) . "'")) ? ' active' : '') . '">' . $eventStartTitle . '</a>';
 			$startDayNum++;
 		}
 
@@ -1278,7 +1265,7 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 				<div id="eventStartButtonsGroup" class="btn-group margin-bottom-15">' . $htmlEventStartButtons . '</div>
 			</div>
 			<script>
-				$("#eventStartButtonsGroup").on({
+				$("#' . $windowId . ' #eventStartButtonsGroup").on({
 						"mouseover": function (){
 							!$(this).hasClass("active") && $(this).addClass("btn-default");
 						},
@@ -1350,10 +1337,10 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 		$oAdmin_Form_Entity_Code = Admin_Form_Entity::factory('Code');
 		$oAdmin_Form_Entity_Code->html(
 			'<script>
-				var formatDateTimePicker = $("input[name=\'all_day\']").attr("checked") ? "' . Core::$mainConfig['datePickerFormat'] . '" : "' . Core::$mainConfig['dateTimePickerFormat'] . '";
+				var formatDateTimePicker = $("#' . $windowId . ' input[name=\'all_day\']").attr("checked") ? "' . Core::$mainConfig['datePickerFormat'] . '" : "' . Core::$mainConfig['dateTimePickerFormat'] . '";
 
-				$(\'input[name="start"]\').parent().data("DateTimePicker").format(formatDateTimePicker);
-				$(\'input[name="deadline"]\').parent().data("DateTimePicker").format(formatDateTimePicker);
+				$(\'#' . $windowId . ' input[name="start"]\').parent().data("DateTimePicker").format(formatDateTimePicker);
+				$(\'#' . $windowId . ' input[name="deadline"]\').parent().data("DateTimePicker").format(formatDateTimePicker);
 			</script>'
 		);
 
@@ -1423,7 +1410,7 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 
 		$oMainRow4->add($oDropdownlistEventStatuses);
 
-		$oMainTab->move($this->getField('important')->class('colored-danger')->divAttr(array('class' => 'form-group col-md-3 col-sm-3 col-xs-6  margin-top-21 no-padding-right')), $oMainRow4);
+		$oMainTab->move($this->getField('important')->class('colored-danger')->divAttr(array('class' => 'form-group col-md-3 col-sm-3 col-xs-6 margin-top-21 no-padding-right')), $oMainRow4);
 
 		// Вместо 0 в качестве значения пустая строка
 		/*if (is_null($this->_object->id) || !($this->getField('reminder_value')->value))
@@ -1444,7 +1431,7 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 
 		$oScriptResponsibleEmployees = Admin_Form_Entity::factory('Script')
 			->value('
-				 var eventUsersControlElememt = $("#' . $windowId . '-event_user_id")
+				var eventUsersControlElememt = $("#' . $windowId . '-event_user_id")
 					.data({
 						// templateResultOptions - свойство-объект настроек выпадающего списка
 						// templateResultOptions.excludedItems - массив идентификаторов элеметов, исключаемых из списка
@@ -1458,6 +1445,7 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 						}
 					})
 					.select2({
+						dropdownParent: $("#' . $windowId . '"),
 						placeholder: "",
 						//allowClear: true,
 						//multiple: true,
@@ -1569,7 +1557,8 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 
 			$oScriptSiteusers = Admin_Form_Entity::factory('Script')
 				->value('
-					$("#event_siteuser_id").select2({
+					$("#' . $windowId . ' #event_siteuser_id").select2({
+						dropdownParent: $("#' . $windowId . '"),
 						minimumInputLength: 1,
 						placeholder: "",
 						allowClear: true,
@@ -1602,39 +1591,6 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 			$oMainRow5
 				->add($oSelectSiteusers)
 				->add($oScriptSiteusers);
-		}
-
-		// Если сотрудник является участником дела, но не его создателем, то возможен только просмотр информации о деле.
-		if ($this->_object->id && $iCreatorUserId != $oUser->id)
-		{
-			$oDivTimeSlider
-				->add(
-					Admin_Form_Entity::factory('Div')
-						->class("disabled")
-				);
-
-			$this->getField('name')->disabled('disabled');
-			$this->getField('description')->disabled('disabled');
-			$this->getField('important')->disabled('disabled');
-			$this->getField('start')->disabled('disabled');
-			$this->getField('deadline')->disabled('disabled');
-			$this->getField('duration')->disabled('disabled');
-			$this->getField('all_day')->disabled('disabled');
-			$this->getField('place')->disabled('disabled');
-			// $this->getField('reminder_value')->disabled('disabled');
-			$this->getField('completed')->disabled('disabled');
-			$this->getField('busy')->disabled('disabled');
-
-			$this->getField('result')->disabled('disabled');
-
-			$oDropdownlistEventTypes->disabled(TRUE);
-			$oDropdownlistEventGroups->disabled(TRUE);
-			$oDropdownlistEventStatuses->disabled(TRUE);
-
-			$oSelectSiteusers->disabled('disabled');
-			$oDurationTypes->disabled('disabled');
-			$oSelectReminderTypes->disabled('disabled');
-			$oSelectResponsibleEmployees->disabled('disabled');
 		}
 
 		$aLead_Events = Core::moduleIsActive('Lead')
@@ -1778,6 +1734,39 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 			->move($this->getField('busy')->divAttr(array('class' => 'form-group col-md-2 col-xs-3 margin-top-21 no-padding-right')), $oMainRow6)
 			->move($this->getField('result'), $oMainRow9);
 
+		// Если сотрудник является участником дела, но не его создателем, то возможен только просмотр информации о деле.
+		if ($this->_object->id && $iCreatorUserId != $oUser->id)
+		{
+			$oDivTimeSlider
+				->add(
+					Admin_Form_Entity::factory('Div')
+						->class("disabled")
+				);
+
+			$this->getField('name')->disabled('disabled');
+			$this->getField('description')->disabled('disabled');
+			$this->getField('important')->disabled('disabled');
+			$this->getField('start')->disabled('disabled');
+			$this->getField('deadline')->disabled('disabled');
+			$this->getField('duration')->disabled('disabled');
+			$this->getField('all_day')->disabled('disabled');
+			$this->getField('place')->disabled('disabled');
+			// $this->getField('reminder_value')->disabled('disabled');
+			$this->getField('completed')->disabled('disabled');
+			$this->getField('busy')->disabled('disabled');
+
+			$this->getField('result')->disabled('disabled');
+
+			$oDropdownlistEventTypes->disabled(TRUE);
+			$oDropdownlistEventGroups->disabled(TRUE);
+			$oDropdownlistEventStatuses->disabled(TRUE);
+
+			$oSelectSiteusers->disabled('disabled');
+			//$oDurationTypes->disabled('disabled');
+			$oSelectReminderTypes->disabled('disabled');
+			$oSelectResponsibleEmployees->disabled('disabled');
+		}
+
 		if ($this->_object->event_type_id)
 		{
 			$oMainTab->delete($this->getField('completed'));
@@ -1811,22 +1800,13 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 			)->add(Admin_Form_Entity::factory('Script')
 				->value("
 					$(function(){
-						$('.type-states').on('click', 'label.checkbox-inline', function(e) {
+						$('#{$windowId} .type-states').on('click', 'label.checkbox-inline', function(e) {
 							e.preventDefault();
 
 							var radio = $(this).find('input[type=radio]');
-
-							if (radio.is(':checked'))
-							{
-								radio.prop('checked', false);
-							}
-							else
-							{
-								radio.prop('checked', true);
-							}
+							radio.prop('checked', !radio.is(':checked'));
 						});
-					});
-				")
+					});")
 			);
 		}
 
@@ -1839,12 +1819,12 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 			? '<span class="badge badge-azure">' . count($aEvent_Attachments) . '</span>'
 			: '';
 
-		$countNotes = $this->_object->Event_Notes->getCount()
-			? '<span class="badge badge-palegreen">' . $this->_object->Event_Notes->getCount() . '</span>'
+		$countNotes = ($count = $this->_object->Event_Notes->getCount())
+			? '<span class="badge badge-palegreen">' . $count . '</span>'
 			: '';
 
-		$countEvents = $this->_object->Events->getCount()
-			? '<span class="badge badge-yellow">' . $this->_object->Events->getCount() . '</span>'
+		$countEvents = ($count = $this->_object->Events->getCount())
+			? '<span class="badge badge-yellow">' . $count . '</span>'
 			: '';
 
 		ob_start();
@@ -1886,7 +1866,7 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 						ob_start();
 						$icon_file = '/admin/images/icons/' . (isset(Core::$mainConfig['fileIcons'][$ext]) ? Core::$mainConfig['fileIcons'][$ext] : 'file.gif');
 
-						 Core::factory('Core_Html_Entity_Img')
+						Core::factory('Core_Html_Entity_Img')
 							->src($icon_file)
 							->class('img_line')
 							->execute();
@@ -1920,7 +1900,7 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 					}
 
 					$oAdmin_Form_Entity_Code = Admin_Form_Entity::factory('Code');
-					$oAdmin_Form_Entity_Code->html('<div class="input-group-addon no-padding add-remove-property"><div class="no-padding-left col-lg-12"><div class="btn btn-palegreen" onclick="$.cloneFile(\'' . $windowId .'\'); event.stopPropagation();"><i class="fa fa-plus-circle close"></i></div>
+					$oAdmin_Form_Entity_Code->html('<div class="input-group-addon no-padding add-remove-property"><div class="no-padding-left col-lg-12"><div class="btn btn-palegreen" onclick="$.cloneFile(\'' . $windowId . '\'); event.stopPropagation();"><i class="fa fa-plus-circle close"></i></div>
 						<div class="btn btn-darkorange" onclick="$(this).parents(\'#file\').remove(); event.stopPropagation();"><i class="fa fa-minus-circle close"></i></div>
 						</div>
 						</div>');
@@ -1943,7 +1923,7 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 					<?php
 					Admin_Form_Entity::factory('Div')
 						->controller($this->_Admin_Form_Controller)
-						->id("event-notes")
+						->id("{$windowId}-event-notes")
 						->add(
 							$this->_object->id
 								? $this->_addEventNotes()
@@ -1997,10 +1977,13 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 	protected function _addEvents()
 	{
 		$windowId = $this->_Admin_Form_Controller->getWindowId();
+		$modalWindowId = preg_replace('/[^A-Za-z0-9_-]/', '', Core_Array::getGet('modalWindowId'));
+
+		$targetWindowId = $modalWindowId ? $modalWindowId : $windowId;
 
 		return Admin_Form_Entity::factory('Script')
-			->value("$(function (){
-				$.adminLoad({ path: '/admin/event/index.php', additionalParams: 'show_subs=1&hideMenu=1&parent_id={$this->_object->id}&parentWindowId={$windowId}', windowId: '{$windowId}-related-events' });
+			->value("$(function() {
+				$.adminLoad({ path: '/admin/event/index.php', additionalParams: 'show_subs=1&hideMenu=1&parent_id={$this->_object->id}&parentWindowId={$targetWindowId}', windowId: '{$targetWindowId}-related-events' });
 			});");
 	}
 
@@ -2010,9 +1993,14 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 	 */
 	protected function _addEventNotes()
 	{
+		$windowId = $this->_Admin_Form_Controller->getWindowId();
+		$modalWindowId = preg_replace('/[^A-Za-z0-9_-]/', '', Core_Array::getGet('modalWindowId'));
+
+		$targetWindowId = $modalWindowId ? $modalWindowId : $windowId;
+
 		return Admin_Form_Entity::factory('Script')
-			->value("$(function (){
-				$.adminLoad({ path: '/admin/event/note/index.php', additionalParams: 'event_id=" . $this->_object->id . "', windowId: 'event-notes' });
+			->value("$(function() {
+				$.adminLoad({ path: '/admin/event/note/index.php', additionalParams: 'event_id=" . $this->_object->id . "', windowId: '{$targetWindowId}-event-notes' });
 			});");
 	}
 
@@ -2038,6 +2026,7 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 	protected function _applyObjectProperty()
 	{
 		$oCurrentUser = Core_Auth::getCurrentUser();
+
 		$bAddEvent = is_null($this->_object->id);
 
 		// Значение завершенности дела до применения изменений
@@ -2077,7 +2066,7 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 			$this->_formValues['deadline'] = $this->_formValues['deadline'] . ' 23:59:59';
 		}
 
-		if ($iEventStatusId  = intval(Core_Array::getPost('event_status_id', 0)))
+		if ($iEventStatusId = intval(Core_Array::getPost('event_status_id', 0)))
 		{
 			$oEventStatus = Core_Entity::factory('Event_Status', $iEventStatusId);
 			$oEventStatus->final &&	$this->_formValues['completed']	= 1;
@@ -2409,62 +2398,19 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 	{
 		$oUser = Core_Auth::getCurrentUser();
 
-		$iDealId = intval(Core_Array::getGet('deal_id'));
-		$iLeadId = intval(Core_Array::getGet('lead_id'));
-		$iParentId = intval(Core_Array::getGet('parent_id'));
+		// $windowId = $this->_Admin_Form_Controller->getWindowId();
 
-		$parentWindowId = Core_Array::getGet('parentWindowId');
-
+		// Всегда id_content
 		$sJsRefresh = '<script>
-		$("#calendar").length && $("#calendar").fullCalendar("refetchEvents");
+		$("#id_content #calendar").length && $("#id_content #calendar").fullCalendar("refetchEvents");
 
-		if ($(".kanban-board").length && typeof _windowSettings != \'undefined\') {
-			$(\'#refresh-toggler\').click();
+		if ($("#id_content .kanban-board").length && typeof _windowSettings != \'undefined\') {
+			$(\'#id_content #refresh-toggler\').click();
 		}
 
-		if ($(".timeline-crm").length && typeof _windowSettings != \'undefined\') {
-			$.adminLoad({ path: \'/admin/crm/project/entity/index.php\', additionalParams: \'crm_project_id=' . $this->_object->crm_project_id . '\', windowId: \'' . $parentWindowId . '\' });
-		}';
-
-		if ($parentWindowId)
-		{
-			$windowId = $this->_Admin_Form_Controller->getWindowId();
-			$additionalParams = Core_Str::escapeJavascriptVariable(
-				str_replace(array('"'), array('&quot;'), $this->_Admin_Form_Controller->additionalParams)
-			);
-
-			if ($iParentId)
-			{
-				$sJsRefresh .= '
-				// Refresh related events list
-				if ($("#' . $parentWindowId . '-related-events").length)
-				{
-					$.adminLoad({ path: \'/admin/event/index.php\', additionalParams: \'' . $additionalParams . '\', windowId: \'' . $parentWindowId . '-related-events\' });
-				}';
-			}
-
-			if ($iDealId && Core::moduleIsActive('deal'))
-			{
-				$sJsRefresh .= '
-				// Refresh deal events list
-				if ($("#' . $parentWindowId . '-related-events").length)
-				{
-					$.adminLoad({ path: \'/admin/deal/event/index.php\', additionalParams: \'' . $additionalParams . '\', windowId: \'' . $parentWindowId . '-related-events\' });
-				}';
-			}
-
-			if ($iLeadId && Core::moduleIsActive('lead'))
-			{
-				$sJsRefresh .= '
-				// Refresh lead events list
-				if ($("#' . $parentWindowId . '-related-events").length)
-				{
-					$.adminLoad({ path: \'/admin/lead/event/index.php\', additionalParams: \'' . $additionalParams . '\', windowId: \'' . $parentWindowId . '-related-events\' });
-				}';
-			}
-		}
-
-		$sJsRefresh .= '</script>';
+		if ($("#id_content .timeline-crm").length && typeof _windowSettings != \'undefined\') {
+			$.adminLoad({ path: \'/admin/crm/project/entity/index.php\', additionalParams: \'crm_project_id=' . $this->_object->crm_project_id . '\', windowId: \'id_content\' });
+		}</script>';
 
 		switch ($operation)
 		{
@@ -2480,12 +2426,11 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 					if (!is_null($oEventCreator) && $oEventCreator->id == $oUser->id)
 					{
 						// Заданы ответственные сотрудники
-						if (count($aEventUserId))
+						if (is_array($aEventUserId) && count($aEventUserId))
 						{
 							$bError = TRUE;
 
-							//foreach ($aEventUserId as $key => $sEventUserId)
-							foreach ($aEventUserId as $key => $iEventUserId)
+							foreach ($aEventUserId as $iEventUserId)
 							{
 								//$aTmp = explode('_', $sEventUserId);
 
@@ -2495,8 +2440,8 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 								// Проверяем задан ли создатель дела
 								if ($iEventUserId == $oUser->id)
 								{
-									 $bError = FALSE;
-									 break;
+									$bError = FALSE;
+									break;
 								}
 							}
 
@@ -2550,7 +2495,7 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 
 		if ($this->_object->id)
 		{
-			$aEvent_Users = $this->_object->Event_Users->findAll();
+			$aEvent_Users = $this->_object->Event_Users->findAll(FALSE);
 
 			foreach ($aEvent_Users as $oEvent_User)
 			{
@@ -2563,90 +2508,26 @@ class Event_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 			$iCreatorUserId = $oUser->id;
 		}
 
+		// Кнопки
+		$oAdmin_Form_Entity_Buttons = parent::_addButtons();
+
+		// Удаляем "Удалить"
 		if ($this->_object->id && $iCreatorUserId != $oUser->id)
 		{
-			// Кнопки
-			$oAdmin_Form_Entity_Buttons = Admin_Form_Entity::factory('Buttons');
+			$aButtons = $oAdmin_Form_Entity_Buttons->getChildren();
 
-			$sOperaion = $this->_Admin_Form_Controller->getOperation();
-			$sOperaionSufix = $sOperaion == 'modal'
-				? 'Modal'
-				: '';
-
-			if ($sOperaionSufix == '')
+			foreach ($aButtons as $key => $oButton)
 			{
-				// Кнопка Назад
-				$oAdmin_Form_Entity_Button_Back = Admin_Form_Entity::factory('Button')
-					->name('back')
-					->class('btn btn-yellow')
-					->value(Core::_('Event.back'))
-					->onclick(
-						$this->_Admin_Form_Controller->getAdminLoadAjax($this->_Admin_Form_Controller->getPath(), NULL, NULL, '')
-					);
+				if ($oButton->id == 'action-button-delete')
+				{
+					$oAdmin_Form_Entity_Buttons->deleteChild($key);
+				}
 
-				$oAdmin_Form_Entity_Buttons->add($oAdmin_Form_Entity_Button_Back);
+				/*if ($oButton->id == 'action-button-back')
+				{
+					$oButton->onclick = $this->_Admin_Form_Controller->getAdminLoadAjax($this->_Admin_Form_Controller->getPath(), NULL, NULL, '');
+				}*/
 			}
-
-			// Кнопка Применить
-			$oAdmin_Form_Entity_Button_Apply = Admin_Form_Entity::factory('Button')
-				->name('apply')
-				->class('btn btn-palegreen')
-				->type('submit')
-				->value(Core::_('Admin_Form.apply'))
-				->onclick(
-					$this->_Admin_Form_Controller->getAdminSendForm(NULL, 'apply' . $sOperaionSufix)
-				);
-
-			$oAdmin_Form_Entity_Buttons->add($oAdmin_Form_Entity_Button_Apply);
-		}
-		elseif ($this->_object->id && $iCreatorUserId == $oUser->id
-			&& $this->_Admin_Form_Controller->getOperation() == 'modal')
-		{
-			$oAdmin_Form_Entity_Buttons = Admin_Form_Entity::factory('Buttons');
-
-			$sOperaion = $this->_Admin_Form_Controller->getOperation();
-			$sOperaionSufix = $sOperaion == 'modal'
-				? 'Modal'
-				: '';
-
-			// Кнопка Сохранить
-			$oAdmin_Form_Entity_Button_Save = Admin_Form_Entity::factory('Button')
-				->name('save')
-				->class('btn btn-blue')
-				->value(Core::_('admin_form.save'))
-				->onclick(
-					$this->_Admin_Form_Controller->getAdminSendForm(NULL, 'save' . $sOperaionSufix)
-				);
-
-			$oAdmin_Form_Entity_Button_Apply = Admin_Form_Entity::factory('Button')
-				->name('apply')
-				->class('btn btn-palegreen')
-				->type('submit')
-				->value(Core::_('admin_form.apply'))
-				->onclick(
-					$this->_Admin_Form_Controller->getAdminSendForm(NULL, 'apply' . $sOperaionSufix)
-				);
-
-			// $windowId = $this->_Admin_Form_Controller->getWindowId();
-
-			// Кнопка Удалить
-			$oAdmin_Form_Entity_Button_Delete = Admin_Form_Entity::factory('Button')
-				->name('markDeleted')
-				->class('btn btn-darkorange pull-right')
-				->type('submit')
-				->value(Core::_('Admin_Form.delete'))
-				->onclick(
-					"res = confirm('" . Core::_('Admin_Form.confirm_dialog', htmlspecialchars(Core::_('Admin_Form.delete'))) . "'); if (res) {" . $this->_Admin_Form_Controller->getAdminSendForm(NULL, 'markDeleted') . "} else { return false; }"
-				);
-
-			$oAdmin_Form_Entity_Buttons
-				->add($oAdmin_Form_Entity_Button_Save)
-				->add($oAdmin_Form_Entity_Button_Apply)
-				->add($oAdmin_Form_Entity_Button_Delete);
-		}
-		else
-		{
-			$oAdmin_Form_Entity_Buttons = TRUE;
 		}
 
 		return $oAdmin_Form_Entity_Buttons;

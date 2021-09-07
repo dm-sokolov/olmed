@@ -11,7 +11,8 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @author Hostmake LLC
  * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
-class Calendar_Module extends Core_Module{
+class Calendar_Module extends Core_Module
+{
 	/**
 	 * Module version
 	 * @var string
@@ -22,7 +23,7 @@ class Calendar_Module extends Core_Module{
 	 * Module date
 	 * @var date
 	 */
-	public $date = '2021-02-16';
+	public $date = '2021-08-23';
 
 
 	/**
@@ -30,6 +31,13 @@ class Calendar_Module extends Core_Module{
 	 * @var string
 	 */
 	protected $_moduleName = 'calendar';
+
+	protected $_options = array(
+		'entityLimit' => array(
+			'type' => 'int',
+			'default' => 5
+		)
+	);
 
 	/**
 	 * Constructor.
@@ -44,7 +52,7 @@ class Calendar_Module extends Core_Module{
 				->controller('Calendar_Caldav_Command_Controller');
 		}
 	}
-	
+
 	/**
 	 * Get Module's Menu
 	 * @return array

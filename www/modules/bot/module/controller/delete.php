@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Bot
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Bot_Module_Controller_Delete extends Admin_Form_Action_Controller
 {
@@ -19,18 +19,36 @@ class Bot_Module_Controller_Delete extends Admin_Form_Action_Controller
 	 */
 	public function execute($operation = NULL)
 	{
-		$oBot_Module = Core_Entity::factory('Bot_Module')->getById($this->_object->id);
+		$id = intval($this->_object->id);
 
-		if (!is_null($oBot_Module))
+		if ($id)
 		{
-			$oBot_Module->delete();
+			$oBot_Module = Core_Entity::factory('Bot_Module')->getById($id);
+
+			$sJSUpdateBotCounts = '';
+
+			if (!is_null($oBot_Module))
+			{
+				$oBot_Modules = Core_Entity::factory('Bot_Module');
+
+				$oBot_Modules->queryBuilder()
+					->where('bot_modules.module_id', '=', $oBot_Module->module_id)
+					->where('bot_modules.entity_id', '=', $oBot_Module->entity_id)
+					->where('bot_modules.type', '=', $oBot_Module->type);
+
+				$oBot_Module->delete();
+
+				$countBotModules = $oBot_Modules->getCount(FALSE);
+
+				$windowId = $this->_Admin_Form_Controller->getWindowId();
+
+				$sJSUpdateBotCounts = "var oTabBots = $('#" . $windowId . "').closest('.tab-pane'), tabBotsId = oTabBots.attr('id'), tabBotsBadge = oTabBots.parent('.tab-content').prev().find('a[href=#' + tabBotsId + '] span.badge'); tabBotsBadge.length && tabBotsBadge.text('" . ($countBotModules ? $countBotModules : '') . "');";
+			}
+
+			$this->_Admin_Form_Controller->addMessage(
+				"<script>$('#{$windowId} .bot-modules div#{$id}').parents('.dd').remove(); $.loadBotModuleNestable();" . $sJSUpdateBotCounts . "</script>"
+			);
 		}
-
-		$id = $this->_object->id;
-
-		$this->_Admin_Form_Controller->addMessage(
-			"<script>$('.bot-modules div#{$id}').parents('.dd').remove(); $.loadBotNestable();</script>"
-		);
 
 		return TRUE;
 	}

@@ -15,45 +15,49 @@
 	
 	<xsl:template match="informationsystem_item">
 		
-		<div class="row specialists">
-			<div class="col-lg-3">
-				<!-- Фотогафия к информационному элементу -->
-				<xsl:if test="image_small!=''">
-					<!-- Проверяем задан ли путь к файлу большого изображения -->
-					<xsl:choose>
-						<xsl:when test="image_large!=''">
-							<a href="{dir}{image_large}" target="_blank" data-fancybox="gallery_{informationsystem_id}">
-								<img class="d-flex mr-3 img-thumbnail" src="{dir}{image_small}" />
-							</a>
-						</xsl:when>
-						<xsl:otherwise>
-							<img class="d-flex mr-3 img-thumbnail" src="{dir}{image_small}" />
-						</xsl:otherwise>
-					</xsl:choose>
-				</xsl:if>
-			</div>
-			<div class="specialists__text col-lg-9">
-				<xsl:choose>
-					<xsl:when test="property_value[tag_name='alt-h1']/value !=''">
-						<h1 class="mt-0"><xsl:value-of disable-output-escaping="yes" select="property_value[tag_name='alt-h1']/value"/></h1>
-					</xsl:when>
-					<xsl:otherwise>
-						<h1 class="mt-0"><xsl:value-of select="name"/></h1>
-					</xsl:otherwise>
-				</xsl:choose>
-				
-				<div class="mb-3">
-					<xsl:choose>
-						<xsl:when test="text !=''">
-							<xsl:value-of disable-output-escaping="yes" select="text"/>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:value-of disable-output-escaping="yes" select="description"/>
-						</xsl:otherwise>
-					</xsl:choose>
+		<div class="specialists">
+			<xsl:choose>
+				<xsl:when test="property_value[tag_name='alt-h1']/value !=''">
+					<h1 class=""><xsl:value-of disable-output-escaping="yes" class="specialists__title" select="property_value[tag_name='alt-h1']/value"/></h1>
+				</xsl:when>
+				<xsl:otherwise>
+					<h1 class=""><xsl:value-of select="name"/></h1>
+				</xsl:otherwise>
+			</xsl:choose>
+			<!-- Фотогафия к информационному элементу -->
+			<div class="specialists__content">
+				<div class="specialists__images">
+					<div class="specialists__main-img">
+						
+						<xsl:if test="image_small!=''">
+							<!-- Проверяем задан ли путь к файлу большого изображения -->
+							<xsl:choose>
+								<xsl:when test="image_large!=''">
+									<a href="{dir}{image_large}" target="_blank" data-fancybox="gallery_{informationsystem_id}">
+										<div style="background-image: url('{dir}{image_large}')" class="main-img"></div>
+									</a>
+								</xsl:when>
+								<xsl:otherwise>
+									<img class="img-thumbnail" src="{dir}{image_small}" />
+								</xsl:otherwise>
+							</xsl:choose>
+						</xsl:if>
+					</div>
 				</div>
-				<xsl:variable name="doctor" select="name"></xsl:variable>
-				<button class="btn btn-primary mb-3" onclick="$.showXslTemplate('/callback/', 83, 357, ' ', '{$doctor}'); return false;">Запись к врачу</button>
+				<div class="specialists__text">
+					<div class="">
+						<xsl:choose>
+							<xsl:when test="text !=''">
+								<xsl:value-of disable-output-escaping="yes" select="text"/>
+							</xsl:when>
+							<xsl:otherwise>
+								<xsl:value-of disable-output-escaping="yes" select="description"/>
+							</xsl:otherwise>
+						</xsl:choose>
+					</div>
+					<xsl:variable name="doctor" select="name"></xsl:variable>
+					<button class="btn btn-primary" onclick="$.showXslTemplate('/callback/', 86, 357, ' ', '{$doctor}'); return false;">Записаться на прием</button>
+				</div>
 			</div>
 		</div>
 		

@@ -44,5 +44,7 @@ return array(
 	'show_phone_types' => 'Типи телефонів',
 	'show_address_types' => 'Типи адрес',
 	'show_socials' => 'Соціальні мережі',
-	'show_messengers' => 'Месенджери'
+	'show_messengers' => 'Месенджери',
+	'sorting' => 'Сортування',
+	'apply_success' => 'Елемент успішно змінено!',
 );

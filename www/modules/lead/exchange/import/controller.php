@@ -39,7 +39,7 @@ class Lead_Exchange_Import_Controller extends Core_Servant_Properties
 		// Путь к картинкам
 		'imagesPath',
 		// Действие с существующими лидами:
-		// 1 - обновить существующие  элементы
+		// 1 - обновить существующие элементы
 		// 2 - не обновлять существующие элементы
 		'importAction'
 	);

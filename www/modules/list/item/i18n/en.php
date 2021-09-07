@@ -13,6 +13,7 @@ return array(
 	'sorting' => 'Sort',
 	'description' => 'List item description',
 	'active' => 'Active',
+	'color' => 'Color',
 	'edit_success' => 'List item modified successfully.',
 	'add_lists_items_error' => 'List element with this value already exists!',
 	'changeStatus_success' => 'Information modified successfully.',

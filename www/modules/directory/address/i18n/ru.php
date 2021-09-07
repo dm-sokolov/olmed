@@ -1,13 +1,5 @@
 <?php
-/**
- * Directory Address
- *
- * @package HostCMS
- * @subpackage Directory
- * @version 6.x
- * @author Hostmake LLC
- * @copyright © 2005-2018 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
- */
+
 return array(
 	'addresses' => 'Адреса',
 	'type_address' => 'Тип',
@@ -17,4 +9,6 @@ return array(
 	'address_country' => 'Страна',
 	'address_postcode' => 'Индекс',
 	'address_city' => 'Город',
+	'latitude' => 'Широта',
+	'longitude' => 'Долгота',
 );

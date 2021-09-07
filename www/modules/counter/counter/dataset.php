@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Counter
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Counter_Counter_Dataset extends Admin_Form_Dataset
 {
@@ -18,7 +18,7 @@ class Counter_Counter_Dataset extends Admin_Form_Dataset
 	 * @var int
 	 */
 	protected $_count = NULL;
-	
+
 	/**
 	 * Cache config, /modules/core/config/cache.php
 	 * @var array
@@ -49,17 +49,13 @@ class Counter_Counter_Dataset extends Admin_Form_Dataset
 	}
 
 	/**
-	 * Dataset objects list
-	 * @var array
-	 */
-	protected $_objects = array();
-
-	/**
 	 * Load objects
 	 * @return array
 	 */
 	public function load()
 	{
+		!is_array($this->_objects) && $this->_getCounter();
+
 		return array_slice($this->_objects, $this->_offset, $this->_limit);
 	}
 
@@ -106,7 +102,8 @@ class Counter_Counter_Dataset extends Admin_Form_Dataset
 	 */
 	public function getObject($primaryKey)
 	{
-		!count($this->_objects) && $this->_getCounter();
+		!is_array($this->_objects) && $this->_getCounter();
+
 		return isset($this->_objects[$primaryKey])
 			? $this->_objects[$primaryKey]
 			: $this->_newObject();

@@ -5,7 +5,7 @@
  * @package HostCMS
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 require_once('../../../bootstrap.php');
 
@@ -30,7 +30,9 @@ $oAdmin_Form_Controller
 	->path($sAdminFormAction)
 	->title(Core::_('Lead_Note.lead_notes_title'))
 	->pageTitle(Core::_('Lead_Note.lead_notes_title'))
-	->Admin_View('Admin_Internal_View')
+	->Admin_View(
+		Admin_View::getClassName('Admin_Internal_View')
+	)
 	->addView('note', 'Lead_Controller_Note')
 	->view('note');
 

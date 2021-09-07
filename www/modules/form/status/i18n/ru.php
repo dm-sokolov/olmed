@@ -6,7 +6,7 @@
  * @subpackage Form
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2018 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 return array(
 	'model_name' => 'Статусы форм',
@@ -19,7 +19,7 @@ return array(
 	'color' => 'Цвет',
 	'description' => 'Описание',
 	'sorting' => 'Порядок сортировки',
-	'edit_success'  => 'Информация о статусе форм изменена!',
+	'edit_success' => 'Информация о статусе форм изменена!',
 	'copy_success' => 'Статус форм успешно скопирован!',
 	'markDeleted_success' => 'Статус форм успешено удален!',
 	'markDeleted_error' => 'Ошибка! Статус форм не удален!',

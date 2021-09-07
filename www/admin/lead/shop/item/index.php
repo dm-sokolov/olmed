@@ -5,7 +5,7 @@
  * @package HostCMS
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 require_once('../../../../bootstrap.php');
 
@@ -31,8 +31,9 @@ $oAdmin_Form_Controller
 	->path($sAdminFormAction)
 	->title(Core::_('Lead_Shop_Item.lead_shop_items_title'))
 	->pageTitle(Core::_('Lead_Shop_Item.lead_shop_items_title'))
-	->Admin_View('Admin_Internal_View')
-	;
+	->Admin_View(
+		Admin_View::getClassName('Admin_Internal_View')
+	);
 
 $oAdmin_Form_Controller->addExternalReplace('{lead_id}', $oLead->id);
 
@@ -64,9 +65,9 @@ if (is_null(Core_Array::getGet('hideMenu')))
 									<input type="hidden" id="shop_item_rate" name="shop_item_rate" value="0"/>
 								</div>
 								<script type="text/javascript">
-									$(\'#shop_item_name\').autocompleteShopItem({ shop_id: ' . $oShop->id . ', shop_currency_id: ' . $oShop->shop_currency_id . ' }, function(event, ui) {
-										$(\'#shop_item_id\').val(typeof ui.item.id !== \'undefined\' ? ui.item.id : 0);
-										$(\'#shop_item_rate\').val(typeof ui.item.rate !== \'undefined\' ? ui.item.rate : 0);
+									$(\'#' . $windowId . ' #shop_item_name\').autocompleteShopItem({ shop_id: ' . $oShop->id . ', shop_currency_id: ' . $oShop->shop_currency_id . ' }, function(event, ui) {
+										$(\'#' . $windowId . ' #shop_item_id\').val(typeof ui.item.id !== \'undefined\' ? ui.item.id : 0);
+										$(\'#' . $windowId . ' #shop_item_rate\').val(typeof ui.item.rate !== \'undefined\' ? ui.item.rate : 0);
 									});
 
 									$(\'#' . $windowId . ' :input\').on(\'click\', function() { mainFormLocker.unlock() });

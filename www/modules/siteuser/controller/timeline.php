@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Siteuser
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Siteuser_Controller_Timeline extends Admin_Form_Controller_View
 {
@@ -107,6 +107,8 @@ class Siteuser_Controller_Timeline extends Admin_Form_Controller_View
 
 		// Устанавливаем ограничения на источники
 		$oAdmin_Form_Controller->setDatasetConditions();
+
+		$oAdmin_Form_Controller->setDatasetLimits();
 
 		$aDatasets = $oAdmin_Form_Controller->getDatasets();
 
@@ -383,7 +385,7 @@ class Siteuser_Controller_Timeline extends Admin_Form_Controller_View
 								}
 							}
 
-							$iDeltaTime  = time() - $iEventCreationTimestamp;
+							$iDeltaTime = time() - $iEventCreationTimestamp;
 
 							// ФИО создателя дела, если оным не является текущий сотрудник
 							if (!$userIsEventCreator && !is_null($oEventCreator))
@@ -443,10 +445,10 @@ class Siteuser_Controller_Timeline extends Admin_Form_Controller_View
 												? $Admin_Word_Value->name
 												: '';
 
-											$href = $oAdmin_Form_Controller->getAdminActionLoadHref($path, $oAdmin_Form_Action->name, NULL, $datasetId, $oTmpEntity->id, $additionalParams, 10, 1, NULL, NULL, 'list');
+											$href = $oAdmin_Form_Controller->getAdminActionLoadHref($path, $oAdmin_Form_Action->name, NULL, $datasetId, intval($oTmpEntity->id), $additionalParams, 10, 1, NULL, NULL, 'list');
 
 
-											$onclick = $oAdmin_Form_Controller->getAdminActionLoadAjax($path, $oAdmin_Form_Action->name, NULL, $datasetId, $oTmpEntity->id, $additionalParams, 10, 1, NULL, NULL, 'list');
+											$onclick = $oAdmin_Form_Controller->getAdminActionLoadAjax($path, $oAdmin_Form_Action->name, NULL, $datasetId, intval($oTmpEntity->id), $additionalParams, 10, 1, NULL, NULL, 'list');
 
 											// Добавляем установку метки для чекбокса и строки + добавлем уведомление, если необходимо
 											if ($oAdmin_Form_Action->confirm)

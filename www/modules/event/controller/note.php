@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Event
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Event_Controller_Note extends Admin_Form_Controller_View
 {
@@ -142,7 +142,7 @@ class Event_Controller_Note extends Admin_Form_Controller_View
 							<span class="input-group-btn padding-left-30 formButtons">
 								<button id="sendForm" class="btn btn-default" type="submit" onclick="<?php echo $oAdmin_Form_Controller
 									->checked(array(0 => array(0)))
-									->getAdminSendForm('addEventNote', NULL, $additionalParams)?>">
+									->getAdminSendForm(array('action' => 'addEventNote', 'additionalParams' => $additionalParams))?>">
 									<i class="fa fa-plus fa-fw"></i>
 								</button>
 							</span>
@@ -218,18 +218,18 @@ class Event_Controller_Note extends Admin_Form_Controller_View
 													? $Admin_Word_Value->name
 													: '';
 
-												$href = $oAdmin_Form_Controller->getAdminActionLoadHref($oAdmin_Form_Controller->getPath(), $oAdmin_Form_Action->name, NULL, 0, $oEntity->id);
+												$href = $oAdmin_Form_Controller->getAdminActionLoadHref($oAdmin_Form_Controller->getPath(), $oAdmin_Form_Action->name, NULL, 0, intval($oEntity->id));
 
 												$onclick = $oAdmin_Form_Action->name == 'edit'
 													? "$.modalLoad({path: '{$oAdmin_Form_Controller->getPath()}', action: 'edit', operation: 'modal', additionalParams: 'hostcms[checked][0][{$oEntity->id}]=1&event_id={$oEvent->id}', windowId: '{$windowId}'}); return false"
-													: $oAdmin_Form_Controller->getAdminActionLoadAjax($oAdmin_Form_Controller->getPath(), $oAdmin_Form_Action->name, NULL, 0, $oEntity->id);
+													: $oAdmin_Form_Controller->getAdminActionLoadAjax($oAdmin_Form_Controller->getPath(), $oAdmin_Form_Action->name, NULL, 0, intval($oEntity->id));
 
 												// Добавляем установку метки для чекбокса и строки + добавлем уведомление, если необходимо
 												if ($oAdmin_Form_Action->confirm)
 												{
 													$onclick = "res = confirm('".Core::_('Admin_Form.confirm_dialog', htmlspecialchars($name))."'); if (!res) { $('#{$windowId} #row_0_{$oEntity->id}').toggleHighlight(); } else {{$onclick}} return res;";
 												}
-												?><a onclick="<?php echo htmlspecialchars($onclick)?>" href="<?php echo htmlspecialchars($href)?>" title="<?php echo htmlspecialchars($name)?>"><i class="<?php echo htmlspecialchars($oAdmin_Form_Action->icon)?>"></i></a><?php
+												?><a onclick="mainFormLocker.unlock(); <?php echo htmlspecialchars($onclick)?>" href="<?php echo htmlspecialchars($href)?>" title="<?php echo htmlspecialchars($name)?>"><i class="<?php echo htmlspecialchars($oAdmin_Form_Action->icon)?>"></i></a><?php
 											}
 										}
 										?>

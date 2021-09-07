@@ -91,4 +91,11 @@ return array(
 
 	'move_title' => 'Transfer properties',
 	'move_dir_id' => 'Parent dir',
+
+	'option_recursive_properties' => 'Allow recursive properties',
+	'option_add_list_items' => 'Add values for list properties to XML',
+
+	'indexing' => 'Index',
+	'changeIndexing_success' => 'Property indexing status changed successfully.',
+	'changeIndexing_error' => 'An error occurred while changing the indexing status of a property.',
 );

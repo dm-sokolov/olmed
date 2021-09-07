@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Company
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Company_Department_User_Controller_Delete extends Admin_Form_Action_Controller
 {
@@ -20,9 +20,8 @@ class Company_Department_User_Controller_Delete extends Admin_Form_Action_Contro
 	 */
 	public function execute($sOperation = NULL)
 	{
-		if (!is_null($sOperation) && $sOperation == 'deleteUserFromDepartment')
+		if (!is_null($sOperation) && $sOperation == 'deleteUserFromDepartment' && $this->_object->id)
 		{
-
 			$iDepartmentId = intval(Core_Array::getGet('department_id'));
 			$iCompanyPostId = intval(Core_Array::getGet('company_post_id'));
 			$oUser = Core_Entity::factory('User', $this->_object->id);

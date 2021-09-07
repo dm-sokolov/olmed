@@ -23,11 +23,22 @@ class Comment_Module extends Core_Module
 	 * Module date
 	 * @var date
 	 */
-	public $date = '2021-02-16';
+	public $date = '2021-08-23';
 
 	/**
 	 * Module name
 	 * @var string
 	 */
 	protected $_moduleName = 'comment';
+
+	protected $_options = array(
+		'gradeStep' => array(
+			'type' => 'int',
+			'default' => 1
+		),
+		'gradeLimit' => array(
+			'type' => 'int',
+			'default' => 5
+		)
+	);
 }

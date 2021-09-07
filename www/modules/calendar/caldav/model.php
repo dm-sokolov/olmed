@@ -97,30 +97,6 @@ class Calendar_Caldav_Model extends Core_Entity
 
 	protected function _createICalendar($oEntity)
 	{
-		/*
-		array(1) {
-		  [0]=>
-		  object(stdClass)#178 (8) {
-			["id"]=>
-			string(7) "189_100"
-			["title"]=>
-			string(6) "fsdfsd"
-			["path"]=>
-			string(22) "/admin/event/index.php"
-			["textColor"]=>
-			string(7) "#262626"
-			["borderColor"]=>
-			string(7) "#a0d468"
-			["start"]=>
-			string(25) "2017-12-06T08:00:09+03:00"
-			["allDay"]=>
-			bool(false)
-			["end"]=>
-			string(25) "2017-12-06T13:48:09+03:00"
-		  }
-		}
-		*/
-
 		$start = Core_Date::gmdate("Ymd\THis\Z", Core_Date::datetime2timestamp($oEntity->start));
 		$end = isset($oEntity->end)
 			? Core_Date::gmdate("Ymd\THis\Z", Core_Date::datetime2timestamp($oEntity->end))

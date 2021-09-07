@@ -14,14 +14,14 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * - addForbiddenTags(array('description', 'vendor')) массив тегов, запрещенных к передаче в генерируемый YML.
  * - cdata(array('description')) массив тегов, передаваемых с форматированием в виде блока символьных данных — CDATA, по умолчанию array(). Если длина кода превышает установленные лимиты, будет произведено удаление тегов и сокращение текста до установленных лимитов.
  * - removeForbiddenTag(name) удалить тег из списка запрещенных к передаче в генерируемый YML.
- * - outlets(array()) массив соответствия ID склада в системе и ID точки продаж в Яндекс.Маркет.
- * - paymentMethod(array('CASH_ON_DELIVERY' => 1, 'CARD_ON_DELIVERY' => 1, 'YANDEX' => 5)) массив соответствия способов оплаты (CASH_ON_DELIVERY, CARD_ON_DELIVERY, YANDEX) и ID платежных систем в системе управления.
  * - modifications(TRUE|FALSE) экспортировать модификации, по умолчанию TRUE.
+ * - rootItems(TRUE|FALSE) экспортировать корневые товары, по умолчанию FALSE.
  * - groupModifications(TRUE|FALSE) группировать модификации (атрибут group_id у offer, используется только в категориях Одежда, обувь и аксессуары, Мебель, Косметика, парфюмерия и уход, Детские товары, Аксессуары для портативной электроники), по умолчанию FALSE.
  * - recommended(TRUE|FALSE) экспортировать рекомендованные товары, по умолчанию FALSE.
  * - checkAvailable(TRUE|FALSE) проверять остаток на складе, по умолчанию TRUE. Если FALSE, то товар будет выгружаться доступным назвисимо от остатка на складе.
  * - checkRest(TRUE|FALSE) не экспортировать товары с нулевым остатком, по умолчанию FALSE. Если TRUE, то товар будет выгружаться только при наличии остатка на складе.
  * - deliveryOptions(TRUE|FALSE) условия доставки, по умолчанию TRUE. У самого магазина должно быть указано хотя бы одно условие доставки.
+ * - model('ADV'|'DBS'|'FBY'|'FBY+'|'FBS') модель размещения на Маркете, влияет на выгружаемые теги, по умолчанию не задана.
  * - type('offer'|'vendor.model'|'book'|'audiobook'|'artist.title'|'tour'|'event-ticket') тип товара, по умолчанию 'offer'
  * - onStep(3000) количество товаров, выбираемых запросом за 1 шаг, по умолчанию 500
  * - stdOut() поток вывода, может использоваться для записи результата в файл. По умолчанию Core_Out_Std
@@ -29,6 +29,10 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * - delay() временная задержка в микросекундах, используется на виртульных хостингах с ограничнием на ресурсы в единицу времени, по умолчанию 0. значение 10000 - 0,01 секунда.
  * - mode('between'|'offset') вариант перебора элементов, по умолчанию 'between'. Если у вас большая разница между идентификаторами товаров или групп, выберите 'offset'.
  * - priceMode('item'|'shop') режим формирования цен, по умолчанию 'item'. Если необходимо выгружать товары в валюте магазина, укажите 'shop'.
+ * - outlets(array()) [Покупка на Яндекс.Маркете] массив соответствия ID склада в системе и ID точки продаж в Яндекс.Маркет.
+ * - paymentMethod(array('YANDEX' => 17, 'APPLE_PAY' => 18, 'GOOGLE_PAY' => 19, 'CARD_ON_DELIVERY' => 2, 'CASH_ON_DELIVERY' => 1)) [Покупка на Яндекс.Маркете] массив соответствия способов оплаты ('YANDEX', 'APPLE_PAY', 'GOOGLE_PAY', 'CARD_ON_DELIVERY', 'CASH_ON_DELIVERY') и ID платежных систем в системе управления.
+ * - token(string) [Покупка на Яндекс.Маркете] токен
+ * - request(string) [Покупка на Яндекс.Маркете] данные запроса, если заданы, то используются вместо присланного запроса
  * - utm_source() определяет рекламодателя, например, market
  * - utm_medium() определяет рекламный или маркетинговый канал (цена за клик, баннер, рассылка по электронной почте).
  *
@@ -74,11 +78,13 @@ class Shop_Controller_YandexMarket extends Core_Controller
 		'outlets',
 		'paymentMethod',
 		'modifications',
+		'rootItems',
 		'groupModifications',
 		'recommended',
 		'checkAvailable',
 		'checkRest',
 		'deliveryOptions',
+		'model',
 		'type',
 		'onStep',
 		'protocol',
@@ -88,6 +94,7 @@ class Shop_Controller_YandexMarket extends Core_Controller
 		'mode',
 		'priceMode',
 		'token',
+		'request',
 		'utm_source',
 		'utm_medium',
 		//'pattern',
@@ -328,7 +335,7 @@ class Shop_Controller_YandexMarket extends Core_Controller
 
 		$this->itemsProperties = $this->modifications = $this->deliveryOptions = $this->checkAvailable = TRUE;
 
-		$this->groupModifications = $this->recommended = $this->checkRest = $this->outlets = FALSE;
+		$this->groupModifications = $this->rootItems = $this->recommended = $this->checkRest = $this->outlets = FALSE;
 
 		$this->paymentMethod = $this->cdata = $this->itemsForbiddenProperties = array();
 
@@ -340,7 +347,7 @@ class Shop_Controller_YandexMarket extends Core_Controller
 		$this->mode = 'between';
 		$this->priceMode = 'item';
 
-		$this->additionalImages = NULL;
+		$this->model = $this->additionalImages = NULL;
 
 		$this->stdOut = new Core_Out_Std();
 		$this->_Shop_Item_Controller = new Shop_Item_Controller();
@@ -485,16 +492,23 @@ class Shop_Controller_YandexMarket extends Core_Controller
 			'UAH',
 		);
 
+		/* https://yandex.ru/support/partnermarket-catalog/catalog-smb/restrictions.html
+		Ограничения для моделей ADV и DBS
+		В формате YML не поддерживается элемент currencies с информацией о валютах магазина и курсах конвертации. Рекомендуется не указывать его в файле.
+		Основной валютой магазина будет валюта его страны (по модели DBS могут подключаться только российские магазины, поэтому их основная валюта — российский рубль). Если для товара указана другая валюта (элемент currencyId в формате YML, поле Валюта в личном кабинете), цена будет пересчитываться в основную валюту по курсу центрального банка страны магазина. На Маркете пользователь увидит цену в валюте своей страны, пересчитанную по курсу ее центрального банка из основной валюты. */
 		foreach ($aShop_Currencies as $oShop_Currency)
 		{
 			// В режиме товара выводим все валюты, в режиме валюты магазина - только валюту магазина
-			if (trim($oShop_Currency->code) != '' && in_array($oShop_Currency->code, $aCurrenciesCodes) && $this->priceMode == 'item'
+			if (trim($oShop_Currency->code) != '' && in_array($oShop_Currency->code, $aCurrenciesCodes)
+					&& $this->priceMode == 'item'
+					&& $this->model != 'ADV' && $this->model != 'DBS'
 				|| $oShop_Currency->id == $oShop->shop_currency_id
 			)
 			{
-				$this->write('<currency id="' . Core_Str::xml($oShop_Currency->code) . '" rate="' . Core_Str::xml($oShop_Currency->exchange_rate) .'"'. "/>\n");
+				$this->write('<currency id="' . Core_Str::xml($oShop_Currency->code) . '" rate="' . floatval($oShop_Currency->exchange_rate) .'"'. "/>\n");
 			}
 		}
+
 		$this->write('</currencies>'. "\n");
 
 		return $this;
@@ -581,6 +595,10 @@ class Shop_Controller_YandexMarket extends Core_Controller
 
 			$iCount = count($aShop_Groups);
 
+			// Delete BETWEEN() and deleted = 1
+			$this->mode == 'between'
+				&& $this->_Shop_Groups->queryBuilder()->deleteLastWhere()->deleteLastWhere();
+
 			// Delay execution
 			$this->delay && $iCount && usleep($this->delay);
 		}
@@ -638,9 +656,8 @@ class Shop_Controller_YandexMarket extends Core_Controller
 		$iFrom = 0;
 
 		do {
-			$this->_setShopItems();
-
 			$this->mode == 'between'
+				// deleteLastWhere() see below
 				? $this->_Shop_Items->queryBuilder()->where('shop_items.id', 'BETWEEN', array($iFrom + 1, $iFrom + $this->onStep))
 				: $this->_Shop_Items->queryBuilder()->offset($iFrom)->limit($this->onStep);
 
@@ -648,7 +665,7 @@ class Shop_Controller_YandexMarket extends Core_Controller
 
 			foreach ($aShop_Items as $oShop_Item)
 			{
-				if (isset($this->_aCategoriesId[$oShop_Item->shop_group_id]))
+				if (isset($this->_aCategoriesId[$oShop_Item->shop_group_id]) || $oShop_Item->shop_group_id == 0 && $this->rootItems)
 				{
 					if ($this->modifications && $this->groupModifications)
 					{
@@ -656,7 +673,7 @@ class Shop_Controller_YandexMarket extends Core_Controller
 					}
 
 					// Если отключена группировка groupModifications или нет модификаций, то основной товар показывается
-					if ($oShop_Item->price > 0 && (!$this->groupModifications || $oShop_Item->Modifications->getCount() == 0))
+					if ($oShop_Item->price > 0 && (!$this->groupModifications || $oShop_Item->Modifications->getCount(FALSE) == 0))
 					{
 						$this->_showOffer($oShop_Item);
 					}
@@ -709,6 +726,10 @@ class Shop_Controller_YandexMarket extends Core_Controller
 
 			// Delay execution
 			$this->delay && $iCount && usleep($this->delay);
+
+			// Delete BETWEEN() and deleted = 1
+			$this->mode == 'between'
+				&& $this->_Shop_Items->queryBuilder()->deleteLastWhere()->deleteLastWhere();
 		}
 		while ($this->mode == 'between' ? $iFrom < $maxId : $iCount);
 
@@ -757,8 +778,6 @@ class Shop_Controller_YandexMarket extends Core_Controller
 			? ' cbid="' . Core_Str::xml($oShop_Item->yandex_market_cid) . '"'
 			: '';*/
 
-		$available = !$this->checkAvailable || $oShop_Item->getRest() > 0 ? 'true' : 'false';
-
 		$sType = $this->type != 'offer'
 			? ' type="' . Core_Str::xml($this->type) . '"'
 			: '';
@@ -767,7 +786,11 @@ class Shop_Controller_YandexMarket extends Core_Controller
 			? ' group_id="' . $this->_currentModificationGroupId . '"'
 			: '';
 
-		$this->write('<offer id="' . $oShop_Item->id . '"'. $tag_bid . /*$tag_cbid . */$sType . $sGroupId . " available=\"{$available}\">\n");
+		$sAvailable = $this->model != 'ADV'
+			? ' available="' . (!$this->checkAvailable || $oShop_Item->getRest() > 0 ? 'true' : 'false') . '"'
+			: '';
+
+		$this->write('<offer id="' . $oShop_Item->id . '"'. $tag_bid . /*$tag_cbid . */$sType . $sGroupId . $sAvailable . ">\n");
 
 		return $this;
 	}
@@ -795,18 +818,21 @@ class Shop_Controller_YandexMarket extends Core_Controller
 		) . '</url>'. "\n");
 
 		/* Определяем цену со скидкой */
-		switch ($this->priceMode)
+		/* Ограничения для моделей ADV и DBS
+		В формате YML не поддерживается элемент currencies с информацией о валютах магазина и курсах конвертации. */
+		if ($this->priceMode == 'shop' || $this->model == 'ADV' || $this->model == 'DBS')
 		{
-			case 'item':
-				$aPrices = $this->_Shop_Item_Controller->calculatePriceInItemCurrency($oShop_Item->price, $oShop_Item);
-			break;
-			case 'shop':
-				$aPrices = $this->_Shop_Item_Controller->calculatePrice($oShop_Item->price, $oShop_Item);
-			break;
-			default:
-				throw new Core_Exception("Wrong priceMode '%priceMode'",
-					array('%priceMode' => $this->priceMode)
-				);
+			$aPrices = $this->_Shop_Item_Controller->calculatePrice($oShop_Item->price, $oShop_Item);
+		}
+		elseif ($this->priceMode == 'item')
+		{
+			$aPrices = $this->_Shop_Item_Controller->calculatePriceInItemCurrency($oShop_Item->price, $oShop_Item);
+		}
+		else
+		{
+			throw new Core_Exception("Wrong priceMode '%priceMode'",
+				array('%priceMode' => $this->priceMode)
+			);
 		}
 
 		/* Цена */
@@ -861,14 +887,16 @@ class Shop_Controller_YandexMarket extends Core_Controller
 		}
 
 		/* PICTURE */
+		$aPictures = array();
+
 		// Если модификация с пустым изображением и включено копирование groupModifications, то берем изображение основного товара.
 		if ($this->groupModifications && $oShop_Item->modification_id && $oShop_Item->image_large == '')
 		{
-			$this->write('<picture>' . $this->protocol . '://' . Core_Str::xml($this->_siteAlias->name . $oShop_Item->Modification->getLargeFileHref()) . '</picture>'. "\n");
+			$aPictures[] = $this->protocol . '://' . Core_Str::xml($this->_siteAlias->name . $oShop_Item->Modification->getLargeFileHref());
 		}
 		elseif ($oShop_Item->image_large != '')
 		{
-			$this->write('<picture>' . $this->protocol . '://' . Core_Str::xml($this->_siteAlias->name . $oShop_Item->getLargeFileHref()) . '</picture>'. "\n");
+			$aPictures[] = $this->protocol . '://' . Core_Str::xml($this->_siteAlias->name . $oShop_Item->getLargeFileHref());
 		}
 
 		$oEntity = $this->groupModifications && $oShop_Item->modification_id
@@ -891,11 +919,18 @@ class Shop_Controller_YandexMarket extends Core_Controller
 					{
 						if ($oProperty_Value->file != '')
 						{
-							$this->write('<picture>' . $this->protocol . '://' . Core_Str::xml($this->_siteAlias->name . $oEntity->getItemHref()) . $oProperty_Value->file . '</picture>'. "\n");
+							$aPictures[] = $this->protocol . '://' . Core_Str::xml($this->_siteAlias->name . $oEntity->getItemHref()) . Core_Str::xml($oProperty_Value->file);
 						}
 					}
 				}
 			}
+		}
+
+		// Не более 10 <picture> для товара
+		$aPictures = array_slice($aPictures, 0, 10);
+		foreach ($aPictures as $sPicture)
+		{
+			$this->write('<picture>' . $sPicture . '</picture>'. "\n");
 		}
 
 		/* Delivery options */
@@ -962,7 +997,8 @@ class Shop_Controller_YandexMarket extends Core_Controller
 		}
 
 		/* sales_notes */
-		if (!isset($this->_forbiddenTags['sales_notes']))
+		// При размещении по модели DBS (продажи с доставкой магазина) элемент не поддерживается.
+		if (!isset($this->_forbiddenTags['sales_notes']) && $this->model != 'DBS')
 		{
 			$sales_notes = $oShop_Item->yandex_market_sales_notes != ''
 				? trim($oShop_Item->yandex_market_sales_notes)
@@ -1007,17 +1043,25 @@ class Shop_Controller_YandexMarket extends Core_Controller
 			$this->write('<dimensions>' . $sDimensions . '</dimensions>'. "\n");
 		}
 
+		// Возможность заказать товар на Маркете: 1 — товар можно заказать на Маркете. 0 — товар можно заказать только на сайте магазина. Значение по умолчанию: 1.
+		$cpa = $this->model != 'ADV'
+			? $oShop_Item->cpa
+			: 0;
+
 		/* cpa */
-		!isset($this->_forbiddenTags['cpa']) && $this->write('<cpa>' . $oShop_Item->cpa .  '</cpa>' . "\n");
+		// https://yandex.ru/support/partnermarket-dsbs/offers.html#offers__cpa
+		/* Алкоголь, лекарственные средства и товары, подлежащие маркировке, с кодами идентификации из системы «Честный ЗНАК» не удастся разместить по модели DBS (продажи с доставкой магазина). Поэтому для них элемент всегда принимает значение 0. */
+		!isset($this->_forbiddenTags['cpa'])
+			&& $this->write('<cpa>' . $cpa . '</cpa>' . "\n");
 
 		/* weight */
 		if (!isset($this->_forbiddenTags['weight']) && $oShop_Item->weight > 0)
 		{
-			$this->write('<weight>' . $oShop_Item->weight .  '</weight>' . "\n");
+			$this->write('<weight>' . Core_Str::convertWeight(rtrim($oShop->Shop_Measure->name, '. '), 'kg', $oShop_Item->weight) . '</weight>' . "\n");
 		}
 
 		/* rec */
-		if (!isset($this->_forbiddenTags['weight']) && $this->recommended)
+		if (!isset($this->_forbiddenTags['rec']) && $this->recommended)
 		{
 			$aTmp = array();
 
@@ -1038,6 +1082,19 @@ class Shop_Controller_YandexMarket extends Core_Controller
 			{
 				$this->write('<rec>' . implode(',', $aTmp) . '</rec>'. "\n");
 			}
+		}
+
+		/* Модель DBS https://yandex.ru/support/partnermarket-dsbs/orders/stocks.html
+		https://yandex.ru/support/partnermarket/offers.html
+		В YML-файле
+		Добавьте и заполните элемент count для всех товаров в вашем прайс-листе.
+		Если товара нет в наличии, в элементе count укажите 0. Не оставляйте элемент пустым — в этом случае товар продолжит размещаться на Маркете.
+		Внимание. При размещении по модели ADV (реклама) элемент не поддерживается.
+		*/
+		if (!isset($this->_forbiddenTags['count']) && $this->model != 'ADV')
+		{
+			// 10.00 => 10
+			$this->write('<count>' . floatval($oShop_Item->getRest(FALSE)) . '</count>'. "\n");
 		}
 
 		$this->itemsProperties
@@ -1338,7 +1395,9 @@ class Shop_Controller_YandexMarket extends Core_Controller
 		{
 			$sTagName = 'param';
 
-			$unit = $oProperty->type == 0 && $oProperty->Shop_Item_Property->shop_measure_id
+			// https://yandex.ru/support/partnermarket/elements/param.html
+			// В атрибуте unit задайте единицы измерения (для числовых параметров, опционально)
+			$unit = in_array($oProperty->type, array(0, 11)) && $oProperty->Shop_Item_Property->shop_measure_id
 				? ' unit="' . Core_Str::xml($oProperty->Shop_Item_Property->Shop_Measure->name) . '"'
 				: '';
 
@@ -1450,6 +1509,7 @@ class Shop_Controller_YandexMarket extends Core_Controller
 			switch ($path)
 			{
 				case '/cart':
+				case '/stocks':
 				case '/order/accept':
 				case '/order/status':
 				case '/order/shipment/status':
@@ -1482,7 +1542,7 @@ class Shop_Controller_YandexMarket extends Core_Controller
 
 	/**
 	 * Current site alias
-	 * @var string
+	 * @var object
 	 */
 	protected $_siteAlias = NULL;
 
@@ -1491,6 +1551,17 @@ class Shop_Controller_YandexMarket extends Core_Controller
 	 * @var string
 	 */
 	protected $_shopPath = NULL;
+
+	/**
+	 * Get request (php://input or $this->request)
+	 * @return string
+	 */
+	public function getRequest()
+	{
+		return is_null($this->request)
+			? file_get_contents('php://input')
+			: $this->request;
+	}
 
 	/**
 	 * Show built data
@@ -1505,6 +1576,9 @@ class Shop_Controller_YandexMarket extends Core_Controller
 		{
 			case '/cart':
 				$this->responseCart();
+			break;
+			case '/stocks':
+				$this->responseStocks();
 			break;
 			case '/order/accept':
 				$this->orderAccept();
@@ -1528,7 +1602,7 @@ class Shop_Controller_YandexMarket extends Core_Controller
 	 */
 	public function responseCart()
 	{
-		$body = file_get_contents('php://input');
+		$body = $this->getRequest();
 
 		$aResponse = json_decode($body, TRUE);
 
@@ -1540,19 +1614,39 @@ class Shop_Controller_YandexMarket extends Core_Controller
 			0 => 'NO_VAT',
 			10 => 'VAT_10',
 			18 => 'VAT_18',
+			20 => 'VAT_20',
 		);
 
+		// https://yandex.ru/dev/market/partner-dsbs/doc/dg/reference/post-cart.html#examples
 		if (isset($aResponse['cart']))
 		{
-			$sCurrency = $oShop->Shop_Currency->code == 'RUB'
-				? 'RUR'
-				: $oShop->Shop_Currency->code;
+			if ($this->model == 'DBS')
+			{
+				$sCurrency = $oShop->Shop_Currency->code == 'RUB'
+					? 'RUR'
+					: $oShop->Shop_Currency->code;
 
-			$aAnswer['cart']['deliveryCurrency'] = strval($sCurrency);
-			$aAnswer['cart']['taxSystem'] = strval($this->sno);
+				$aAnswer['cart']['currency'] = strval($sCurrency);
+				$aAnswer['cart']['deliveryCurrency'] = strval($sCurrency);
+				$aAnswer['cart']['taxSystem'] = strval($this->sno);
 
-			isset($aResponse['cart']['delivery']['address']['postcode'])
-				&& $postcode = $aResponse['cart']['delivery']['address']['postcode'];
+				/*isset($aResponse['cart']['delivery']['address']['postcode'])
+					&& $postcode = $aResponse['cart']['delivery']['address']['postcode'];*/
+			}
+
+			$aShop_Items = array();
+			if (isset($aResponse['cart']['items']))
+			{
+				foreach ($aResponse['cart']['items'] as $aItem)
+				{
+					$oShop_Item = Core_Entity::factory('Shop_Item')->getById($aItem['offerId']);
+
+					if (!is_null($oShop_Item))
+					{
+						$aShop_Items[$oShop_Item->id] = $oShop_Item;
+					}
+				}
+			}
 
 			$aRegion = isset($aResponse['cart']['delivery']['region'])
 				? $this->_getRegion($aResponse['cart']['delivery']['region'])
@@ -1586,6 +1680,67 @@ class Shop_Controller_YandexMarket extends Core_Controller
 							->shop_country_location_city_id($oShop_Country_Location_City->id)
 							->setUp();
 
+						//////////////////////////
+						$totalAmount = $totalQuantity = $totalTax = $totalWeight = $totalVolume
+							//= $totalQuantityForPurchaseDiscount = $totalAmountForPurchaseDiscount
+							= 0;
+
+						//$aDiscountPrices = array();
+						$oShop_Item_Controller = new Shop_Item_Controller();
+
+						if (isset($aResponse['cart']['items']))
+						{
+							foreach ($aResponse['cart']['items'] as $aItem)
+							{
+								if (isset($aShop_Items[$aItem['offerId']]))
+								{
+									$oShop_Item = $aShop_Items[$aItem['offerId']];
+
+									//$bSkipItem = $oShop_Item->type == 4;
+
+									$totalQuantity += $aItem['count'];
+
+									// Количество для скидок от суммы заказа рассчитывается отдельно
+									/*$oShop_Item->apply_purchase_discount && !$bSkipItem
+										&& $totalQuantityForPurchaseDiscount += $oShop_Cart->quantity;*/
+
+									$oShop_Item_Controller->count($aItem['count']);
+									$aPrices = $oShop_Item_Controller->getPrices($oShop_Item);
+									$totalAmount += $aPrices['price_discount'] * $aItem['count'];
+
+									/*if ($bPositionDiscount && !$bSkipItem)
+									{
+										// По каждой единице товара добавляем цену в массив, т.к. может быть N единиц одого товара
+										for ($i = 0; $i < $aItem['count']; $i++)
+										{
+											$aDiscountPrices[] = $aPrices['price_discount'];
+										}
+									}
+
+									// Сумма для скидок от суммы заказа рассчитывается отдельно
+									$oShop_Item->apply_purchase_discount && !$bSkipItem
+										&& $totalAmountForPurchaseDiscount += $aPrices['price_discount'] * $aItem['count'];*/
+
+									$totalTax += $aPrices['tax'] * $aItem['count'];
+
+									$totalWeight += $oShop_Item->weight * $aItem['count'];
+
+									$totalVolume += Shop_Controller::convertSizeMeasure($oShop_Item->length, $oShop->size_measure, 0)
+										* Shop_Controller::convertSizeMeasure($oShop_Item->width, $oShop->size_measure, 0)
+										* Shop_Controller::convertSizeMeasure($oShop_Item->height, $oShop->size_measure, 0);
+								}
+							}
+						}
+
+						$oShop_Delivery_Controller_Show->totalAmount = $totalAmount;
+						//$oShop_Delivery_Controller_Show->totalQuantityForPurchaseDiscount = $totalQuantityForPurchaseDiscount;
+						//$oShop_Delivery_Controller_Show->totalAmountForPurchaseDiscount = $totalAmountForPurchaseDiscount;
+						$oShop_Delivery_Controller_Show->totalWeight = $totalWeight;
+						$oShop_Delivery_Controller_Show->volume = $totalVolume;
+
+						//$totalDiscountPrices = $aDiscountPrices;
+						//////////////////////////
+
 						// Выбираем все типы доставки для данного магазина
 						$aShop_Deliveries = $oShop->Shop_Deliveries->getAllByActive(1);
 
@@ -1595,54 +1750,69 @@ class Shop_Controller_YandexMarket extends Core_Controller
 							2 => 'DELIVERY',
 						);
 
+						$bDelivery = FALSE;
+
 						foreach ($aShop_Deliveries as $oShop_Delivery)
 						{
-							$aShop_Delivery_Conditions = $oShop_Delivery_Controller_Show->getShopDeliveryConditions($oShop_Delivery);
+							try {
+								$aShop_Delivery_Conditions = $oShop_Delivery_Controller_Show->getShopDeliveryConditions($oShop_Delivery);
 
-							foreach ($aShop_Delivery_Conditions as $key => $object)
-							{
-								// Не самовывоз или заданы outlets
-								if ($aDeliveryMethods[$oShop_Delivery->method] != 'PICKUP' || $this->outlets)
+								foreach ($aShop_Delivery_Conditions as $object)
 								{
-									$aTmpDelivery = array(
-										'id' => $object->id,
-										'price' => floatval($object->price),
-										'paymentAllow' => FALSE,
-										'type' => $aDeliveryMethods[$oShop_Delivery->method],
-										'serviceName' => $object->name,
-										'vat' => isset($object->shop_tax_id)
-											? Core_Array::get($aVat, $object->Shop_Tax->rate, 'NO_VAT')
-											: 'NO_VAT',
-										/*'paymentMethods' => array(
-										  "CARD_ON_DELIVERY",
-										  "CASH_ON_DELIVERY",
-										  "YANDEX" // Предоплата
-										)*/
-									);
-
-									if ($aDeliveryMethods[$oShop_Delivery->method] == 'PICKUP')
+									// Не самовывоз или заданы outlets
+									// Указывается, если выбран самовывоз ("type": "PICKUP"). Укажите в параметре outlets идентификаторы всех пунктов самовывоза.
+									if ($aDeliveryMethods[$oShop_Delivery->method] != 'PICKUP' || $this->model == 'DBS' && $this->outlets)
 									{
-										$aShop_Warehouses = $oShop->Shop_Warehouses->getAllById(array_keys($this->outlets), FALSE, 'IN');
+										$bDelivery = TRUE;
 
-										foreach ($aShop_Warehouses as $oShop_Warehouse)
+										if ($this->model == 'DBS')
 										{
-											$aTmpDelivery['outlets'][] = array(
-												'id' => intval($this->outlets[$oShop_Warehouse->id])
+											$aTmpDelivery = array(
+												'id' => $object->id,
+												'price' => floatval($object->price),
+												'paymentAllow' => FALSE,
+												'type' => $aDeliveryMethods[$oShop_Delivery->method],
+												'serviceName' => isset($object->name) ? $object->name : 'Доставка',
+												/*'vat' => isset($object->shop_tax_id)
+													? Core_Array::get($aVat, $object->Shop_Tax->rate, 'NO_VAT')
+													: 'NO_VAT'*/
 											);
+
+											if (strlen($this->sno))
+											{
+												$aTmpDelivery['vat'] = isset($object->shop_tax_id)
+													? Core_Array::get($aVat, $object->Shop_Tax->rate, 'NO_VAT')
+													: 'NO_VAT';
+											}
+
+											if ($aDeliveryMethods[$oShop_Delivery->method] == 'PICKUP')
+											{
+												$aShop_Warehouses = $oShop->Shop_Warehouses->getAllById(array_keys($this->outlets), FALSE, 'IN');
+
+												foreach ($aShop_Warehouses as $oShop_Warehouse)
+												{
+													$aTmpDelivery['outlets'][] = array(
+														'id' => intval($this->outlets[$oShop_Warehouse->id])
+													);
+												}
+											}
+
+											$aTmpDelivery['dates'] = array(
+												'fromDate' => date('d-m-Y', strtotime('+' . $oShop_Delivery->days_from . ' day')),
+												'toDate' => date('d-m-Y', strtotime('+' . $oShop_Delivery->days_to . ' day'))
+											);
+
+											$aDeliveries[] = $aTmpDelivery;
 										}
 									}
-
-									$aTmpDelivery['dates'] = array(
-										'fromDate' => date('d-m-Y', strtotime('+' . $oShop_Delivery->days_from . ' day')),
-										'toDate' => date('d-m-Y', strtotime('+' . $oShop_Delivery->days_to . ' day'))
-									);
-
-									$aDeliveries[] = $aTmpDelivery;
 								}
-							}
+							} catch (Exception $e) {}
 						}
 
-						$aAnswer['cart']['deliveryOptions'] = $aDeliveries;
+						if ($this->model == 'DBS')
+						{
+							$aAnswer['cart']['deliveryOptions'] = $aDeliveries;
+						}
 					}
 					else
 					{
@@ -1657,14 +1827,13 @@ class Shop_Controller_YandexMarket extends Core_Controller
 			{
 				foreach ($aResponse['cart']['items'] as $aItem)
 				{
-					$oShop_Item = Core_Entity::factory('Shop_Item')->getById($aItem['offerId']);
-
-					if (!is_null($oShop_Item))
+					if (isset($aShop_Items[$aItem['offerId']]))
 					{
+						$oShop_Item = $aShop_Items[$aItem['offerId']];
+
 						$aShop_Warehouse_Items = $oShop_Item->Shop_Warehouse_Items->findAll(FALSE);
 
 						$count = 0;
-
 						foreach ($aShop_Warehouse_Items as $oShop_Warehouse_Item)
 						{
 							if ($oShop_Warehouse_Item->Shop_Warehouse->active)
@@ -1673,23 +1842,35 @@ class Shop_Controller_YandexMarket extends Core_Controller
 							}
 						}
 
-						$aAnswer['cart']['items'][] = array(
-							'count' => $count,
-							'delivery' => count($aDeliveries) > 0,
+						$aTmp = array(
 							'feedId' => $aItem['feedId'],
 							'offerId' => strval($oShop_Item->id),
-							'price' => floatval($oShop_Item->price),
-							'vat' => Core_Array::get($aVat, $oShop_Item->Shop_Tax->rate, 'NO_VAT')
+							'count' => $count,
+							// 'delivery' => count($aDeliveries) > 0
+							'delivery' => $bDelivery
+							// 'price' => floatval($oShop_Item->price),
+							// 'vat' => Core_Array::get($aVat, $oShop_Item->Shop_Tax->rate, 'NO_VAT')
 						);
+
+						if ($this->model == 'DBS')
+						{
+							$aTmp['price'] = floatval($oShop_Item->price);
+
+							if (strlen($this->sno))
+							{
+								$aTmp['vat'] = Core_Array::get($aVat, $oShop_Item->Shop_Tax->rate, 'NO_VAT');
+							}
+						}
+
+						$aAnswer['cart']['items'][] = $aTmp;
 					}
 				}
 			}
 
-			$aAnswer['cart']['paymentMethods'] = array(
-			  "CARD_ON_DELIVERY",
-			  "CASH_ON_DELIVERY",
-			  // "YANDEX" // Предоплата
-			);
+			if ($this->model == 'DBS' && is_array($this->paymentMethod))
+			{
+				$aAnswer['cart']['paymentMethods'] = array_keys($this->paymentMethod);
+			}
 		}
 
 		Core::showJson($aAnswer);
@@ -1714,9 +1895,53 @@ class Shop_Controller_YandexMarket extends Core_Controller
 	 * Order accept
 	 * @return array
 	 */
+	public function responseStocks()
+	{
+		$body = $this->getRequest();
+
+		$aResponse = json_decode($body, TRUE);
+
+		$oShop = $this->getEntity();
+
+		$aAnswer = array();
+		$aAnswer['skus'] = array();
+
+		if (isset($aResponse['skus']))
+		{
+			foreach ($aResponse['skus'] as $sku)
+			{
+				// Отрезаем префикс + дефис
+				$shop_item_id = preg_replace('/.*?\-/', '', $sku);
+
+				$oShop_Item = $oShop->Shop_Items->getById($shop_item_id);
+
+				if (!is_null($oShop_Item))
+				{
+					$aAnswer['skus'][] = array(
+						'sku' => $sku,
+						'warehouseId' => $aResponse['warehouseId'],
+						'items' => array(
+							array(
+								'type' => 'FIT',
+								'count' => intval($oShop_Item->getRest()),
+								'updatedAt' => date('c')
+							)
+						)
+					);
+				}
+			}
+		}
+
+		Core::showJson($aAnswer);
+	}
+
+	/**
+	 * Order accept
+	 * @return array
+	 */
 	public function orderAccept()
 	{
-		$body = file_get_contents('php://input');
+		$body = $this->getRequest();
 
 		$aResponse = json_decode($body, TRUE);
 
@@ -1744,7 +1969,7 @@ class Shop_Controller_YandexMarket extends Core_Controller
 	 */
 	public function orderStatus()
 	{
-		$body = file_get_contents('php://input');
+		$body = $this->getRequest();
 
 		$aResponse = json_decode($body, TRUE);
 
@@ -1765,9 +1990,13 @@ class Shop_Controller_YandexMarket extends Core_Controller
 	 * Create order
 	 * @param array $aOrderParams
 	 * @return object
+	 * @hostcms-event Shop_Controller_YandexMarket.onAfterCreateOrderItem
+	 * @hostcms-event Shop_Controller_YandexMarket.onAfterCreateOrder
 	 */
 	public function createOrder(array $aOrderParams)
 	{
+		// https://yandex.ru/dev/market/partner-dsbs/doc/dg/reference/post-order-accept.html
+
 		$oShop = $this->getEntity();
 
 		$oShop_Order = Core_Entity::factory('Shop_Order');
@@ -1775,33 +2004,82 @@ class Shop_Controller_YandexMarket extends Core_Controller
 			->shop_id($oShop->id)
 			->shop_currency_id($oShop->shop_currency_id);
 
-		$aRegion = isset($aOrderParams['delivery']['region'])
-			? $this->_getRegion($aOrderParams['delivery']['region'])
-			: array();
-
-		if (count($aRegion))
+		if (isset($aOrderParams['delivery']))
 		{
-			$oShop_Country = Core_Entity::factory('Shop_Country')->getByName($aRegion[0]);
+			$aRegion = isset($aOrderParams['delivery']['region'])
+				? $this->_getRegion($aOrderParams['delivery']['region'])
+				: array();
 
-			if (!is_null($oShop_Country))
+			if (count($aRegion))
 			{
-				$city = end($aRegion);
+				$oShop_Country = Core_Entity::factory('Shop_Country')->getByName($aRegion[0]);
 
-				$oShop_Country_Location_Cities = Core_Entity::factory('Shop_Country_Location_City');
-				$oShop_Country_Location_Cities->queryBuilder()
-					->select('shop_country_location_cities.*')
-					->join('shop_country_locations', 'shop_country_locations.id', '=', 'shop_country_location_cities.shop_country_location_id')
-					->where('shop_country_locations.shop_country_id', '=', $oShop_Country->id)
-					->limit(1);
-
-				$oShop_Country_Location_City = $oShop_Country_Location_Cities->getByName($city);
-
-				if ($oShop_Country_Location_City)
+				if (!is_null($oShop_Country))
 				{
-					$oShop_Order
-						->shop_country_id($oShop_Country->id)
-						->shop_country_location_id($oShop_Country_Location_City->shop_country_location_id)
-						->shop_country_location_city_id($oShop_Country_Location_City->id);
+					$city = end($aRegion);
+
+					$oShop_Country_Location_Cities = Core_Entity::factory('Shop_Country_Location_City');
+					$oShop_Country_Location_Cities->queryBuilder()
+						->select('shop_country_location_cities.*')
+						->join('shop_country_locations', 'shop_country_locations.id', '=', 'shop_country_location_cities.shop_country_location_id')
+						->where('shop_country_locations.shop_country_id', '=', $oShop_Country->id)
+						->limit(1);
+
+					$oShop_Country_Location_City = $oShop_Country_Location_Cities->getByName($city);
+
+					if ($oShop_Country_Location_City)
+					{
+						$oShop_Order
+							->shop_country_id($oShop_Country->id)
+							->shop_country_location_id($oShop_Country_Location_City->shop_country_location_id)
+							->shop_country_location_city_id($oShop_Country_Location_City->id);
+					}
+				}
+			}
+
+			/* "address":
+			{
+				"postcode": "{string}",
+				"country": "{string}",
+				"city": "{string}",
+				"subway": "{string}",
+				"street": "{string}",
+				"house": "{string}",
+				"block": "{string}",
+				"floor": "{string}"
+			}, */
+			$aTmp = array();
+			$aAddress = Core_Array::get($aOrderParams['delivery'], 'address', array());
+			$oShop_Order->postcode = Core_Array::get($aAddress, 'postcode', '', 'trim');
+			!$oShop_Order->shop_country_id && $aTmp[] = Core_Array::get($aAddress, 'country', '', 'trim');
+			!$oShop_Order->shop_country_location_city_id && $aTmp[] = Core_Array::get($aAddress, 'city', '', 'trim');
+			$aTmp[] = Core_Array::get($aAddress, 'subway', '', 'trim');
+			$aTmp[] = Core_Array::get($aAddress, 'street', '', 'trim');
+			$oShop_Order->house = Core_Array::get($aAddress, 'house', '', 'trim');
+
+			$sBlock = Core_Array::get($aAddress, 'block', '', 'trim');
+			if (strlen($sBlock))
+			{
+				$oShop_Order->house .= '/' . $sBlock;
+			}
+
+			$sFloor = Core_Array::get($aAddress, 'floor', '', 'trim');
+			if (strlen($sFloor))
+			{
+				$aTmp[] = 'этаж ' . $sFloor;
+			}
+			$aTmp = array_filter($aTmp, 'strlen');
+			$oShop_Order->address = implode(', ', $aTmp);
+
+			// Передается, только если магазин передал данный идентификатор в ответе на запрос POST /cart, в параметре id, вложенном в deliveryOptions.
+			if (isset($aOrderParams['delivery']['shopDeliveryId']))
+			{
+				$oShop_Delivery_Condition = Core_Entity::factory('Shop_Delivery_Condition')->find($aOrderParams['delivery']['shopDeliveryId']);
+
+				if (!is_null($oShop_Delivery_Condition->id))
+				{
+					$oShop_Order->shop_delivery_id = $oShop_Delivery_Condition->shop_delivery_id;
+					$oShop_Order->shop_delivery_condition_id = $oShop_Delivery_Condition->id;
 				}
 			}
 		}
@@ -1811,6 +2089,8 @@ class Shop_Controller_YandexMarket extends Core_Controller
 		$oShop_Order->shop_payment_system_id = isset($aOrderParams['paymentMethod'])
 			? Core_Array::get($this->paymentMethod, $aOrderParams['paymentMethod'], 0)
 			: 0;
+
+		$oShop_Order->shop_order_status_id = intval($oShop->shop_order_status_id);
 
 		$oShop_Order->save();
 
@@ -1861,12 +2141,17 @@ class Shop_Controller_YandexMarket extends Core_Controller
 					$oShop_Order_Item->marking = $oShop_Item->marking;
 
 					$oShop_Order->add($oShop_Order_Item);
+
+					Core_Event::notify(get_class($this) . '.onAfterCreateOrderItem', $this, array($oShop_Order, $oShop_Order_Item));
 				}
 			}
 		}
 
-		$oShop_Order->invoice = $oShop_Order->id;
-		$oShop_Order->save();
+		$oShop_Order->createInvoice()->save();
+
+		// Еще неизвестно ФИО заказчика, см. updateOrder()
+		
+		Core_Event::notify(get_class($this) . '.onAfterCreateOrder', $this, array($oShop_Order));
 
 		return $oShop_Order;
 	}
@@ -1895,14 +2180,36 @@ class Shop_Controller_YandexMarket extends Core_Controller
 		if (isset($aOrderParams['buyer']))
 		{
 			$oShop_Order
-				->name(isset($aOrderParams['buyer']['firstName']) ? $aOrderParams['buyer']['firstName'] : '')
-				->surname(isset($aOrderParams['buyer']['lastName']) ? $aOrderParams['buyer']['lastName'] : '')
-				->patronymic(isset($aOrderParams['buyer']['middleName']) ? $aOrderParams['buyer']['middleName'] : '')
-				->email($aOrderParams['buyer']['email'])
-				->phone($aOrderParams['buyer']['phone']);
+				->name(Core_Array::get($aOrderParams['buyer'], 'firstName', ''))
+				->surname(Core_Array::get($aOrderParams['buyer'], 'lastName', ''))
+				->patronymic(Core_Array::get($aOrderParams['buyer'], 'middleName', ''))
+				->email(Core_Array::get($aOrderParams['buyer'], 'email', ''))
+				->phone(Core_Array::get($aOrderParams['buyer'], 'phone', ''));
 		}
 
 		$oShop_Order->save();
+		
+		if ($oShop_Order->shop_payment_system_id)
+		{
+			$oShop_Payment_System_Handler = Shop_Payment_System_Handler::factory(
+				Core_Entity::factory('Shop_Payment_System', $oShop_Order->shop_payment_system_id)
+			);
+
+			if ($oShop_Payment_System_Handler)
+			{
+				$oShop_Payment_System_Handler->shopOrder($oShop_Order)
+					->shopOrderBeforeAction(clone $oShop_Order);
+
+				// Создание уведомлений
+				$oShop_Payment_System_Handler->createNotification();
+
+				// Установка XSL-шаблонов в соответствии с настройками в узле структуры
+				$oShop_Payment_System_Handler->setXSLs();
+
+				// Отправка писем клиенту и пользователю
+				$oShop_Payment_System_Handler->send();
+			}
+		}
 
 		Core::showJson('OK');
 	}
@@ -1951,8 +2258,6 @@ class Shop_Controller_YandexMarket extends Core_Controller
 	{
 		$dateTime = Core_Date::timestamp2sql(time());
 
-		$this->write("<promos>\n");
-
 		$oShop = $this->getEntity();
 
 		$oShop_Discounts = $oShop->Shop_Discounts;
@@ -1977,12 +2282,17 @@ class Shop_Controller_YandexMarket extends Core_Controller
 
 		$aShop_Discounts = $oShop_Discounts->findAll(FALSE);
 
-		foreach ($aShop_Discounts as $oShop_Discount)
+		if (count($aShop_Discounts))
 		{
-			$this->_showPromo($oShop_Discount);
-		}
+			$this->write("<promos>\n");
 
-		$this->write("</promos>\n");
+			foreach ($aShop_Discounts as $oShop_Discount)
+			{
+				$this->_showPromo($oShop_Discount);
+			}
+
+			$this->write("</promos>\n");
+		}
 
 		return $this;
 	}
@@ -2103,7 +2413,11 @@ class Shop_Controller_YandexMarket extends Core_Controller
 		$this->write("<version>" . Core_Str::xml(CURRENT_VERSION) . "</version>\n");
 
 		/* Валюты */
-		$this->_currencies();
+		// с 28.07.2021 Яндекс опять требует указывать currencies и приводит его в примерах на страницах
+		// https://yandex.ru/support/partnermarket/export/yml.html
+		// https://yandex.ru/support/partnermarket-dsbs/export/yml.html
+		/*$this->model != 'ADV' && $this->model != 'DBS'
+			&& */$this->_currencies();
 
 		/* Категории */
 		$this->_categories();
@@ -2121,14 +2435,22 @@ class Shop_Controller_YandexMarket extends Core_Controller
 			$this->write('<adult>true</adult>' . "\n");
 		}
 
+		// Возможность заказать товар на Маркете: 1 — товар можно заказать на Маркете. 0 — товар можно заказать только на сайте магазина. Значение по умолчанию: 1.
+		$cpa = $this->model != 'ADV'
+			? $oShop->cpa
+			: 0;
+
 		/* cpa */
-		!isset($this->_forbiddenTags['cpa']) && $this->write('<cpa>' . $oShop->cpa . '</cpa>' . "\n");
+		!isset($this->_forbiddenTags['cpa'])
+			&& $this->write('<cpa>' . $cpa . '</cpa>' . "\n");
 
 		/* Товары */
 		$this->_offers();
 
 		/* Промоакции */
-		$this->_promos();
+		// https://yandex.ru/support/partnermarket-dsbs/elements/promos.html?lang=ru
+		// При размещении по модели DBS (продажи с доставкой продавца) нельзя передавать информацию об акциях.
+		$this->model != 'DBS' && $this->_promos();
 
 		$this->write("</shop>\n");
 		$this->write('</yml_catalog>');

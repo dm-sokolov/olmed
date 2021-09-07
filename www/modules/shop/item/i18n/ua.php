@@ -150,7 +150,6 @@ return array(
 	'input_file_encoding0' => 'Windows-1251',
 	'input_file_encoding1' => 'UTF-8',
 	'import_price_list_parent_group' => "Батьківська група для вивантаження товарів",
-	'import_price_list_producer' => "Виробник товарів",
 	'import_price_list_images_path' => "<acronym title=\"Шлях для зовнішніх файлів, наприклад /upload_images/\">Шлях для зовнішніх файлів</acronym>",
 	'import_price_list_action_items' => "Дія для існуючих товарів",
 	'import_price_action_items0' => "Видалити існуючі товари у всіх групах",
@@ -349,4 +348,8 @@ return array(
 	'certificate_item_header' => 'Сертифікат',
 	'item_type_selection_group_buttons_name_certificate' => "Сертифікат",
 	'create_modification_use_property_name' => 'Використовувати назву властивості',
+
+	'delete_unsent_modifications_by_properties' => 'Видаляти непередані модифікації, створені по властивості',
+	'shortcut' => 'Ярлик',
+	'include_modifications' => 'Враховувати модифікації',
 );

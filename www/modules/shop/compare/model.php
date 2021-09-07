@@ -82,6 +82,23 @@ class Shop_Compare_Model extends Core_Entity
 		return $this;
 	}
 
+		/**
+	 * Show comments rating data in XML
+	 * @var boolean
+	 */
+	protected $_showXmlCommentsRating = FALSE;
+
+	/**
+	 * Add Comments Rating XML to item
+	 * @param boolean $showXmlComments mode
+	 * @return self
+	 */
+	public function showXmlCommentsRating($showXmlCommentsRating = TRUE)
+	{
+		$this->_showXmlCommentsRating = $showXmlCommentsRating;
+		return $this;
+	}
+
 	/**
 	 * Get XML for entity and children entities
 	 * @return string
@@ -120,7 +137,8 @@ class Shop_Compare_Model extends Core_Entity
 			->clearEntities()
 			->showXmlWarehousesItems(TRUE)
 			->showXmlProperties($this->_showXmlProperties)
-			->showXmlModifications($this->_showXmlModifications);
+			->showXmlModifications($this->_showXmlModifications)
+			->showXmlCommentsRating($this->_showXmlCommentsRating);
 
 		// Parent item for modification
 		if ($this->Shop_Item->modification_id)
@@ -135,5 +153,22 @@ class Shop_Compare_Model extends Core_Entity
 			->addEntity($oShop_Item);
 
 		return $this;
+	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event shop_compare.onBeforeGetRelatedSite
+	 * @hostcms-event shop_compare.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Shop->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
 	}
 }

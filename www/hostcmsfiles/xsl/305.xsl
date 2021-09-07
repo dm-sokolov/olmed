@@ -45,22 +45,21 @@
 					</div>
 				</xsl:if>
 			</xsl:when>
+			
 			<xsl:otherwise>
 				<h1><xsl:value-of select="$current_group/name"/><xsl:value-of select="$city" /></h1>
-				
-				<xsl:if test="count(tag) = 0 and count(.//*[@id][parent_id = $group or informationsystem_group_id = $group]) &gt; 0">
-					<div class="gray-gradient padding-15 mb-4">
-						<div class="row">
-							
-							<!--div class="col-sm-4">
-							<div class="padding-15"-->
+				<div class="service-list__wrapper" >
+					<xsl:apply-templates select="$current_group" mode="img"/>
+					
+					<xsl:if test="count(tag) = 0 and count(.//*[@id][parent_id = $group or informationsystem_group_id = $group]) &gt; 0">
+						<div class="service-list">
+							<div class="service-list__item">
+								
 								<xsl:apply-templates select=".//*[@id][parent_id = $group or informationsystem_group_id = $group]" mode="category" />
-								<!--/div>
-							</div-->
+							</div>
 						</div>
-					</div>
-				</xsl:if>
-				
+					</xsl:if>
+				</div>
 				<!-- Описание выводим только на первой странице -->
 				<xsl:if test="page = 0 and $current_group/description != ''">
 					<div><xsl:value-of disable-output-escaping="yes" select="$current_group/description"/></div>
@@ -146,15 +145,13 @@
 	<!-- Шаблон выводит ссылки подгруппы информационного элемента -->
 	<xsl:template match="*" mode="category">
 		<xsl:if  test="not(property_value[tag_name='hide-in-list'] and property_value[tag_name='hide-in-list']/value = 1)">
-			<div class="col-sm-4">
-				<div class="mb-1">
-					<a href="{url}">
-						<i class="fa fa-chevron-circle-right" aria-hidden="true"></i>
-						<xsl:text> </xsl:text>
-						<xsl:value-of select="name"/>
-					</a>
-				</div>
-			</div>
+			<li class="">
+				
+				<a href="{url}">
+					<xsl:text> </xsl:text>
+					<xsl:value-of select="name"/>
+				</a>
+			</li>
 			<!--xsl:if test="position() mod $n = 0 and position() != last()">
 			<xsl:text disable-output-escaping="yes">
 				&lt;/div&gt;
@@ -165,7 +162,9 @@
 		</xsl:if-->
 	</xsl:if>
 </xsl:template>
-
+<xsl:template match="informationsystem_group" mode="img">
+	<img class="service-list__background-image" src="{dir}{image_large}" />
+</xsl:template>
 <!-- Шаблон выводит ссылки подгруппы информационного элемента -->
 <xsl:template match="informationsystem_group" mode="groups">
 	

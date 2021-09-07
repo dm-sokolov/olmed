@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Lead
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Lead_Controller_Note extends Admin_Form_Controller_View
 {
@@ -134,7 +134,7 @@ class Lead_Controller_Note extends Admin_Form_Controller_View
 							<span class="input-group-btn padding-left-30 formButtons">
 								<button id="sendForm" class="btn btn-default" type="submit" onclick="<?php echo $oAdmin_Form_Controller
 									->checked(array(0 => array(0)))
-									->getAdminSendForm('addLeadNote', NULL, $additionalParams)?>">
+									->getAdminSendForm(array('action' => 'addLeadNote', 'additionalParams' => $additionalParams))?>">
 									<i class="fa fa-plus fa-fw"></i>
 								</button>
 							</span>

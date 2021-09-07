@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Shop
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
  class Shop_Discountcard_Bonus_Model extends Core_Entity
 {
@@ -20,6 +20,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
 	protected $_belongsTo = array(
 		'shop_order' => array(),
 		'shop_discountcard' => array(),
+		'shop_discountcard_bonus_type' => array(),
 		'user' => array()
 	);
 
@@ -41,8 +42,6 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
 		{
 			$oUser = Core_Auth::getCurrentUser();
 			$this->_preloadValues['user_id'] = is_null($oUser) ? 0 : $oUser->id;
-			//$this->_preloadValues['datetime'] = Core_Date::timestamp2sql(time());
-			//$this->_preloadValues['expired'] = Core_Date::timestamp2sql(strtotime('+1 week', time()));
 		}
 	}
 
@@ -67,11 +66,13 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
 		{
 			$color = 'default';
 		}
-		elseif($this->datetime <= $datetime && $this->expired >= $datetime && $value) // Бонус доступен и НЕ потрачен
+		// Бонус доступен и НЕ потрачен
+		elseif($this->datetime <= $datetime && $this->expired >= $datetime && floatval($value))
 		{
 			$color = 'palegreen';
 		}
-		else // Бонус доступен и потрачен
+		// Бонус доступен и потрачен
+		else
 		{
 			$color = 'pink';
 		}
@@ -80,6 +81,36 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
 			->class('label label-' . $color)
 			->value($value)
 			->execute();
+	}
+
+	/**
+	 * Backend callback method
+	 * @return string
+	 */
+	public function shop_discountcard_bonus_type_idBackend($oAdmin_Form_Field, $oAdmin_Form_Controller)
+	{
+		ob_start();
+
+		$path = $oAdmin_Form_Controller->getPath();
+
+		$oCore_Html_Entity_Dropdownlist = new Core_Html_Entity_Dropdownlist();
+
+		$additionalParams = Core_Str::escapeJavascriptVariable(
+			str_replace(array('"'), array('&quot;'), $oAdmin_Form_Controller->additionalParams)
+		);
+
+		Core::factory('Core_Html_Entity_Span')
+			->class('padding-left-10')
+			->add(
+				$oCore_Html_Entity_Dropdownlist
+					->value($this->shop_discountcard_bonus_type_id)
+					->options(Shop_Discountcard_Bonus_Type_Controller_Edit::getDropdownlistOptions())
+					->onchange("$.adminLoad({path: '{$path}', additionalParams: '{$additionalParams}', action: 'apply', post: { 'hostcms[checked][0][{$this->id}]': 0, apply_check_0_{$this->id}_fv_{$oAdmin_Form_Field->id}: $(this).find('li[selected]').prop('id') }, windowId: '{$oAdmin_Form_Controller->getWindowId()}'});")
+					->data('change-context', 'true')
+				)
+			->execute();
+
+		return ob_get_clean();
 	}
 
 	/**
@@ -96,5 +127,31 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
 
 			return '<a href="/admin/shop/order/index.php?hostcms[action]=edit&hostcms[checked][0][' . $oShop_Order->id . ']=1&shop_id=' . $oShop_Order->Shop->id . '" onclick="$.adminLoad({path: \'/admin/shop/order/index.php\', action: \'edit\', operation: \'\', additionalParams: \'hostcms[checked][0][' . $oShop_Order->id . ']=1&shop_id=' . $oShop_Order->Shop->id . '\', windowId: \'id_content\'}); return false">' . htmlspecialchars($oShop_Order->invoice) . '</a>';
 		}
+	}
+
+	/**
+	 * Change active
+	 */
+	public function changeActive()
+	{
+		$this->active = 1 - $this->active;
+		return $this->save();
+	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event shop_discountcard_bonus.onBeforeGetRelatedSite
+	 * @hostcms-event shop_discountcard_bonus.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Shop_Discountcard->Shop->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
 	}
 }

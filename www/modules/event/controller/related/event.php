@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Event
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Event_Controller_Related_Event extends Admin_Form_Controller_View
 {
@@ -139,25 +139,20 @@ class Event_Controller_Related_Event extends Admin_Form_Controller_View
 							$sImportantIco = '<i class="fa fa-exclamation-circle ' . ($oEvent->important ? 'red' : 'fa-inactive') . '"></i>';
 
 							$sImportantHtml = $oEvent->checkPermission2ChangeImportant($oUser)
-								? '<a href="' . $oAdmin_Form_Controller->getAdminActionLoadHref($oAdmin_Form_Controller->getPath(), 'changeImportant', NULL, 0, $oEvent->id) . '" onclick="' . $oAdmin_Form_Controller->getAdminActionLoadAjax($oAdmin_Form_Controller->getPath(), 'changeImportant', NULL, 0, $oEvent->id) . '">' . $sImportantIco . '</a>'
+								? '<a href="' . $oAdmin_Form_Controller->getAdminActionLoadHref($oAdmin_Form_Controller->getPath(), 'changeImportant', NULL, 0, intval($oEvent->id)) . '" onclick="mainFormLocker.unlock(); ' . $oAdmin_Form_Controller->getAdminActionLoadAjax($oAdmin_Form_Controller->getPath(), 'changeImportant', NULL, 0, intval($oEvent->id)) . '">' . $sImportantIco . '</a>'
 								: $sImportantIco;
 							?>
 							<tr class="related-event-row">
 								<td class="text-center" width="30px">
-									<a href="<?php echo $oAdmin_Form_Controller->getAdminActionLoadHref($oAdmin_Form_Controller->getPath(), 'changeCompleted', NULL, 0, $oEvent->id);?>" onclick="<?php echo $oAdmin_Form_Controller->getAdminActionLoadAjax($oAdmin_Form_Controller->getPath(), 'changeCompleted', NULL, 0, $oEvent->id)?>"><?php echo $sCompletedIco?></a>
+									<a href="<?php echo $oAdmin_Form_Controller->getAdminActionLoadHref($oAdmin_Form_Controller->getPath(), 'changeCompleted', NULL, 0, intval($oEvent->id))?>" onclick="mainFormLocker.unlock(); <?php echo $oAdmin_Form_Controller->getAdminActionLoadAjax($oAdmin_Form_Controller->getPath(), 'changeCompleted', NULL, 0, intval($oEvent->id))?>"><?php echo $sCompletedIco?></a>
 								</td>
-								<td class="text-center" width="30px">
-									<?php echo $sImportantHtml;?>
-								</td>
-								<td>
-									<?php echo $oEvent->nameBackend(NULL, $oAdmin_Form_Controller)?>
-								</td>
-								<!--<td width="210px">-->
+								<td class="text-center" width="30px"><?php echo $sImportantHtml?></td>
+								<td><?php echo $oEvent->nameBackend(NULL, $oAdmin_Form_Controller)?></td>
 								<td class="hidden-xxs" width="25%">
 									<?php
 									$aEvent_Users =	$oEvent->Users->findAll();
 
-									foreach($aEvent_Users as $oEvent_User)
+									foreach ($aEvent_Users as $oEvent_User)
 									{
 									?>
 									<div class="user-info">
@@ -203,7 +198,8 @@ class Event_Controller_Related_Event extends Admin_Form_Controller_View
 												: '';
 
 											$onclick = $oAdmin_Form_Action->name == 'edit'
-												? "$.modalLoad({path: '{$oAdmin_Form_Controller->getPath()}', action: 'edit', operation: 'modal', additionalParams: 'hostcms[checked][0][{$oEvent->id}]=1&{$additionalParams}', windowId: '{$windowId}'}); return false"
+												// ? "$.modalLoad({path: '{$oAdmin_Form_Controller->getPath()}', action: 'edit', operation: 'modal', additionalParams: 'hostcms[checked][0][{$oEvent->id}]=1&{$additionalParams}', windowId: '{$windowId}'}); return false"
+												? $oAdmin_Form_Controller->getAdminActionModalLoad($oAdmin_Form_Controller->getPath(), $oAdmin_Form_Action->name, 'modal', 0, $oEvent->id, $additionalParams)
 												: $oAdmin_Form_Controller->getAdminActionLoadAjax($oAdmin_Form_Controller->getPath(), $oAdmin_Form_Action->name, NULL, 0, $oEvent->id);
 
 											// Добавляем установку метки для чекбокса и строки + добавлем уведомление, если необходимо
@@ -212,7 +208,7 @@ class Event_Controller_Related_Event extends Admin_Form_Controller_View
 												$onclick = "res = confirm('".Core::_('Admin_Form.confirm_dialog', htmlspecialchars($name))."'); if (!res) { $('#{$windowId} #row_0_{$oEvent->id}').toggleHighlight(); } else {{$onclick}} return res;";
 											}
 											?>
-											<span onclick="<?php echo $onclick?>" title="<?php echo htmlspecialchars($name)?>"><i class="<?php echo htmlspecialchars($oAdmin_Form_Action->icon)?>"></i></span>
+											<span onclick="mainFormLocker.unlock(); <?php echo $onclick?>" title="<?php echo htmlspecialchars($name)?>"><i class="<?php echo htmlspecialchars($oAdmin_Form_Action->icon)?>"></i></span>
 											<?php
 										}
 									}

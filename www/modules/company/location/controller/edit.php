@@ -61,20 +61,18 @@ class Company_Location_Controller_Edit extends Admin_Form_Action_Controller_Type
 
 		$oScript = Admin_Form_Entity::factory('Script')
 			->value("$(function() {
-				$('input[name = company_id]').data({'current_value': " . (intval($this->_object->company_id)) . "});
-				$('#company_department_id').data({'current_value': " . (intval($this->_object->company_department_id)) . "});
+				$('#{$windowId} input[name = company_id]').data({'current_value': " . (intval($this->_object->company_id)) . "});
+				$('#{$windowId} #company_department_id').data({'current_value': " . (intval($this->_object->company_department_id)) . "});
 
 				$.ajaxRequest({
 					path: '/admin/company/department/index.php',
 					context: 'company_department_id',
 					callBack: [$.loadSelectOptionsCallback, function(data){
-
-						var iCompanyDepartmentId = $('input[name = company_id]').val() == $('input[name = company_id]').data('current_value') ? $('#company_department_id').data('current_value') : 0;
-
-						$('#company_department_id').val(iCompanyDepartmentId);
+						var iCompanyDepartmentId = $('#{$windowId} input[name = company_id]').val() == $('#{$windowId} input[name = company_id]').data('current_value') ? $('#{$windowId} #company_department_id').data('current_value') : 0;
+						$('#{$windowId} #company_department_id').val(iCompanyDepartmentId);
 					}],
 					action: 'loadCompanyDepartments',
-					additionalParams: 'company_id=' + $('input[name = company_id]').val() + '&loadDepartments', windowId: '{$windowId}'
+					additionalParams: 'company_id=' + $('#{$windowId} input[name = company_id]').val() + '&loadDepartments', windowId: '{$windowId}'
 				});
 			})");
 
@@ -96,15 +94,14 @@ class Company_Location_Controller_Edit extends Admin_Form_Action_Controller_Type
 
 		$oScriptResponsibleUsers = Admin_Form_Entity::factory('Script')
 			->value('$(function() {
-						$("#responsible_user_id")
-							.selectUser({
-								placeholder: "' . Core::_('Company_Location.start_input') . '",
-								language: "' . Core_i18n::instance()->getLng() . '"
-							});
-
-						$("#responsible_user_id").val("' . $this->_object->responsible_user_id . '").trigger("change.select2");
-					});'
-			);
+				$("#' . $windowId . ' #responsible_user_id").selectUser({
+					placeholder: "' . Core::_('Company_Location.start_input') . '",
+					language: "' . Core_i18n::instance()->getLng() . '",
+					dropdownParent: $("#' . $windowId . '")
+				})
+				.val("' . $this->_object->responsible_user_id . '")
+				.trigger("change.select2");
+			});');
 
 		$oMainRow3
 			->add($oSelectResponsibleUsers)

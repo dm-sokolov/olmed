@@ -51,7 +51,7 @@ class Calendar_Caldav_Command_Controller extends Core_Command_Controller
 						padding: 0px;
 					}
 					body{
-					   text-align: center;
+						text-align: center;
 					}
 					body, html{
 						height: 100%;

@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Advertisement
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Advertisement_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 {
@@ -151,7 +151,6 @@ class Advertisement_Controller_Edit extends Admin_Form_Action_Controller_Type_Ed
 			->divAttr(array('class' => 'form-group col-xs-12 hidden-0 hidden-1 hidden-3'));
 
 		$oAdditionalTab->delete($this->getField('popup_structure_id'));
-
 		$oMainRow7->add($oAdmin_Form_Entity_Select_Popup);
 
 		// Удаляем отображение текущей даты
@@ -165,7 +164,7 @@ class Advertisement_Controller_Edit extends Admin_Form_Action_Controller_Type_Ed
 			->caption(Core::_('Advertisement.sizes_tab'))
 			->name('sizes_tab');
 
-		$this->addTabBefore($oAdmin_Form_Tab_Entity_Lib_Sizes, $oAdditionalTab);
+		$this->addTabAfter($oAdmin_Form_Tab_Entity_Lib_Sizes, $oMainTab);
 
 		$oAdmin_Form_Tab_Entity_Lib_Sizes
 			->add($oSizesRow1 = Admin_Form_Entity::factory('Div')->class('row'))
@@ -183,7 +182,7 @@ class Advertisement_Controller_Edit extends Admin_Form_Action_Controller_Type_Ed
 			->caption(Core::_('Advertisement.shows_tab'))
 			->name('shows_tab');
 
-		$this->addTabBefore($oAdmin_Form_Tab_Entity_Lib_Shows, $oAdditionalTab);
+		$this->addTabAfter($oAdmin_Form_Tab_Entity_Lib_Shows, $oMainTab);
 
 		$oAdmin_Form_Tab_Entity_Lib_Shows
 			->add($oShowsRow1 = Admin_Form_Entity::factory('Div')->class('row'))

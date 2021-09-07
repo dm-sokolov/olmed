@@ -6,7 +6,7 @@
  * @subpackage Lead
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 return array(
 	'model_name' => 'Статусы лидов',
@@ -24,7 +24,7 @@ return array(
 	'type_1' => 'Успешный',
 	'type_2' => 'Неуспешный',
 	'sorting' => 'Порядок сортировки',
-	'edit_success'  => 'Информация о статусе лида изменена!',
+	'edit_success' => 'Информация о статусе лида изменена!',
 	'copy_success' => 'Статус лида успешно скопирован!',
 	'markDeleted_success' => 'Статус лида успешено удален!',
 	'markDeleted_error' => 'Ошибка! Статус лида не удален!',

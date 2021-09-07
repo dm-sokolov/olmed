@@ -6,10 +6,10 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * Core command controller.
  *
  * @package HostCMS
- * @subpackage Core\Command
+ * @subpackage Cloud
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2019 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Cloud_Command_Controller extends Core_Command_Controller
 {
@@ -51,7 +51,7 @@ class Cloud_Command_Controller extends Core_Command_Controller
 						padding: 0px;
 					}
 					body{
-					   text-align: center;
+						text-align: center;
 					}
 					body, html{
 						height: 100%;

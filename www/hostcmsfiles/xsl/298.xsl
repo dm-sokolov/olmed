@@ -24,7 +24,15 @@
 				dataLayer.push({'event': 'form<xsl:value-of select="@id" />.sendMS'});
 				});*/
 				$('#form<xsl:value-of select="@id" />').validate({
-				focusInvalid: true,
+				onfocusout: function(element) {
+				// if ($(element).attr("name") == "email") {
+				//     var pattern = /^\b[A-Z0-9._%-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b$/i
+				//     var value = $(element).val()
+				//     if
+				// }
+				$(element).valid();
+				},
+				focusInvalid: false,
 				errorClass: "input_error",
 				submitHandler: function(form) {
 				$(".modal, .modal-backdrop").remove();
@@ -63,6 +71,10 @@
 				<div class="modal-content">
 					<form name="form{@id}" id="form{@id}" class="validate" method="post">
 						<div class="modal-body">
+							
+							<button type="button" class="modal__close" data-dismiss="modal">
+								<svg height="20px" viewBox="0 0 329.26933 329" width="20px" xmlns="http://www.w3.org/2000/svg"><path d="m194.800781 164.769531 128.210938-128.214843c8.34375-8.339844 8.34375-21.824219 0-30.164063-8.339844-8.339844-21.824219-8.339844-30.164063 0l-128.214844 128.214844-128.210937-128.214844c-8.34375-8.339844-21.824219-8.339844-30.164063 0-8.34375 8.339844-8.34375 21.824219 0 30.164063l128.210938 128.214843-128.210938 128.214844c-8.34375 8.339844-8.34375 21.824219 0 30.164063 4.15625 4.160156 9.621094 6.25 15.082032 6.25 5.460937 0 10.921875-2.089844 15.082031-6.25l128.210937-128.214844 128.214844 128.214844c4.160156 4.160156 9.621094 6.25 15.082032 6.25 5.460937 0 10.921874-2.089844 15.082031-6.25 8.34375-8.339844 8.34375-21.824219 0-30.164063zm0 0"/></svg>
+							</button>
 							<xsl:choose>
 								<xsl:when test="success/node() and success = 1">
 									<div><xsl:value-of disable-output-escaping="yes" select="substring-after(description, '&lt;!-- pagebreak --&gt;')" /></div>
@@ -88,9 +100,10 @@
 									</xsl:choose>
 									
 									<xsl:apply-templates select="form_field" />
-									<div class="form-group">
+									<div class="">
+										<small class="form-text text-danger mb-1">Поля, отмеченные * обязательны для заполнения.</small>
 										<small class="form-text text-muted">
-											<span class="text-danger">Поля, отмеченные * обязательны для заполнения.</span><br />
+											<br />
 										Нажимая кнопку "<xsl:value-of select="button_value" />", я подтверждаю, что даю свое согласие на обработку предоставленных мной данных в соответствии с <a href="/personalnie-dannie/">Политикой обработки персональных данных</a>
 										</small>
 									</div>
@@ -98,11 +111,15 @@
 							</xsl:choose>
 						</div>
 						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
 							<xsl:if test="not(success)">
-								<button type="submit" class="btn btn-primary" name="{button_name}" value="{button_value}"><xsl:value-of select="button_value" /></button>
+								<button type="submit" class="btn btn-primary btn-lg border-radius autofocus-btn" name="{button_name}" value="{button_value}"><xsl:value-of select="button_value" /></button>
 							</xsl:if>
-						</div>
+						</div><script type="text/javascript">
+							<xsl:comment>
+								<xsl:text disable-output-escaping="yes">
+								</xsl:text>
+							</xsl:comment>
+						</script>
 					</form>
 				</div>
 			</div>
@@ -111,15 +128,24 @@
 	
 	<xsl:template match="form_field">
 		<xsl:variable name="placeholder">
-			<xsl:value-of select="value" />
-		<xsl:if test="obligatory = 1"><xsl:text> *</xsl:text></xsl:if>
+			<xsl:text> *</xsl:text>	<xsl:value-of select="value" />
+			<xsl:if test="obligatory = 1"></xsl:if>
+		</xsl:variable>
+		<xsl:variable name="error-mes">
+			
+		<xsl:if test="name = 'name'"> <xsl:text>Напишите имя</xsl:text> </xsl:if>
+		<xsl:if test="name = 'phone'"> <xsl:text>Напишите номер телефона</xsl:text> </xsl:if>
+		<xsl:if test="name = 'vrach'"> <xsl:text>Выберите врача</xsl:text> </xsl:if>
 		</xsl:variable>
 		<!-- Не скрытое поле и не надпись -->
 		<xsl:if test="type != 7 and type != 8">
-			<div class="form-group">
+			
+			<div class="form-group relative">
 				<!-- Текстовые поля -->
 				<xsl:if test="type = 0 or type = 1 or type = 2">
-					<input type="text" name="{name}" size="{size}" placeholder="{$placeholder}" class="form-control">
+					<input type="text" name="{name}" size="{size}"  class="form-control">
+			
+						
 						<xsl:choose>
 							<!-- Поле для ввода пароля -->
 							<xsl:when test="type = 1">
@@ -137,7 +163,11 @@
 						<xsl:if test="obligatory = 1">
 							<xsl:attribute name="class">form-control required</xsl:attribute>
 							<xsl:attribute name="minlength">1</xsl:attribute>
-							<xsl:attribute name="title">Заполните поле <xsl:value-of select="value" /></xsl:attribute>
+							<xsl:attribute name="title"><xsl:choose>
+									<xsl:when test="name = 'name'">Напишите имя</xsl:when>
+									<xsl:when test="name = 'phone'">Напишите номер телефона</xsl:when>
+									<xsl:when test="name = 'vrach'">Выберите врача</xsl:when>
+							</xsl:choose></xsl:attribute>
 						</xsl:if>
 						<xsl:if test="name = 'phone'">
 							<xsl:attribute name="type">tel</xsl:attribute>
@@ -145,14 +175,29 @@
 						<!--xsl:if test="name = 'docname'">
 						<xsl:attribute name="value"><xsl:value-of select="/form/docname"/></xsl:attribute>
 					</xsl:if-->
-				</input>
+				</input><label class="absolute-label" for="{name}"><xsl:text> *</xsl:text>	<xsl:value-of select="value" /> </label>
 				<xsl:if test="name = 'phone'">
 					<script type="text/javascript">
 						<xsl:comment>
 							<xsl:text disable-output-escaping="yes">
 								<![CDATA[
 								$(document).ready(function() {
-								$("input[type='tel']").mask("+7 (999) 999-99-99", {placeholder:"_"});
+								$("input[type='tel']").mask("+7 (999) 999-99-99", {placeholder:"_", completed: function() {
+									console.log($(this))
+								$(this).removeClass("input_error")
+								$(this).next(".input_error").hide()
+								}
+								});
+								$(".form-control").each(function() {
+		var input = $(this)
+		$(this).on("blur", function() {
+			if ($(this).val().length) {
+				$(this).addClass("val")
+			} else {
+				$(this).removeClass("val")
+			}
+		})
+	})
 								});
 								]]>
 							</xsl:text>
@@ -189,12 +234,16 @@
 			
 			<!-- Список -->
 			<xsl:if test="type = 6">
-				<select name="{name}" class="form-control">
+				<select name="{name}" class="form-control relative">
 					<xsl:if test="obligatory = 1">
 						<xsl:attribute name="class">form-control required</xsl:attribute>
-						<xsl:attribute name="title">Заполните поле <xsl:value-of select="caption" /></xsl:attribute>
+						<xsl:attribute name="title"><xsl:choose>
+								<xsl:when test="name = 'name'">Напишите имя</xsl:when>
+								<xsl:when test="name = 'phone'">Напишите номер телефона</xsl:when>
+								<xsl:when test="name = 'vrach'">Выберите врача</xsl:when>
+						</xsl:choose></xsl:attribute>
 					</xsl:if>
-					<option value="">...</option>
+					<option value="">*Выберите врача</option>
 					<xsl:apply-templates select="list/list_item" />
 				</select>
 			</xsl:if>
@@ -208,7 +257,7 @@
 	
 	<!-- Надпись -->
 	<xsl:if test="type = 8">
-		<div class="form-group">
+		<div class="form-group relative">
 			<strong><xsl:value-of select="caption" /></strong>
 		</div>
 	</xsl:if>

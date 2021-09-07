@@ -23,13 +23,20 @@ class Revision_Module extends Core_Module
 	 * Module date
 	 * @var date
 	 */
-	public $date = '2021-02-16';
+	public $date = '2021-08-23';
 
 	/**
 	 * Module name
 	 * @var string
 	 */
 	protected $_moduleName = 'revision';
+
+	protected $_options = array(
+		'storeDays' => array(
+			'type' => 'int',
+			'default' => 60
+		)
+	);
 
 	/**
 	 * Get Module's Menu

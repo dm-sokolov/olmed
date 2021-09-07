@@ -79,8 +79,10 @@ class Shop_Model extends Core_Entity
 		'deal' => array(),
 		'shop_discountcard' => array(),
 		'shop_discountcard_level' => array(),
+		'shop_discountcard_bonus_type' => array(),
 		'shop_price_setting' => array(),
 		'shop_filter_seo' => array(),
+		'shop_filter_seo_dir' => array(),
 		'shop_tab_dir' => array(),
 		'shop_tab' => array(),
 		'shop_comment_property' => array(),
@@ -140,8 +142,8 @@ class Shop_Model extends Core_Entity
 		'shop_currency' => array(),
 		'shop_order_status' => array(),
 		'shop_codetype' => array(),
-		'shop_measure' => array(),
-		'default_shop_measure' => array('model' => 'Shop_Measure', 'foreign_key' => 'default_shop_measure_id'),
+		'shop_measure' => array(), // weight
+		'default_shop_measure' => array('model' => 'Shop_Measure', 'foreign_key' => 'default_shop_measure_id'), // item's default measure
 		'user' => array(),
 		'siteuser_group' => array(),
 		'shop_company' => array(), // old relation
@@ -358,7 +360,9 @@ class Shop_Model extends Core_Entity
 		$this->Shop_Item_Delivery_Options->deleteAll(FALSE);
 		$this->Shop_Discountcards->deleteAll(FALSE);
 		$this->Shop_Discountcard_Levels->deleteAll(FALSE);
+		$this->Shop_Discountcard_Bonus_Types->deleteAll(FALSE);
 		$this->Shop_Price_Settings->deleteAll(FALSE);
+		$this->Shop_Filter_Seo_Dirs->deleteAll(FALSE);
 		$this->Shop_Filter_Seos->deleteAll(FALSE);
 		$this->Shop_Tab_Dirs->deleteAll(FALSE);
 		$this->Shop_Tabs->deleteAll(FALSE);
@@ -643,6 +647,22 @@ class Shop_Model extends Core_Entity
 		{
 			$newObject->add(
 				$oShop_Bonus->copy()
+			);
+		}
+
+		$aShop_Discountcard_Levels = $this->Shop_Discountcard_Levels->findAll(FALSE);
+		foreach ($aShop_Discountcard_Levels as $oShop_Discountcard_Level)
+		{
+			$newObject->add(
+				$oShop_Discountcard_Level->copy()
+			);
+		}
+
+		$aShop_Discountcard_Bonus_Types = $this->Shop_Discountcard_Bonus_Types->findAll(FALSE);
+		foreach ($aShop_Discountcard_Bonus_Types as $oShop_Discountcard_Bonus_Type)
+		{
+			$newObject->add(
+				$oShop_Discountcard_Bonus_Type->copy()
 			);
 		}
 
@@ -1098,8 +1118,8 @@ class Shop_Model extends Core_Entity
 			$href = $oAdmin_Form_Controller->getAdminActionLoadHref($oAdmin_Form_Controller->getPath(), 'rebuildFilter', NULL, 1, $this->id, '');
 			$onclick = $oAdmin_Form_Controller->getAdminActionLoadAjax($oAdmin_Form_Controller->getPath(), 'rebuildFilter', NULL, 1, $this->id, '');
 
-			$Shop_Filter_Controller = new Shop_Filter_Controller($this);
-			$sTableName = $Shop_Filter_Controller->getTableName();
+			$oShop_Filter_Controller = new Shop_Filter_Controller($this);
+			$sTableName = $oShop_Filter_Controller->getTableName();
 
 			$oQB = Core_QueryBuilder::select(array('COUNT(*)', 'count'))
 				->from($sTableName);
@@ -1125,6 +1145,24 @@ class Shop_Model extends Core_Entity
 	}
 
 	/**
+	 * The position of watermark on the X axis
+	 * @return string
+	 */
+	public function getWatermarkDefaultPositionX()
+	{
+		return $this->watermark_default_position_x;
+	}
+
+	/**
+	 * The position of watermark on the Y axis
+	 * @return string
+	 */
+	public function getWatermarkDefaultPositionY()
+	{
+		return $this->watermark_default_position_y;
+	}
+
+	/**
 	 * Backend badge
 	 * @param Admin_Form_Field $oAdmin_Form_Field
 	 * @param Admin_Form_Controller $oAdmin_Form_Controller
@@ -1135,5 +1173,22 @@ class Shop_Model extends Core_Entity
 		$this->Shop_Currency->id == 0 && Core::factory('Core_Html_Entity_I')
 			->class('fa fa-exclamation-triangle darkorange')
 			->execute();
+	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event shop.onBeforeGetRelatedSite
+	 * @hostcms-event shop.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
 	}
 }

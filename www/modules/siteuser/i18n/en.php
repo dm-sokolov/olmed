@@ -6,7 +6,7 @@
  * @subpackage Siteuser
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 return array(
 	'model_name' => 'Customers',
@@ -111,4 +111,6 @@ return array(
 	'text' => 'Text',
 	'from' => 'E-mail of the sender',
 	'sender_name' => 'Sender name',
+
+	'option_save_emails' => 'Save emails'
 );

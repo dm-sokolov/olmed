@@ -196,4 +196,12 @@ return array(
 	'certificate_subject' => 'Тема письма',
 	'certificate_text' => 'Текст письма',
 	'certificate_template_coupon_id' => 'ID купона',
+
+	'option_itemEditWarehouseLimit' => 'Количество складов, выводимых при редактировании товара, если складов больше, то блок не выводится',
+	'option_smallImagePrefix' => 'Префикс при именовании малых изображений',
+	'option_itemLargeImage' => 'Шаблон именования большого изображения товара',
+	'option_itemSmallImage' => 'Шаблон именования малого изображения товара',
+	'option_groupLargeImage' => 'Шаблон именования большого изображения группы',
+	'option_groupSmallImage' => 'Шаблон именования малого изображения группы',
+	'option_shop_item_card_xsl' => 'XSL-шаблон ценников'
 );

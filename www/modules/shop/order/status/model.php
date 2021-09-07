@@ -29,6 +29,7 @@ class Shop_Order_Status_Model extends Core_Entity
 	 */
 	protected $_belongsTo = array(
 		'shop_order_status' => array('foreign_key' => 'parent_id'),
+		'shop_order_item_status' => array(),
 		'user' => array()
 	);
 
@@ -87,6 +88,36 @@ class Shop_Order_Status_Model extends Core_Entity
 	}
 
 	/**
+	 * Backend callback method
+	 * @return string
+	 */
+	public function shop_order_item_status_idBackend($oAdmin_Form_Field, $oAdmin_Form_Controller)
+	{
+		ob_start();
+
+		$path = $oAdmin_Form_Controller->getPath();
+
+		$oCore_Html_Entity_Dropdownlist = new Core_Html_Entity_Dropdownlist();
+
+		$additionalParams = Core_Str::escapeJavascriptVariable(
+			str_replace(array('"'), array('&quot;'), $oAdmin_Form_Controller->additionalParams)
+		);
+
+		Core::factory('Core_Html_Entity_Span')
+			->class('padding-left-10')
+			->add(
+				$oCore_Html_Entity_Dropdownlist
+					->value($this->shop_order_item_status_id)
+					->options(Shop_Order_Item_Status_Controller_Edit::getDropdownlistOptions())
+					->onchange("$.adminLoad({path: '{$path}', additionalParams: '{$additionalParams}', action: 'apply', post: { 'hostcms[checked][0][{$this->id}]': 0, apply_check_0_{$this->id}_fv_{$oAdmin_Form_Field->id}: $(this).find('li[selected]').prop('id') }, windowId: '{$oAdmin_Form_Controller->getWindowId()}'});")
+					->data('change-context', 'true')
+				)
+			->execute();
+
+		return ob_get_clean();
+	}
+
+	/**
 	 * Get parent status
 	 * @return Shop_Order_Status_Model|NULL
 	 */
@@ -131,11 +162,11 @@ class Shop_Order_Status_Model extends Core_Entity
 			foreach ($aBot_Modules as $oBot_Module)
 			{
 				$oBot = $oBot_Module->Bot;
-				
+
 				$sParents = $oBot->bot_dir_id
 					? $oBot->Bot_Dir->dirPathWithSeparator() . ' → '
 					: '';
-							
+
 				Core::factory('Core_Html_Entity_Span')
 					->class('badge badge-square badge-hostcms')
 					->value('<i class="fa fa-android"></i> ' . $sParents . htmlspecialchars($oBot->name))
@@ -167,6 +198,21 @@ class Shop_Order_Status_Model extends Core_Entity
 			->set('shop_order_status_id', 0)
 			->where('shop_order_status_id', '=', $this->id)
 			->execute();
+
+		if (Core::moduleIsActive('bot'))
+		{
+			$oModule = Core_Entity::factory('Module')->getByPath('shop');
+
+			if ($oModule)
+			{
+				$aBot_Modules = Bot_Controller::getBotModules($oModule->id, 0, $this->id);
+
+				foreach ($aBot_Modules as $oBot_Module)
+				{
+					$oBot_Module->delete();
+				}
+			}
+		}
 
 		return parent::delete($primaryKey);
 	}

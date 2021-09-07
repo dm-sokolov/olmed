@@ -64,11 +64,14 @@ class Printlayout_Controller extends Core_Controller
 
 	/**
 	 * Generate docx file
-	 * @param string $ext
-	 * @return self
+	 * @return string Generated File Path
+	 * @hostcms-event Printlayout_Controller.onBeforeGenerateDocx
+	 * @hostcms-event Printlayout_Controller.onAfterExecute
 	 */
 	protected function _generateDocx()
 	{
+		Core_Event::notify('Printlayout_Controller.onBeforeGenerateDocx', $this);
+
 		$copyFilePath = $this->_oPrintlayout->getCopyFilePath();
 
 		if (is_file($copyFilePath))
@@ -168,6 +171,8 @@ class Printlayout_Controller extends Core_Controller
 
 			// Закрываем архив
 			$zip->close();
+
+			Core_Event::notify('Printlayout_Controller.onAfterGenerateDocx', $this, array($copyFilePath));
 		}
 
 		return $copyFilePath;
@@ -241,12 +246,16 @@ class Printlayout_Controller extends Core_Controller
 
 	/*
 	 * Execute business logic
+	 * @hostcms-event Printlayout_Controller.onBeforeExecute
+	 * @hostcms-event Printlayout_Controller.onAfterExecute
 	 */
 	public function execute()
 	{
 		//$ext = Core_File::getExtension($this->_oPrintlayout->file_name);
 
 		$docxSourcePath = $this->_generateDocx();
+
+		Core_Event::notify('Printlayout_Controller.onBeforeExecute', $this, array($docxSourcePath));
 
 		if ($this->driver instanceof Printlayout_Driver_Model)
 		{
@@ -276,6 +285,8 @@ class Printlayout_Controller extends Core_Controller
 		{
 			throw new Core_Exception('Printlayout: Wrong driver');
 		}
+
+		Core_Event::notify('Printlayout_Controller.onAfterExecute', $this);
 
 		return $this;
 	}

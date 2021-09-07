@@ -20,7 +20,7 @@ class Cloud_Handler_Yandex_Controller extends Cloud_Controller
 		$aConfig = Core_Config::instance()->get('cloud_config', array());
 
 		isset($aConfig['drivers'])
-			&&  $this->_config = Core_Array::get($aConfig['drivers'], 'yandex');
+			&& $this->_config = Core_Array::get($aConfig['drivers'], 'yandex');
 
 		$this->chunkSize = Core_Array::get($this->_config, 'chunk');
 

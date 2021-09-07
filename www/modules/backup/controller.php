@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Backup
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2018 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Backup_Controller
 {
@@ -42,7 +42,7 @@ class Backup_Controller
 
 			$aConfig = Core_Config::instance()->get('backup_config', array());
 
-			if  (is_array($aConfig) && isset($aConfig['excludeDir']))
+			if (is_array($aConfig) && isset($aConfig['excludeDir']))
 			{
 				foreach ($aConfig['excludeDir'] as $excludeDir)
 				{

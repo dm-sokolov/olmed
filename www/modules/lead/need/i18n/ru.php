@@ -6,7 +6,7 @@
  * @subpackage Lead
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 return array(
 	'model_name' => 'Потребности лидов',
@@ -20,7 +20,7 @@ return array(
 	'color' => 'Цвет',
 	'description' => 'Описание',
 	'sorting' => 'Порядок сортировки',
-	'edit_success'  => 'Информация о потребности лида изменена!',
+	'edit_success' => 'Информация о потребности лида изменена!',
 	'copy_success' => 'Потребность лида успешно скопирована!',
 	'markDeleted_success' => 'Потребность лида успешено удалена!',
 	'markDeleted_error' => 'Ошибка! Потребность лида не удалена!',

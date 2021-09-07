@@ -50,7 +50,7 @@ return array(
 	'periodDays' => 'Дні',
 	'today' => 'Сьогодні в',
 	'yesterday' => 'Вчора в',
-	'edit_success'  => 'Інформація про подію змінена!',
+	'edit_success' => 'Інформація про подію змінена!',
 	'changeImportant_success' => 'Важливість події змінена',
 	'changeCompleted_success' => 'Завершеність події змінена',
 	'markDeleted_success' => 'Справу видалено',

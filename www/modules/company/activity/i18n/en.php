@@ -10,7 +10,7 @@ return array(
 	'color' => 'Color',
 	'description' => 'Description',
 	'company_id' => 'Company ID',
-	'edit_success'  => 'Company activity information added successfully!',
+	'edit_success' => 'Company activity information added successfully!',
 	'markDeleted_success' => 'Company activity information deleted successfully!',
 	'delete_success' => 'Item deleted successfully!',
 	'undelete_success' => 'Item restored successfully!',

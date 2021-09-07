@@ -183,11 +183,11 @@ function flampWinget(){
 }
 function newHeader($domain){
     $arrCity = array(
-        'http://www.mcolmed.ru/'=>'Екатеринбург',
-        'http://serov.mcolmed.ru/'=>'Серов',
-        'http://ntagil.mcolmed.ru/'=>'Нижний Тагил',
-        'http://kturinsk.mcolmed.ru/'=>'Краснотурьинск',
-        'http://sevural.mcolmed.ru/'=>'Североуральск',
+        'https://www.mcolmed.ru/'=>'Екатеринбург',
+        'https://serov.mcolmed.ru/'=>'Серов',
+        'https://ntagil.mcolmed.ru/'=>'Нижний Тагил',
+        'https://kturinsk.mcolmed.ru/'=>'Краснотурьинск',
+        'https://sevural.mcolmed.ru/'=>'Североуральск',
     );
     $arrContacts = array(
         'serov.mcolmed.ru'=>array(
@@ -203,8 +203,8 @@ function newHeader($domain){
             'address'=>'<a href="/contacts/">ул. Ленина, д. 36</a>',
         ),
     );
-    $city = '<option value="http://'.$domain.'/">'.$arrCity['http://'.$domain.'/'].'</option>';
-    unset($arrCity['http://'.$domain.'/']);
+    $city = '<option value="https://'.$domain.'/">'.$arrCity['https://'.$domain.'/'].'</option>';
+    unset($arrCity['https://'.$domain.'/']);
 
     foreach($arrCity As $link=>$cityName){
         $city .= '<option value="'.$link.'">'.$cityName.'</option>';

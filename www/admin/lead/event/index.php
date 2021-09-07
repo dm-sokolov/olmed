@@ -5,7 +5,7 @@
  * @package HostCMS
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 require_once('../../../bootstrap.php');
 
@@ -28,7 +28,9 @@ $oAdmin_Form_Controller
 	->path($sAdminFormAction)
 	->title(Core::_('Lead_Event.lead_event_title'))
 	->pageTitle(Core::_('Lead_Event.lead_event_title'))
-	->Admin_View('Admin_Internal_View')
+	->Admin_View(
+		Admin_View::getClassName('Admin_Internal_View')
+	)
 	->addView('event', 'Event_Controller_Related_Event')
 	->view('event');
 
@@ -51,13 +53,9 @@ if (is_null(Core_Array::getGet('hideMenu')))
 			Admin_Form_Entity::factory('Menu')
 				->name(Core::_('Admin_Form.add'))
 				->icon('fa fa-plus')
-				/*->href(
-					$oAdmin_Form_Controller->getAdminActionLoadHref($oAdmin_Form_Controller->getPath(), 'edit', NULL, 0, 0)
-				)*/
 				->onclick(
-					// $oAdmin_Form_Controller->getAdminActionLoadAjax($oAdmin_Form_Controller->getPath(), 'edit', '', 0, 0)
-					// "$.modalLoad({path: '{$oAdmin_Form_Controller->getPath()}', action: 'edit', operation: 'modal', additionalParams: 'hostcms[checked][0][0]=1&lead_id={$oLead->id}', windowId: 'id_content'}); return false"
-					"$.modalLoad({path: '{$oAdmin_Form_Controller->getPath()}', action: 'edit', operation: 'modal', additionalParams: 'hostcms[checked][0][0]=1&{$additionalParams}', windowId: '{$windowId}'}); return false"
+					$oAdmin_Form_Controller->getAdminActionModalLoad($oAdmin_Form_Controller->getPath(), 'edit', 'modal', 0, 0, $additionalParams)
+					// "$.modalLoad({path: '{$oAdmin_Form_Controller->getPath()}', action: 'edit', operation: 'modal', additionalParams: 'hostcms[checked][0][0]=1&{$additionalParams}', windowId: '{$windowId}'}); return false"
 				)
 		);
 

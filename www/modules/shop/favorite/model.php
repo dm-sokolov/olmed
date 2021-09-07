@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Shop
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2019 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Shop_Favorite_Model extends Core_Entity
 {
@@ -83,6 +83,40 @@ class Shop_Favorite_Model extends Core_Entity
 	}
 
 	/**
+	 * Show special prices data in XML
+	 * @var boolean
+	 */
+	protected $_showXmlSpecialprices = FALSE;
+
+	/**
+	 * Add special prices XML to item
+	 * @param boolean $showXmlSpecialprices mode
+	 * @return self
+	 */
+	public function showXmlSpecialprices($showXmlSpecialprices = TRUE)
+	{
+		$this->_showXmlSpecialprices = $showXmlSpecialprices;
+		return $this;
+	}
+
+	/**
+	 * Show comments rating data in XML
+	 * @var boolean
+	 */
+	protected $_showXmlCommentsRating = FALSE;
+
+	/**
+	 * Add Comments Rating XML to item
+	 * @param boolean $showXmlComments mode
+	 * @return self
+	 */
+	public function showXmlCommentsRating($showXmlCommentsRating = TRUE)
+	{
+		$this->_showXmlCommentsRating = $showXmlCommentsRating;
+		return $this;
+	}
+
+	/**
 	 * Get XML for entity and children entities
 	 * @return string
 	 * @hostcms-event shop_favorite.onBeforeRedeclaredGetXml
@@ -120,7 +154,9 @@ class Shop_Favorite_Model extends Core_Entity
 			->clearEntities()
 			->showXmlWarehousesItems(TRUE)
 			->showXmlProperties($this->_showXmlProperties)
-			->showXmlModifications($this->_showXmlModifications);
+			->showXmlModifications($this->_showXmlModifications)
+			->showXmlSpecialprices($this->_showXmlSpecialprices)
+			->showXmlCommentsRating($this->_showXmlCommentsRating);
 
 		// Parent item for modification
 		if ($this->Shop_Item->modification_id)
@@ -135,5 +171,22 @@ class Shop_Favorite_Model extends Core_Entity
 			->addEntity($oShop_Item);
 
 		return $this;
+	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event shop_favorite.onBeforeGetRelatedSite
+	 * @hostcms-event shop_favorite.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Shop_Item->Shop->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
 	}
 }

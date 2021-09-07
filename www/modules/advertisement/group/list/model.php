@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Advertisement
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2016 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Advertisement_Group_List_Model extends Core_Entity
 {
@@ -27,7 +27,7 @@ class Advertisement_Group_List_Model extends Core_Entity
 		'advertisement_group' => array(),
 		'advertisement' => array()
 	);
-	
+
 	/**
 	 * Column consist item's name
 	 * @var string
@@ -50,5 +50,22 @@ class Advertisement_Group_List_Model extends Core_Entity
 		$aAdvertisement_Group_List = $this->findAll();
 
 		return isset($aAdvertisement_Group_List[0]) ? $aAdvertisement_Group_List[0] : NULL;
+	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event advertisement_group_list.onBeforeGetRelatedSite
+	 * @hostcms-event advertisement_group_list.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Advertisement->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
 	}
 }

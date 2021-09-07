@@ -28,7 +28,7 @@ class Cloud_Handler_Onedrive_Controller extends Cloud_Controller
 		$aConfig = Core_Config::instance()->get('cloud_config', array());
 
 		isset($aConfig['drivers'])
-			&&  $this->_config = Core_Array::get($aConfig['drivers'], 'onedrive');
+			&& $this->_config = Core_Array::get($aConfig['drivers'], 'onedrive');
 
 		$this->chunkSize = Core_Array::get($this->_config, 'chunk');
 
@@ -62,17 +62,17 @@ class Cloud_Handler_Onedrive_Controller extends Cloud_Controller
 		}
 
 		$aValues = array(
-            'client_id' => $this->_oCloud->key,
-            'response_type' => 'code',
-            'redirect_uri' => $this->_redirectUri,
-            'scope' => implode(' ', array(
+			'client_id' => $this->_oCloud->key,
+			'response_type' => 'code',
+			'redirect_uri' => $this->_redirectUri,
+			'scope' => implode(' ', array(
 				'files.read',
 				'files.read.all',
 				'files.readwrite',
 				'files.readwrite.all',
 				'offline_access'
 			)),
-            'response_mode' => 'query'
+			'response_mode' => 'query'
 		);
 
 		$query = http_build_query($aValues, '', '&', PHP_QUERY_RFC3986);

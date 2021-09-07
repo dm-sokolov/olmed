@@ -63,7 +63,6 @@ abstract class Printlayout_Controller_Print extends Admin_Form_Action_Controller
 				? '&shop_price_id=' . $shop_price_id
 				: '';
 
-			// Original windowId
 			$windowId = $this->_Admin_Form_Controller->getWindowId();
 
 			$this->_newWindowId = 'Printlayout_Print_' . time();
@@ -147,16 +146,16 @@ abstract class Printlayout_Controller_Print extends Admin_Form_Action_Controller
 				->class('btn btn-warning white mail-button')
 				->href('javascript:void(0);')
 				->onclick('
-					$(".modal-dialog").width("60%");
-					$(".modal-body").height(500);
+					$("#' . $windowId . ' .modal-dialog").width("60%");
+					$("#' . $windowId . ' .modal-body").height(500);
 
-					$(".control-group").addClass("printlayout-radio-inline");
+					$("#' . $windowId . ' .control-group").addClass("printlayout-radio-inline");
 
-					$(".download-button").addClass("hidden");
-					$(".mail-button").addClass("hidden");
-					$(".message-address, .message-text, .message-button, .deal-siteuser, .message-subject, .message-emails").removeClass("hidden");
+					$("#' . $windowId . ' .download-button").addClass("hidden");
+					$("#' . $windowId . ' .mail-button").addClass("hidden");
+					$("#' . $windowId . ' .message-address, .message-text, .message-button, .deal-siteuser, .message-subject, .message-emails").removeClass("hidden");
 
-					$(".email-select").select2({
+					$("#' . $windowId . ' .email-select").select2({
 						language: "' . Core_i18n::instance()->getLng() . '",
 						minimumInputLength: 2,
 						placeholder: "' . Core::_('Informationsystem_Item.type_tag') . '",
@@ -166,8 +165,8 @@ abstract class Printlayout_Controller_Print extends Admin_Form_Action_Controller
 						width: "100%"
 					});
 
-					$("input[name*=\"action\"]").val("sendMail");
-					$("input[name*=\"operation\"]").val("send");
+					$("#' . $windowId . ' input[name*=\"action\"]").val("sendMail");
+					$("#' . $windowId . ' input[name*=\"operation\"]").val("send");
 
 					$(this).closest("form").removeAttr("target");
 				')
@@ -298,20 +297,25 @@ abstract class Printlayout_Controller_Print extends Admin_Form_Action_Controller
 
 				if (!is_null($oSiteuser))
 				{
-					$oSiteuser_Email = Core_Entity::factory('Siteuser_Email');
-					$oSiteuser_Email->siteuser_id = $oSiteuser->id;
-					$oSiteuser_Email->subject = $subject;
-					$oSiteuser_Email->email = implode(', ', $aEmails);
-					$oSiteuser_Email->from = $userEmail;
-					$oSiteuser_Email->type = 0;
-					$oSiteuser_Email->text = $text;
-					$oSiteuser_Email->save();
+					$aConfig = Core_Config::instance()->get('siteuser_config', array());
 
-					$oSiteuser_Email_Attachment = Core_Entity::factory('Siteuser_Email_Attachment');
-					$oSiteuser_Email_Attachment->siteuser_email_id = $oSiteuser_Email->id;
-					$oSiteuser_Email_Attachment->save();
+					if ((!isset($aConfig['save_emails']) || $aConfig['save_emails']) && $oSiteuser->id)
+					{
+						$oSiteuser_Email = Core_Entity::factory('Siteuser_Email');
+						$oSiteuser_Email->siteuser_id = $oSiteuser->id;
+						$oSiteuser_Email->subject = $subject;
+						$oSiteuser_Email->email = implode(', ', $aEmails);
+						$oSiteuser_Email->from = $userEmail;
+						$oSiteuser_Email->type = 0;
+						$oSiteuser_Email->text = $text;
+						$oSiteuser_Email->save();
 
-					$oSiteuser_Email_Attachment->saveFile($this->_oPrintlayout_Controller->getFilePath(), $this->_oPrintlayout_Controller->getFileName());
+						$oSiteuser_Email_Attachment = Core_Entity::factory('Siteuser_Email_Attachment');
+						$oSiteuser_Email_Attachment->siteuser_email_id = $oSiteuser_Email->id;
+						$oSiteuser_Email_Attachment->save();
+
+						$oSiteuser_Email_Attachment->saveFile($this->_oPrintlayout_Controller->getFilePath(), $this->_oPrintlayout_Controller->getFileName());
+					}
 				}
 			}
 
@@ -364,12 +368,12 @@ abstract class Printlayout_Controller_Print extends Admin_Form_Action_Controller
 				: $oPrintlayout->file_mask;
 
 			?>
-			<div class="form-group col-xs-12 col-sm-6 message-subject hidden">
+			<div class="form-group col-xs-12 message-subject hidden">
 				<span class="caption"><?php echo Core::_('Printlayout.from')?></span>
 				<input class="form-control" name="from" type="text" value="<?php echo htmlspecialchars($oUser->getEmail())?>"/>
 			</div>
-			<div class="form-group col-xs-12 col-sm-6">
-				<div class="control-group margin-top-15">
+			<div class="form-group col-xs-12">
+				<div class="control-group">
 				<?php
 					$aPrintlayout_Drivers = Core_Entity::factory('Printlayout_Driver')->getAllByActive(1);
 					foreach ($aPrintlayout_Drivers as $key => $oPrintlayout_Driver)
@@ -400,6 +404,9 @@ abstract class Printlayout_Controller_Print extends Admin_Form_Action_Controller
 				</div>
 			</div>
 			<?php
+
+			$windowId = $this->_Admin_Form_Controller->getWindowId();
+
 			if (Core::moduleIsActive('siteuser'))
 			{
 				$oSelectSiteusers = Admin_Form_Entity::factory('Select')
@@ -413,11 +420,11 @@ abstract class Printlayout_Controller_Print extends Admin_Form_Action_Controller
 				$oScriptSiteusers = Admin_Form_Entity::factory('Script')
 					->value('
 						$(function(){
-							$("#representative").selectPersonCompany({
+							$("#' . $windowId . ' #representative").selectPersonCompany({
 								language: "' . Core_i18n::instance()->getLng() . '",
 								placeholder: ""
 							});
-							$("#representative").on("select2:select", function (e) {
+							$("#' . $windowId . ' #representative").on("select2:select", function (e) {
 								$.showEmails(e.params.data);
 							});
 						});
@@ -453,7 +460,7 @@ abstract class Printlayout_Controller_Print extends Admin_Form_Action_Controller
 					->value(Core::_('Printlayout.send'))
 					->onclick(
 						'setTimeout(function() { bootbox.hideAll(); }, 500); '
-						. $this->_Admin_Form_Controller->getAdminSendForm('sendMail', 'send')
+						. $this->_Admin_Form_Controller->getAdminSendForm(array('action' => 'sendMail', 'operation' => 'send'))
 					)
 					->controller($this->_Admin_Form_Controller)
 					->execute();

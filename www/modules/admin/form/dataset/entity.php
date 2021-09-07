@@ -128,6 +128,17 @@ class Admin_Form_Dataset_Entity extends Admin_Form_Dataset
 	}
 
 	/**
+	 * Set items count
+	 * @param int $count
+	 * @return self
+	 */
+	public function setCount($count)
+	{
+		$this->_count = $count;
+		return $this;
+	}
+
+	/**
 	 * Get items count
 	 * @return int
 	 */
@@ -174,21 +185,6 @@ class Admin_Form_Dataset_Entity extends Admin_Form_Dataset
 		}
 
 		return $this->_count;
-	}
-
-	/**
-	 * Dataset objects list
-	 * @var array
-	 */
-	protected $_objects = array();
-
-	/**
-	 * Get objects
-	 * @return array
-	 */
-	public function getObjects()
-	{
-		return $this->_objects;
 	}
 
 	/**
@@ -248,6 +244,7 @@ class Admin_Form_Dataset_Entity extends Admin_Form_Dataset
 					: $this->_getTotalCountByCount();
 			}
 		}
+
 		return $this->_objects;
 	}
 

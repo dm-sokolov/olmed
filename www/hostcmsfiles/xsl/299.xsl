@@ -16,20 +16,21 @@
 		
 		<xsl:if test="informationsystem_item">
 			<div class="reviews-box">
-				<div class="h2 text-center mb-4">
+				<h2 class="h2 text-left main-title reviews-title font-weight-bold">
 					Отзывы клиентов
-					<small>
-						<a href="{url}">Все отзывы</a>
-					</small>
-				</div>
-				<div class="review-slider mb-4">
+				</h2>
+				<div class="review-slider mb-md-4">
 					<div id="reviewSlider" class="owl-carousel owl-theme mb-3">
 						<xsl:apply-templates select="informationsystem_item"/>
 					</div>
-					<div class="text-center">
-						<button type="submit" class="btn btn-primary" onclick="$.showXslTemplate('{/informationsystem/url}', {/informationsystem/@id}, 321); return false;">Оставить отзыв <img src="/i/ico-review.png" /></button>
-					</div>
+					
 				</div>
+				
+			</div>
+			<div class="reviews-box__controls d-flex flex-column flex-sm-row ">
+				<div class="text-left">
+				<button type="submit" class="btn btn-primary" onclick="$.showXslTemplate('{/informationsystem/url}', {/informationsystem/@id}, 321); return false;">Оставить отзыв </button> </div>
+				<a class="mt-3 mt-sm-0 reviews-box__btn" href="{url}">Читать все отзывы</a>
 			</div>
 		</xsl:if>
 	</xsl:template>
@@ -38,7 +39,13 @@
 	<xsl:template match="informationsystem_item">
 		<div class="item">
 			<div class="h4"><xsl:value-of select="property_value[tag_name='author']/value"/></div>
-			<div class="mb-1">
+			<div class="mb-1 review-text"><xsl:value-of disable-output-escaping="yes" select="description"  /></div>
+			<xsl:if test="description_real/node()">
+				<div class="mb-1">
+					<a href="{url}">Читать полностью</a>
+				</div>
+			</xsl:if>
+			<div class="mb-1 item-date">
 				<xsl:value-of select="substring-before(date, '.')"/>
 				<xsl:variable name="month_year" select="substring-after(date, '.')"/>
 				<xsl:variable name="month" select="substring-before($month_year, '.')"/>
@@ -58,12 +65,6 @@
 				</xsl:choose>
 				<xsl:value-of select="substring-after($month_year, '.')"/><xsl:text> г.</xsl:text>
 			</div>
-			<div class="mb-1"><xsl:value-of select="description" disable-output-escaping="yes" /></div>
-			<xsl:if test="description_real/node()">
-				<div>
-					<a href="https://www.mcolmed.ru{url}">Читать полностью</a>
-				</div>
-			</xsl:if>
 		</div>
 	</xsl:template>
 </xsl:stylesheet>

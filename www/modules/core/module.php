@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Core
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 abstract class Core_Module
 {
@@ -34,11 +34,11 @@ abstract class Core_Module
 	/**
 	 * Get Module's Menu
 	 * @return array
-	 * @hostcms-event Core_Module.onBeforeGetMenu
+	 * @hostcms-event Core_Module.onBeforeGetMenu, e.g. Skin_Bootstrap_Module_Xxx_Module or Xxx_Module
 	 */
 	public function getMenu()
 	{
-		Core_Event::notify(get_class($this) . '.onBeforeGetMenu', $this);
+		Core_Event::notify(get_class($this) . '.onBeforeGetMenu', $this, array($this->menu));
 		return $this->menu;
 	}
 
@@ -107,7 +107,7 @@ abstract class Core_Module
 						'onclick' => '',								//-- событие нажатия на поле
 						'list' => '',									//--
 					),
-					'field2' =>  array(
+					'field2' => array(
 						'name' => array(								//-- название поля в админке
 							1 => 'Наименование кампании',				//-- по-русски - 1=идентификатор языка
 							2 => 'Campaign name'						//-- по-английски - 2=идентификатор языка
@@ -310,7 +310,7 @@ abstract class Core_Module
 	/**
 	 * Add Admin Form
 	 *
-	 * @param string $name
+	 * @param array $name
 	 * @param array $aForm Array of attributes
 	 * @return Admin_Form_Model
 	 */
@@ -470,6 +470,7 @@ abstract class Core_Module
 	 * @param array $aFields default ('caption', 'captionHTML')
 	 * @param array $aOptions
 	 * @return array
+	 * @hostcms-event Core_Module.onBeforeGetReports
 	 */
 	public function getReports($aFields = array('caption', 'captionHTML'), $aOptions = array())
 	{
@@ -503,5 +504,64 @@ abstract class Core_Module
 		return isset($this->_reports[$reportName])
 			? call_user_func($this->_reports[$reportName], $aFields, $aOptions)
 			: NULL;
+	}
+
+	/**
+	 * Module Options
+	 * @var array
+	 */
+	protected $_options = array();
+
+	/**
+	 * Get Module Options
+	 * @return array
+	 * @hostcms-event Core_Module.onBeforeGetOptions
+	 */
+	public function getOptions()
+	{
+		Core_Event::notify(get_class($this) . '.onBeforeGetOptions', $this, array($this->_options));
+
+		return $this->_options;
+	}
+
+	/**
+	 * Set Module Options
+	 * @return array
+	 * @hostcms-event Core_Module.onBeforeSetOptions
+	 */
+	public function setOptions($data)
+	{
+		Core_Event::notify(get_class($this) . '.onBeforeSetOptions', $this, array($this->_options));
+
+		$aModule_Options = $this->getOptions();
+
+		if (count($aModule_Options))
+		{
+			$aConfig = Core_Config::instance()->get($this->_moduleName . '_config', array());
+
+			foreach ($aModule_Options as $option_name => $aOptions)
+			{
+				$value = Core_Array::get($data, 'option_' . $option_name);
+
+				switch ($aOptions['type'])
+				{
+					case 'int':
+						$value = intval($value);
+					break;
+					case 'float':
+						$value = floatval($value);
+					break;
+					case 'checkbox':
+						$value = $value == 1;
+					break;
+				}
+
+				$aConfig[$option_name] = $value;
+			}
+
+			Core_Config::instance()->set($this->_moduleName . '_config', $aConfig);
+		}
+
+		return $this;
 	}
 }

@@ -291,7 +291,6 @@ class Shop_Item_Import_Cml_Controller extends Core_Servant_Properties
 
 				// Создаем массив параметров для загрузки картинок элементу
 				$aPicturesParam = array();
-				$aPicturesParam['large_image_isset'] = TRUE;
 				$aPicturesParam['large_image_source'] = $sSourceFile;
 				$aPicturesParam['large_image_name'] = $sSourceFileBaseName;
 				$aPicturesParam['large_image_target'] = $sDestinationFolder . $sTargetFileName;
@@ -543,30 +542,20 @@ class Shop_Item_Import_Cml_Controller extends Core_Servant_Properties
 				}
 			break;
 			case 8:
-				if (!preg_match("/^([0-9]{4})-([0-9]{1,2})-([0-9]{1,2})/", $value))
-				{
-					$changedValue = Core_Date::datetime2sql($value);
-				}
-				else
-				{
-					$changedValue = NULL;
-				}
+				$changedValue = preg_match("/^([0-9]{4})-([0-9]{1,2})-([0-9]{1,2})/", $value)
+					? NULL
+					: Core_Date::datetime2sql($value);
 			break;
 			case 9:
-				if (!preg_match("/^([0-9]{4})-([0-9]{1,2})-([0-9]{1,2}) ([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})/", $value))
-				{
-					$changedValue = Core_Date::datetime2sql($value);
-				}
-				else
-				{
-					$changedValue = NULL;
-				}
+				$changedValue = preg_match("/^([0-9]{4})-([0-9]{1,2})-([0-9]{1,2}) ([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})/", $value)
+					? NULL
+					: Core_Date::datetime2sql($value);
 			break;
 			default:
 				Core_Event::notify(get_class($this) . '.onAddItemPropertyValueDefault', $this, array($oShopItem, $oProperty, $value));
 
 				$changedValue = is_null(Core_Event::getLastReturn())
-					? nl2br($value)
+					? $value
 					: Core_Event::getLastReturn();
 			break;
 		}
@@ -629,7 +618,6 @@ class Shop_Item_Import_Cml_Controller extends Core_Servant_Properties
 
 					// Создаем массив параметров для загрузки картинок элементу
 					$aPicturesParam = array();
-					$aPicturesParam['large_image_isset'] = TRUE;
 					$aPicturesParam['large_image_source'] = $sSourceFile;
 					$aPicturesParam['large_image_name'] = $sSourceFileBaseName;
 					$aPicturesParam['large_image_target'] = $sDestinationFolder . $sTargetFileName;
@@ -881,7 +869,6 @@ class Shop_Item_Import_Cml_Controller extends Core_Servant_Properties
 						}
 
 						$aPicturesParam = array();
-						$aPicturesParam['large_image_isset'] = TRUE;
 						$aPicturesParam['large_image_source'] = $sSourceFile;
 						$aPicturesParam['large_image_name'] = $sSourceFileBaseName;
 						$aPicturesParam['large_image_target'] = $sDestinationFolder . $sTargetFileName;
@@ -1331,7 +1318,7 @@ class Shop_Item_Import_Cml_Controller extends Core_Servant_Properties
 						$sGUIDmod = $sTmp[1];
 					}
 
-					// Товар может быть идентифицирован произвольным (например GUID или внутрисистемным) идентификатором, Штрихкодом, Артикулом. Контрагент может использовать любой удобный с его точки зрения  идентификатор - на выбор
+					// Товар может быть идентифицирован произвольным (например GUID или внутрисистемным) идентификатором, Штрихкодом, Артикулом. Контрагент может использовать любой удобный с его точки зрения идентификатор - на выбор
 
 					// Search by GUID
 					$bCmlIdItemSearchFields
@@ -1616,8 +1603,8 @@ class Shop_Item_Import_Cml_Controller extends Core_Servant_Properties
 					// Fast filter
 					if ($oShop->filter)
 					{
-						$Shop_Filter_Controller = new Shop_Filter_Controller($oShop);
-						$Shop_Filter_Controller->fill($oShopItem);
+						$oShop_Filter_Controller = new Shop_Filter_Controller($oShop);
+						$oShop_Filter_Controller->fill($oShopItem);
 					}
 
 					// Indexation
@@ -1767,7 +1754,7 @@ class Shop_Item_Import_Cml_Controller extends Core_Servant_Properties
 						$sGUIDmod = $aItemGUID[1];
 					}
 
-					// Товар может быть идентифицирован произвольным (например GUID или внутрисистемным) идентификатором, Штрихкодом, Артикулом. Контрагент может использовать любой удобный с его точки зрения  идентификатор - на выбор
+					// Товар может быть идентифицирован произвольным (например GUID или внутрисистемным) идентификатором, Штрихкодом, Артикулом. Контрагент может использовать любой удобный с его точки зрения идентификатор - на выбор
 
 					// Основной товар (не модификация)
 					$bCmlIdItemSearchFields
@@ -2011,10 +1998,14 @@ class Shop_Item_Import_Cml_Controller extends Core_Servant_Properties
 										// Set ->shop_currency_id
 										$oShopItem->add($oShop_Currency);
 
-										if (!is_null($this->_oTaxForBasePrice))
+										// Налоги
+										if ($this->_checkUpdateField('taxes'))
 										{
-											$oShopItem->add($this->_oTaxForBasePrice);
-											$this->_oTaxForBasePrice = NULL;
+											if (!is_null($this->_oTaxForBasePrice))
+											{
+												$oShopItem->add($this->_oTaxForBasePrice);
+												$this->_oTaxForBasePrice = NULL;
+											}
 										}
 
 										// Импортируется только через "БазоваяЕдиница"
@@ -2138,8 +2129,8 @@ class Shop_Item_Import_Cml_Controller extends Core_Servant_Properties
 						// Fast filter
 						if ($oShop->filter)
 						{
-							$Shop_Filter_Controller = new Shop_Filter_Controller($oShop);
-							$Shop_Filter_Controller->fill($oShopItem);
+							$oShop_Filter_Controller = new Shop_Filter_Controller($oShop);
+							$oShop_Filter_Controller->fill($oShopItem);
 						}
 
 						$this->_aReturn['updateItemCount']++;
@@ -2338,7 +2329,6 @@ class Shop_Item_Import_Cml_Controller extends Core_Servant_Properties
 
 								// Создаем массив параметров для загрузки картинок элементу
 								$aPicturesParam = array();
-								$aPicturesParam['large_image_isset'] = TRUE;
 								$aPicturesParam['large_image_source'] = $sSourceFile;
 								$aPicturesParam['large_image_name'] = $sSourceFileBaseName;
 								$aPicturesParam['large_image_target'] = $sDestinationFolder . $sTargetFileName;

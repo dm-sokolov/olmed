@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Form
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Form_Field_Dir_Model extends Core_Entity
 {
@@ -36,6 +36,15 @@ class Form_Field_Dir_Model extends Core_Entity
 		'form_field_dir' => array('foreign_key' => 'parent_id'),
 		'form' => array(),
 		'user' => array()
+	);
+
+	/**
+	 * Default sorting for models
+	 * @var array
+	 */
+	protected $_sorting = array(
+		'form_field_dirs.sorting' => 'ASC',
+		'form_field_dirs.name' => 'ASC'
 	);
 
 	/**
@@ -111,7 +120,7 @@ class Form_Field_Dir_Model extends Core_Entity
 				$oForm_Field->copy()->form_id($newObject->form_id)
 			);
 		}
-		
+
 		Core_Event::notify($this->_modelName . '.onAfterRedeclaredCopy', $newObject, array($this));
 
 		return $newObject;
@@ -145,5 +154,22 @@ class Form_Field_Dir_Model extends Core_Entity
 		}
 
 		return $newObject;
+	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event form_field_dir.onBeforeGetRelatedSite
+	 * @hostcms-event form_field_dir.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Form->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
 	}
 }

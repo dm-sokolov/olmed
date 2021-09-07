@@ -15,6 +15,9 @@ class Skin_Bootstrap_Admin_Form_Entity_File extends Skin_Default_Admin_Form_Enti
 {
 	/**
 	 * Execute business logic
+	 * @hostcms-event Skin_Bootstrap_Admin_Form_Entity_File.onAfterShowLargeImage
+	 * @hostcms-event Skin_Bootstrap_Admin_Form_Entity_File.onAfterShowSmallImage
+	 * @hostcms-event Skin_Bootstrap_Admin_Form_Entity_File.onBeforeExecute
 	 */
 	public function execute()
 	{
@@ -142,23 +145,21 @@ class Skin_Bootstrap_Admin_Form_Entity_File extends Skin_Default_Admin_Form_Enti
 		// ----------
 		$windowId = $this->_Admin_Form_Controller->getWindowId();
 
-		$oLarge_Core_Html_Entity_Div = new Core_Html_Entity_Div();
+		$oMain_Div = new Core_Html_Entity_Div();
 
 		// Установим атрибуты div'a.
 		if (is_array($this->divAttr))
 		{
 			foreach ($this->divAttr as $attrName => $attrValue)
 			{
-				$oLarge_Core_Html_Entity_Div->$attrName($attrValue);
+				$oMain_Div->$attrName($attrValue);
 			}
 		}
 
-		$oLarge_Core_Html_Entity_Div->class(
+		$oMain_Div->class(
 			(count($this->_children) ? 'input-group' : '') .
-			($oLarge_Core_Html_Entity_Div->class != '' ? ' ' . $oLarge_Core_Html_Entity_Div->class : '')
+			($oMain_Div->class != '' ? ' ' . $oMain_Div->class : '')
 		);
-
-		//$sDivClass = 'col-xs-12 col-sm-6';
 
 		$sDivClass = $this->smallImage['show'] || $this->largeImage['show_description']
 			? 'col-xs-12 col-sm-6'
@@ -188,7 +189,7 @@ class Skin_Bootstrap_Admin_Form_Entity_File extends Skin_Default_Admin_Form_Enti
 		{
 			$oLarge_Input_Group_Div->add(Core::factory('Core_Html_Entity_Script')
 					->value('$(function(){
-						$("#' . $windowId . ' input#' . $this->largeImage['id'] .'").on("change", function(){
+						$("#' . $windowId . ' input#' . $this->largeImage['id'] . '").on("change", function(){
 							$.showCropButton($(this), "' . $this->largeImage['id'] . '", "' . $windowId . '");
 						});
 					})')
@@ -211,7 +212,7 @@ class Skin_Bootstrap_Admin_Form_Entity_File extends Skin_Default_Admin_Form_Enti
 			);
 		}
 
-		$oLarge_Core_Html_Entity_Div->add($oLarge_Input_Div);
+		$oMain_Div->add($oLarge_Input_Div);
 
 		if ($this->largeImage['path'] != '' || $this->largeImage['show_params'])
 		{
@@ -312,18 +313,6 @@ class Skin_Bootstrap_Admin_Form_Entity_File extends Skin_Default_Admin_Form_Enti
 			// Отображать Сохранять пропорции изображения
 			if ($this->largeImage['preserve_aspect_ratio_checkbox'])
 			{
-				/* $Core_Html_Entity_Checkbox = Core::factory('Core_Html_Entity_Input')
-					->type('checkbox')
-					->name("large_preserve_aspect_ratio_{$this->largeImage['name']}")
-					->id("large_preserve_aspect_ratio_{$this->largeImage['name']}")
-					->value(1);
-
-				if ($this->largeImage['preserve_aspect_ratio_checkbox_checked'])
-				{
-					$Core_Html_Entity_Checkbox
-						->checked('checked');
-				}; */
-
 				$Core_Html_Entity_Checkbox = Admin_Form_Entity::factory('Checkbox')
 					->divAttr(array('class' => 'form-group col-xs-12'))
 					->name("large_preserve_aspect_ratio_{$this->largeImage['name']}")
@@ -334,20 +323,7 @@ class Skin_Bootstrap_Admin_Form_Entity_File extends Skin_Default_Admin_Form_Enti
 
 				$oLargeWatermark_Div
 					->add(
-
 						$Core_Html_Entity_Checkbox
-						/* Core::factory('Core_Html_Entity_Div')
-						->class('form-group col-xs-12')
-						->add(
-							Core::factory('Core_Html_Entity_Label')
-								->class('checkbox-inline')
-								->value(Core::_('Admin_Form.image_preserve_aspect_ratio'))
-								->add($Core_Html_Entity_Checkbox)
-								->add(
-									Core::factory('Core_Html_Entity_Span')
-										->class('text')
-								)
-						) */
 					)
 					->add(
 						Core::factory('Core_Html_Entity_Div')
@@ -358,12 +334,6 @@ class Skin_Bootstrap_Admin_Form_Entity_File extends Skin_Default_Admin_Form_Enti
 			// Наложить водяной знак на изображение
 			if ($this->largeImage['place_watermark_checkbox'] == 1)
 			{
-			/* 	$Core_Html_Entity_Checkbox = Core::factory('Core_Html_Entity_Input')
-					->type('checkbox')
-					->name("large_place_watermark_checkbox_{$this->largeImage['name']}")
-					->id("large_place_watermark_checkbox_{$this->largeImage['name']}")
-					->value(1); */
-
 				$Core_Html_Entity_Checkbox = Admin_Form_Entity::factory('Checkbox')
 					->divAttr(array('class' => 'form-group col-xs-12'))
 					->name("large_place_watermark_checkbox_{$this->largeImage['name']}")
@@ -375,18 +345,6 @@ class Skin_Bootstrap_Admin_Form_Entity_File extends Skin_Default_Admin_Form_Enti
 				$oLargeWatermark_Div
 					->add(
 						$Core_Html_Entity_Checkbox
-						/* Core::factory('Core_Html_Entity_Div')
-						->class('form-group col-xs-12')
-						->add(
-							Core::factory('Core_Html_Entity_Label')
-								->class('checkbox-inline')
-								->value(Core::_('Admin_Form.place_watermark'))
-								->add($Core_Html_Entity_Checkbox)
-								->add(
-									Core::factory('Core_Html_Entity_Span')
-										->class('text')
-								)
-						) */
 					)
 					->add(
 						Core::factory('Core_Html_Entity_Div')
@@ -397,7 +355,6 @@ class Skin_Bootstrap_Admin_Form_Entity_File extends Skin_Default_Admin_Form_Enti
 			// Отображать поле положения "водяного" знака по оси X
 			if ($this->largeImage['place_watermark_x_show'] == 1)
 			{
-				//$oLargeWatermark_Table
 				$oLargeWatermark_Div
 					->add(
 						Core::factory('Core_Html_Entity_Div')
@@ -428,7 +385,6 @@ class Skin_Bootstrap_Admin_Form_Entity_File extends Skin_Default_Admin_Form_Enti
 			// Отображать поле положения "водяного" знака по оси Y
 			if ($this->largeImage['place_watermark_y_show'] == 1)
 			{
-				//$oLargeWatermark_Table
 				$oLargeWatermark_Div
 					->add(
 						Core::factory('Core_Html_Entity_Div')
@@ -478,7 +434,7 @@ class Skin_Bootstrap_Admin_Form_Entity_File extends Skin_Default_Admin_Form_Enti
 		// Быстрый просмотр большого изображения
 		if ($this->largeImage['path'] != '')
 		{
-			if (Core_File::isValidExtension($this->largeImage['path'], array('jpg', 'jpeg', 'gif', 'png')))
+			if (Core_File::isValidExtension($this->largeImage['path'], array('jpg', 'jpeg', 'gif', 'png', 'webp')))
 			{
 				$prefixRand = strpos($this->largeImage['path'], '?') === FALSE
 					? '?'
@@ -490,7 +446,7 @@ class Skin_Bootstrap_Admin_Form_Entity_File extends Skin_Default_Admin_Form_Enti
 								content: \'<img src="' . htmlspecialchars($this->largeImage['path']) . $prefixRand . 'rnd=' . rand() .'" style="max-width:200px" />\',
 								html: true,
 								placement: \'top\',
-								container: $(\'#file_large_' . $iAdmin_Form_Count . '\'),
+								container: $(\'#' . $windowId . ' #file_large_' . $iAdmin_Form_Count . '\'),
 								trigger: "hover"
 							});
 						});'
@@ -500,7 +456,7 @@ class Skin_Bootstrap_Admin_Form_Entity_File extends Skin_Default_Admin_Form_Enti
 
 		if ($this->largeImage['show_description'])
 		{
-			$oLarge_Core_Html_Entity_Div
+			$oMain_Div
 				->add(
 					Core::factory('Core_Html_Entity_Div')
 						->class('form-group col-xs-12 col-sm-6')
@@ -519,8 +475,10 @@ class Skin_Bootstrap_Admin_Form_Entity_File extends Skin_Default_Admin_Form_Enti
 						)
 			);
 		}
-		// -- Малое изображение
 
+		Core_Event::notify(get_class($this) . '.onAfterShowLargeImage', $this, array($oLarge_Input_Div));
+
+		// -- Малое изображение
 		// Отображать поле загрузки малого изображения
 		if ($this->smallImage['show'])
 		{
@@ -571,7 +529,7 @@ class Skin_Bootstrap_Admin_Form_Entity_File extends Skin_Default_Admin_Form_Enti
 				);
 			}
 
-			$oLarge_Core_Html_Entity_Div->add($oSmall_Input_Div);
+			$oMain_Div->add($oSmall_Input_Div);
 
 			if ($this->smallImage['path'] != '' || $this->smallImage['show_params'])
 			{
@@ -671,12 +629,6 @@ class Skin_Bootstrap_Admin_Form_Entity_File extends Skin_Default_Admin_Form_Enti
 					// Создать малое изображение из большого
 					if ($this->smallImage['create_small_image_from_large'])
 					{
-						/* $Core_Html_Entity_Checkbox = Core::factory('Core_Html_Entity_Input')
-							->type('checkbox')
-							->name("create_small_image_from_large_{$this->smallImage['name']}")
-							->id("create_small_image_from_large_{$this->smallImage['name']}")
-							->value(1); */
-
 						$Core_Html_Entity_Checkbox = Admin_Form_Entity::factory('Checkbox')
 							->divAttr(array('class' => 'form-group col-xs-12'))
 							->name("create_small_image_from_large_{$this->smallImage['name']}")
@@ -688,18 +640,6 @@ class Skin_Bootstrap_Admin_Form_Entity_File extends Skin_Default_Admin_Form_Enti
 						$oSmallWatermark_Div
 							->add(
 								$Core_Html_Entity_Checkbox
-								/* Core::factory('Core_Html_Entity_Div')
-								->class('form-group col-xs-12')
-								->add(
-									Core::factory('Core_Html_Entity_Label')
-										->class('checkbox-inline')
-										->value(Core::_('Admin_Form.create_thumbnail'))
-										->add($Core_Html_Entity_Checkbox)
-										->add(
-											Core::factory('Core_Html_Entity_Span')
-												->class('text')
-										)
-								) */
 							)
 							->add(
 								Core::factory('Core_Html_Entity_Div')
@@ -710,12 +650,6 @@ class Skin_Bootstrap_Admin_Form_Entity_File extends Skin_Default_Admin_Form_Enti
 					// Отображать Сохранять пропорции изображения
 					if ($this->smallImage['preserve_aspect_ratio_checkbox'])
 					{
-						/* $Core_Html_Entity_Checkbox = Core::factory('Core_Html_Entity_Input')
-							->type('checkbox')
-							->name("small_preserve_aspect_ratio_{$this->smallImage['name']}")
-							->id("small_preserve_aspect_ratio_{$this->smallImage['name']}")
-							->value(1); */
-
 						$Core_Html_Entity_Checkbox = Admin_Form_Entity::factory('Checkbox')
 							->divAttr(array('class' => 'form-group col-xs-12'))
 							->name("small_preserve_aspect_ratio_{$this->smallImage['name']}")
@@ -756,7 +690,7 @@ class Skin_Bootstrap_Admin_Form_Entity_File extends Skin_Default_Admin_Form_Enti
 
 					if ($this->smallImage['show_description'])
 					{
-						$oLarge_Core_Html_Entity_Div
+						$oMain_Div
 							->add(
 								Core::factory('Core_Html_Entity_Div')
 								->class('form-group col-xs-12 col-sm-6')
@@ -792,7 +726,7 @@ class Skin_Bootstrap_Admin_Form_Entity_File extends Skin_Default_Admin_Form_Enti
 				// Быстрый просмотр малого изображения
 				if ($this->smallImage['path'] != '')
 				{
-					if (Core_File::isValidExtension($this->smallImage['path'], array('jpg', 'jpeg', 'gif', 'png')))
+					if (Core_File::isValidExtension($this->smallImage['path'], array('jpg', 'jpeg', 'gif', 'png', 'webp')))
 					{
 						$prefixRand = strpos($this->smallImage['path'], '?') === FALSE
 							? '?'
@@ -804,7 +738,7 @@ class Skin_Bootstrap_Admin_Form_Entity_File extends Skin_Default_Admin_Form_Enti
 									content: \'<img src="' . $this->smallImage['path'] . $prefixRand . 'rnd=' . rand() . '" style="max-width:200px" />\',
 									html: true,
 									placement: \'top\',
-									container: $(\'#file_small_' . $iAdmin_Form_Count . '\'),
+									container: $(\'#' . $windowId . ' #file_small_' . $iAdmin_Form_Count . '\'),
 									trigger: "hover"
 								});
 							});'
@@ -812,19 +746,23 @@ class Skin_Bootstrap_Admin_Form_Entity_File extends Skin_Default_Admin_Form_Enti
 					}
 				}
 			}
+
+			Core_Event::notify(get_class($this) . '.onAfterShowSmallImage', $this, array($oSmall_Input_Div));
 		}
 
 		foreach ($this->_children as $oCore_Html_Entity)
 		{
-			$oLarge_Core_Html_Entity_Div->add($oCore_Html_Entity);
+			$oMain_Div->add($oCore_Html_Entity);
 		}
 
-		$oLarge_Core_Html_Entity_Div
-			->add(
-					Core::factory('Core_Html_Entity_Div')
-						->style('clear: both')
-				)
-			->execute();
+		$oMain_Div
+			->add(Core::factory('Core_Html_Entity_Div')
+					->style('clear: both')
+			);
+
+		Core_Event::notify(get_class($this) . '.onBeforeExecute', $this, array($oMain_Div));
+
+		$oMain_Div->execute();
 	}
 
 	protected function _getIcon($originalName)

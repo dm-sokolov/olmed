@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Lead
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Lead_Shop_Item_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 {
@@ -134,24 +134,25 @@ class Lead_Shop_Item_Controller_Edit extends Admin_Form_Action_Controller_Type_E
 
 		$oMainTab->move($this->getField('shop_item_id')->id('itemId')->divAttr(array('class' => 'form-group col-xs-6')), $oMainRow3);
 
+		$windowId = $this->_Admin_Form_Controller->getWindowId();
+
 		$oCore_Html_Entity_Script = Core::factory('Core_Html_Entity_Script')
-			->value("$('#itemInput').autocompleteShopItem({ shop_id: '{$oShop->id}', shop_currency_id: '{$oShop->shop_currency_id}' }, function(event, ui) {
-				$('#itemId').val(typeof ui.item.id !== 'undefined' ? ui.item.id : 0);
-				$('#itemPrice').val(typeof ui.item.price !== 'undefined' ? ui.item.price : 0);
-				$('#shopCurrencyId').val(typeof ui.item.currency_id !== 'undefined' ? ui.item.currency_id : 0);
-				$('#itemRate').val(typeof ui.item.rate !== 'undefined' ? ui.item.rate : 0);
-				$('#itemMarking').val(typeof ui.item.marking !== 'undefined' ? ui.item.marking : 0);
-			  } );"
-			);
+			->value("$('#{$windowId} #itemInput').autocompleteShopItem({ shop_id: '{$oShop->id}', shop_currency_id: '{$oShop->shop_currency_id}' }, function(event, ui) {
+				$('#{$windowId} #itemId').val(typeof ui.item.id !== 'undefined' ? ui.item.id : 0);
+				$('#{$windowId} #itemPrice').val(typeof ui.item.price !== 'undefined' ? ui.item.price : 0);
+				$('#{$windowId} #shopCurrencyId').val(typeof ui.item.currency_id !== 'undefined' ? ui.item.currency_id : 0);
+				$('#{$windowId} #itemRate').val(typeof ui.item.rate !== 'undefined' ? ui.item.rate : 0);
+				$('#{$windowId} #itemMarking').val(typeof ui.item.marking !== 'undefined' ? ui.item.marking : 0);
+			});");
 
 		$oMainTab->add($oCore_Html_Entity_Script);
 
 		$oMainTab->add(
-				Admin_Form_Entity::factory('Input')
-					->type('hidden')
-					->name('lead_id')
-					->value($iLeadId)
-			);
+			Admin_Form_Entity::factory('Input')
+				->type('hidden')
+				->name('lead_id')
+				->value($iLeadId)
+		);
 
 		$title = $this->_object->id
 			? Core::_('Lead_Shop_Item.lead_shop_items_edit_form_title', $oLead->getFullName())

@@ -5,7 +5,7 @@
  * @package HostCMS
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 require_once('../../../../../bootstrap.php');
 
@@ -72,6 +72,8 @@ $oAdmin_Form_Entity_Breadcrumbs
 			)
 	);
 
+$windowId = $oAdmin_Form_Controller->getWindowId();
+
 $oAdmin_Form_Controller->addEntity(
 	Admin_Form_Entity::factory('Code')
 		->html('
@@ -90,8 +92,8 @@ $oAdmin_Form_Controller->addEntity(
 				</form>
 			</div>
 			<script type="text/javascript">
-				$(\'#shop_item_name\').autocompleteShopItem({ shop_id: ' . $oShop->id . ',  shop_currency_id: ' . $oShop->shop_currency_id . '}, function(event, ui) {
-					$(\'#shop_item_id\').val(typeof ui.item.id !== \'undefined\' ? ui.item.id : 0);
+				$(\'#' . $windowId . ' #shop_item_name\').autocompleteShopItem({ shop_id: ' . $oShop->id . ',  shop_currency_id: ' . $oShop->shop_currency_id . '}, function(event, ui) {
+					$(\'#' . $windowId . ' #shop_item_id\').val(typeof ui.item.id !== \'undefined\' ? ui.item.id : 0);
 				});
 			</script>
 		')

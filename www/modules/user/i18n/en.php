@@ -100,4 +100,7 @@ return array(
 	'from' => 'E-mail of the sender',
 	'sender_name' => 'Sender name',
 	'title' => 'Title',
+
+	'option_max_height' => 'Max avatar height',
+	'option_max_width' => 'Max avatar width',
 );
