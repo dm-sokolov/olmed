@@ -583,6 +583,15 @@ abstract class Shop_Payment_System_Handler
 						? $oShop_Cart->marking
 						: $oShop_Item->marking;
 
+					// Статус товаров по умолчанию.
+					if ($oShop->shop_order_status_id
+						&& $oShop->shop_order_status_id == $this->_shopOrder->shop_order_status_id
+						&& $this->_shopOrder->Shop_Order_Status->shop_order_item_status_id
+					)
+					{
+						$oShop_Order_Item->shop_order_item_status_id = $this->_shopOrder->Shop_Order_Status->shop_order_item_status_id;
+					}
+
 					$this->_shopOrder->add($oShop_Order_Item);
 
 					// Save coupon
@@ -1099,7 +1108,7 @@ abstract class Shop_Payment_System_Handler
 				$this->_shopOrder->clearEntities()
 					->showXmlCurrency(TRUE)
 					->showXmlCountry(TRUE)
-					->showXmlItems(TRUE)
+					->showXmlItems('not canceled')
 					->showXmlDelivery(TRUE)
 					->showXmlPaymentSystem(TRUE)
 					->showXmlOrderStatus(TRUE)
@@ -1376,9 +1385,19 @@ abstract class Shop_Payment_System_Handler
 	/**
 	 * Get array of admin emails
 	 * @return array
+	 * @hostcms-event Shop_Payment_System_Handler.onGetAdminEmails
 	 */
 	public function getAdminEmails()
 	{
+		Core_Event::notify('Shop_Payment_System_Handler.onGetAdminEmails', $this);
+
+		$lastReturn = Core_Event::getLastReturn();
+		
+		if (is_array($lastReturn))
+		{	
+			return $lastReturn;
+		}
+	
 		$oShop = $this->_shopOrder->Shop;
 
 		return trim($oShop->email) != ''
@@ -1572,14 +1591,19 @@ abstract class Shop_Payment_System_Handler
 
 			if (Core::moduleIsActive('siteuser') && $oShopOrder->siteuser_id)
 			{
-				$oSiteuser_Email = Core_Entity::factory('Siteuser_Email');
-				$oSiteuser_Email->siteuser_id = $oShopOrder->siteuser_id;
-				$oSiteuser_Email->subject = $user_subject;
-				$oSiteuser_Email->email = $to;
-				$oSiteuser_Email->from = $from;
-				$oSiteuser_Email->type = $this->_siteuserMailContentType == 'text/html' ? 1 : 0;
-				$oSiteuser_Email->text = $sInvoice;
-				$oSiteuser_Email->save();
+				$aConfig = Core_Config::instance()->get('siteuser_config', array());
+
+				if (!isset($aConfig['save_emails']) || $aConfig['save_emails'])
+				{
+					$oSiteuser_Email = Core_Entity::factory('Siteuser_Email');
+					$oSiteuser_Email->siteuser_id = $oShopOrder->siteuser_id;
+					$oSiteuser_Email->subject = $user_subject;
+					$oSiteuser_Email->email = $to;
+					$oSiteuser_Email->from = $from;
+					$oSiteuser_Email->type = $this->_siteuserMailContentType == 'text/html' ? 1 : 0;
+					$oSiteuser_Email->text = $sInvoice;
+					$oSiteuser_Email->save();
+				}
 			}
 		}
 

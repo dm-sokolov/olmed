@@ -6,7 +6,7 @@
  * @package HostCMS
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2019 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 require_once('../../bootstrap.php');
 
@@ -76,8 +76,10 @@ $oCounters->queryBuilder()
 
 if (count($oCounters->findAll()))
 {
+	$sWindowId = $oAdmin_Form_Controller->getWindowId();
+
 	ob_start();
-	
+
 	$iMonth = 6;
 	?>
 	<div class="widget counter">
@@ -290,8 +292,8 @@ if (count($oCounters->findAll()))
 				}
 			};
 
-			var placeholderWebsiteTraffic = $("#website-traffic-chart"),
-				placeholderSearchBots = $("#search-bots-chart");
+			var placeholderWebsiteTraffic = $("#<?php echo $sWindowId?> #website-traffic-chart"),
+				placeholderSearchBots = $("#<?php echo $sWindowId?> #search-bots-chart");
 
 			placeholderWebsiteTraffic.bind("plotselected", function (event, ranges) {
 				//var zoom = $("#zoom").is(":checked");
@@ -335,11 +337,11 @@ if (count($oCounters->findAll()))
 			});
 			*/
 
-			$('#website_traffic #setOriginalZoom').on('click', function(){
+			$('#<?php echo $sWindowId?> #website_traffic #setOriginalZoom').on('click', function(){
 				plotWebsiteTraffic = $.plot(placeholderWebsiteTraffic, dataWebsiteTraffic, options);
 			});
 
-			$('#search_bots #setOriginalZoom').on('click', function(){
+			$('#<?php echo $sWindowId?> #search_bots #setOriginalZoom').on('click', function(){
 				plotSearchBots = $.plot(placeholderSearchBots, dataSearchBots, options);
 			});
 
@@ -351,11 +353,11 @@ if (count($oCounters->findAll()))
 			var plotWebsiteTraffic = $.plot(placeholderWebsiteTraffic, dataWebsiteTraffic, options),
 				plotSearchBots = $.plot(placeholderSearchBots, dataSearchBots, options);
 
-			$("#website_traffic #clearSelection").click(function () {
+			$("#<?php echo $sWindowId?> #website_traffic #clearSelection").click(function () {
 				plotWebsiteTraffic.clearSelection();
 			});
 
-			$("#search_bots #clearSelection").click(function () {
+			$("#<?php echo $sWindowId?> #search_bots #clearSelection").click(function () {
 				plotSearchBots.clearSelection();
 			});
 

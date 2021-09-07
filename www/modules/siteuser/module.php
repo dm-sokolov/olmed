@@ -23,13 +23,20 @@ class Siteuser_Module extends Core_Module
 	 * Module date
 	 * @var date
 	 */
-	public $date = '2021-02-16';
+	public $date = '2021-08-23';
 
 	/**
 	 * Module name
 	 * @var string
 	 */
 	protected $_moduleName = 'siteuser';
+
+	protected $_options = array(
+		'save_emails' => array(
+			'type' => 'checkbox',
+			'default' => TRUE
+		)
+	);
 
 	/**
 	 * Constructor.

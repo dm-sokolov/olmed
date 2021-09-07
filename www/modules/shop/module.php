@@ -23,7 +23,7 @@ class Shop_Module extends Core_Module
 	 * Module date
 	 * @var date
 	 */
-	public $date = '2021-02-16';
+	public $date = '2021-08-23';
 
 	/**
 	 * Module name
@@ -43,6 +43,37 @@ class Shop_Module extends Core_Module
 		4 => 'rebuildFastfilter',
 		5 => 'unsetApplyPurchaseDiscounts',
 		6 => 'setApplyPurchaseDiscounts',
+	);
+
+	protected $_options = array(
+		'itemEditWarehouseLimit' => array(
+			'type' => 'int',
+			'default' => 20
+		),
+		'smallImagePrefix' => array(
+			'type' => 'string',
+			'default' => 'small_'
+		),
+		'itemLargeImage' => array(
+			'type' => 'string',
+			'default' => 'item_%d.%s'
+		),
+		'itemSmallImage' => array(
+			'type' => 'string',
+			'default' => 'small_item_%d.%s'
+		),
+		'groupLargeImage' => array(
+			'type' => 'string',
+			'default' => 'group_%d.%s'
+		),
+		'groupSmallImage' => array(
+			'type' => 'string',
+			'default' => 'small_group_%d.%s'
+		),
+		'shop_item_card_xsl' => array(
+			'type' => 'string',
+			'default' => 'ЦенникиТоваров'
+		),
 	);
 
 	/**

@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Cache
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2018 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Cache_List_Dataset extends Admin_Form_Dataset
 {
@@ -49,17 +49,13 @@ class Cache_List_Dataset extends Admin_Form_Dataset
 	}
 
 	/**
-	 * Dataset objects list
-	 * @var array
-	 */
-	protected $_objects = array();
-
-	/**
 	 * Load objects
 	 * @return array
 	 */
 	public function load()
 	{
+		!is_array($this->_objects) && $this->_getCaches();
+
 		return array_slice($this->_objects, $this->_offset, $this->_limit);
 	}
 
@@ -99,16 +95,6 @@ class Cache_List_Dataset extends Admin_Form_Dataset
 	protected function _newObject()
 	{
 		return new Cache_Entity();
-	}
-
-	/**
-	 * Get object
-	 * @param int $primaryKey ID
-	 * @return object
-	 */
-	public function getObject($primaryKey)
-	{
-		return $this->_objects[$primaryKey];
 	}
 
 	/**

@@ -5,7 +5,7 @@
  * @package HostCMS
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 require_once('../../../../bootstrap.php');
 
@@ -39,7 +39,9 @@ $oAdmin_Form_Controller
 	->pageTitle($sFormTitle);
 
 $siteuser_id = intval(Core_Array::getGet('siteuser_id'));
-$siteuser_id && $oAdmin_Form_Controller->Admin_View('Admin_Internal_View');
+$siteuser_id && $oAdmin_Form_Controller->Admin_View(
+	Admin_View::getClassName('Admin_Internal_View')
+);
 
 if (Core_Array::getPost('load_modal') && Core_Array::getPost('shop_order_item_id'))
 {
@@ -306,7 +308,7 @@ $oAdminFormActionApply = Core_Entity::factory('Admin_Form', $iAdmin_Form_Id)
 if ($oAdminFormActionApply && $oAdmin_Form_Controller->getAction() == 'apply')
 {
 	$oControllerApply = Admin_Form_Action_Controller::factory(
-		'Admin_Form_Action_Controller_Type_Apply', $oAdminFormActionApply
+		'Shop_Order_Item_Controller_Apply', $oAdminFormActionApply
 	);
 
 	// Добавляем типовой контроллер редактирования контроллеру формы

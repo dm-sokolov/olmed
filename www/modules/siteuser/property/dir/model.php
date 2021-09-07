@@ -9,14 +9,39 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Siteuser
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2016 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
-class Siteuser_Property_Dir_Model extends Core_Entity{
+class Siteuser_Property_Dir_Model extends Core_Entity
+{
 	/**
 	 * Disable markDeleted()
 	 * @var mixed
-	 */	protected $_marksDeleted = NULL;
+	 */
+	protected $_marksDeleted = NULL;
+
 	/**
 	 * Belongs to relations
 	 * @var array
-	 */	protected $_belongsTo = array(		'site' => array(),		'property_dir' => array()	);}
+	 */
+	protected $_belongsTo = array(
+		'site' => array(),
+		'property_dir' => array()
+	);
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event siteuser_property_dir.onBeforeGetRelatedSite
+	 * @hostcms-event siteuser_property_dir.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
+	}
+}

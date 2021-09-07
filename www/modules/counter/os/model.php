@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Counter
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2018 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Counter_Os_Model extends Core_Entity
 {
@@ -27,4 +27,20 @@ class Counter_Os_Model extends Core_Entity
 	 */
 	protected $_marksDeleted = NULL;
 
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event counter_os.onBeforeGetRelatedSite
+	 * @hostcms-event counter_os.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
+	}
 }

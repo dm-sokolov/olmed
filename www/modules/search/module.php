@@ -23,7 +23,7 @@ class Search_Module extends Core_Module
 	 * Module date
 	 * @var date
 	 */
-	public $date = '2021-02-16';
+	public $date = '2021-08-23';
 
 	/**
 	 * Module name
@@ -120,8 +120,6 @@ class Search_Module extends Core_Module
 
 								$result = $oModule->Core_Module->indexing($offset, $step);
 								$count = $result ? count($result) : 0;
-
-								//echo "\n  ", $offset, ' -> ', $offset + $step, ', found: ', $count;
 
 								$count && $Search_Controller->indexingSearchPages($result);
 

@@ -24,7 +24,7 @@ class Notification_Model extends Core_Entity
 	 * @var array
 	 */
 	protected $_hasMany = array(
-		'notification_user' =>  array(),
+		'notification_user' => array(),
 		'user' => array('through' => 'notification_users')
 	);
 

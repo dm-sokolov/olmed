@@ -239,6 +239,12 @@ class Core_Str
 
 						return $oData->translations[0]->text;
 					}
+					else
+					{
+						Core_Log::instance()->clear()
+							->status(Core_Log::$MESSAGE)
+							->write('Core_Str::translate error: ' . $data);
+					}
 				}
 			}
 			catch (Exception $e){}
@@ -287,7 +293,7 @@ class Core_Str
 
 		$aConfig = Core::$config->get('core_str') + array(
 			'spaceSeparator' => '-',
-			// ISO 9
+			// ISO 9, Транслитерация по системе Б с использованием буквосочетаний
 			'transliteration' => array(
 				'а' => 'a', 'б' => 'b', 'в' => 'v', 'г' => 'g', 'д' => 'd', 'е' => 'e', 'ё' => 'yo',
 				'ж' => 'zh', 'з' => 'z', 'и' => 'i', 'й' => 'j', 'к' => 'k', 'л' => 'l', 'м' => 'm',
@@ -918,12 +924,9 @@ class Core_Str
 
 		foreach ($rgb as $key => $iColor)
 		{
-			$k = $iColor - floor((255 - $iColor) * $opacity);
+			$k = $iColor - floor($iColor * $opacity);
 			$rgb[$key] = $k > 0 ? $k : 0;
 		}
-
-		//$rgb = array_map('dechex', $rgb);
-		//return '#' . implode('', $rgb);
 
 		return sprintf('#%02x%02x%02x', $rgb[0], $rgb[1], $rgb[2]);
 	}
@@ -1407,5 +1410,72 @@ class Core_Str
 		}
 
 		return strval($mixed);
+	}
+
+	/**
+	 * Convert weight
+	 *
+	 * @param string $from, $to, $value
+	 * @param string $to
+	 * @param mixed $value
+	 * @return float
+	 */
+	static public function convertWeight($from, $to, $value)
+	{
+		switch ($from)
+		{
+			case 'г':
+			case 'g':
+			default:
+				$coeff = 1;
+			break;
+			case 'кг':
+			case 'kg':
+				$coeff = 1000;
+			break;
+			case 'ц':
+				$coeff = 100000;
+			break;
+			case 'т':
+			case 't':
+				$coeff = 1000000;
+			break;
+			case 'фунт':
+			case 'lb':
+				$coeff = 453.59;
+			break;
+		}
+
+		// Пересчет из $from в граммы
+		$value *= $coeff;
+
+		switch ($to)
+		{
+			case 'г':
+			case 'g':
+			default:
+				$coeff = 1;
+			break;
+			case 'кг':
+			case 'kg':
+				$coeff = 0.001;
+			break;
+			case 'ц':
+				$coeff = 0.00001;
+			break;
+			case 'т':
+			case 't':
+				$coeff = 0.000001;
+			break;
+			case 'фунт':
+			case 'lb':
+				$coeff = 0.0022046341409643;
+			break;
+		}
+
+		// Пересчет из граммов в $to
+		$value *= $coeff;
+
+		return sprintf("%.3f", $value);
 	}
 }

@@ -5,7 +5,7 @@
  * @package HostCMS
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2017 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 require_once('../../bootstrap.php');
 
@@ -48,10 +48,10 @@ $oAdmin_Form_Entity_Menus->add(
 		->icon('fa fa-list')
 		->img('/admin/images/banners.gif')
 		->href(
-			$oAdmin_Form_Controller->getAdminLoadHref($sAdvertisementPath, '', NULL, 0, 0)
+			$oAdmin_Form_Controller->getAdminLoadHref($sAdvertisementPath, NULL, NULL)
 		)
 		->onclick(
-			$oAdmin_Form_Controller->getAdminLoadAjax($sAdvertisementPath, '', NULL, 0, 0)
+			$oAdmin_Form_Controller->getAdminLoadAjax($sAdvertisementPath, NULL, NULL)
 		)
 );
 

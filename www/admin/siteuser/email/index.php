@@ -45,7 +45,9 @@ $oAdmin_Form_Controller
 	->pageTitle($pageTitle);
 
 $siteuser_id = intval(Core_Array::getGet('siteuser_id'));
-$siteuser_id && $oAdmin_Form_Controller->Admin_View('Admin_Internal_View');
+$siteuser_id && $oAdmin_Form_Controller->Admin_View(
+	Admin_View::getClassName('Admin_Internal_View')
+);
 
 // Меню формы
 $oAdmin_Form_Entity_Menus = Admin_Form_Entity::factory('Menus');

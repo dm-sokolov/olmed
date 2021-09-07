@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Form
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Form_Fill_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 {
@@ -97,9 +97,7 @@ class Form_Fill_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 
 		$aMasFormStatuses = array(array('value' => Core::_('Admin.none'), 'color' => '#aebec4'));
 
-		// При добавлении дела отображаем статусы, которые не являются завершающими
 		$aForm_Statuses = Core_Entity::factory('Form_Status')->findAll();
-
 		foreach ($aForm_Statuses as $oForm_Status)
 		{
 			$aMasFormStatuses[$oForm_Status->id] = array(
@@ -213,13 +211,13 @@ class Form_Fill_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 				break;
 
 				case 5: // Большое текстовое поле
-					$oInput_Item_Textarea = Admin_Form_Entity::factory('Textarea');
+					// $oInput_Item_Textarea = Admin_Form_Entity::factory('Textarea');
 
-					$oInput_Item = Admin_Form_Entity::factory('Div')
+					/*$oInput_Item = Admin_Form_Entity::factory('Div')
 						->class('form-group col-xs-12')
-						->add($oInput_Item_Textarea);
+						->add($oInput_Item_Textarea);*/
 
-					$oInput_Item_Textarea
+					$oInput_Item = Admin_Form_Entity::factory('Textarea')
 						->name('form_fill_field_' . $oForm_Fill_Field->Form_Field->id . '_' . $oForm_Fill_Field->id)
 						->value($oForm_Fill_Field->value)
 						->caption(htmlspecialchars($oForm_Fill_Field->Form_Field->caption));
@@ -275,13 +273,14 @@ class Form_Fill_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 				case 7: // Скрытое поле
 				case 9: // Список из флажков
 				case 5: // Большое текстовое поле
+				default:
 					!is_null($value) && $oForm_Fill_Field->value($value)->save();
 				break;
 				case 4: // Флажок
 					$oForm_Fill_Field->value(is_null($value) ? 0 : 1)->save();
 				break;
 				case 2: // Поле загрузки файла
-					/////
+					//
 				break;
 				case 8: //Надпись
 				break;

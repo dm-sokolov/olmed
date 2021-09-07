@@ -20,19 +20,17 @@
 	<xsl:template match="informationsystem">
 		
 		<xsl:if test="informationsystem_item">
-			<div class="h1 text-center mb-4">
+			<div class="h2 font-weight-bold main-title advantages-title">
 				<xsl:choose>
 					<xsl:when test="other_name/node()">
 						<xsl:value-of disable-output-escaping="yes" select="other_name" />
 					</xsl:when>
-					<xsl:otherwise>Почему клиенты довольны нашей работой:</xsl:otherwise>
+					<xsl:otherwise>Почему клиенты довольны нашей работой</xsl:otherwise>
 				</xsl:choose>
 			</div>
-			<div class="row justify-content-md-center">
-				<div class="col-sm-11 advantages-box">
-					<div class="row">
-						<xsl:apply-templates select="informationsystem_item" />
-					</div>
+			<div class="">
+				<div class="advantages-box">
+					<xsl:apply-templates select="informationsystem_item" />
 				</div>
 			</div>
 		</xsl:if>
@@ -41,9 +39,9 @@
 	
 	<xsl:template match="informationsystem_item">
 		
-		<div class="col-sm-6 mb-4">
+		<div class="mb-4">
 			<div class="advantage-desc" style="background-image: url({dir}{image_small});">
-				<div class="h4 text-dark"><xsl:value-of select="name"/></div>
+				<div class="h4 text-dark advantages-subtitle"><xsl:value-of select="name"/></div>
 				<xsl:value-of disable-output-escaping="yes" select="description"/>
 			</div>
 		</div>

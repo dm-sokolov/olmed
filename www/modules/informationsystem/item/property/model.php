@@ -27,4 +27,21 @@ class Informationsystem_Item_Property_Model extends Core_Entity
 		'informationsystem' => array(),
 		'property' => array(),
 	);
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event informationsystem_item_property.onBeforeGetRelatedSite
+	 * @hostcms-event informationsystem_item_property.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Informationsystem->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
+	}
 }

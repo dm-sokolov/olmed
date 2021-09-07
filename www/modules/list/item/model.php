@@ -88,9 +88,14 @@ class List_Item_Model extends Core_Entity
 	 */
 	public function valueBadge($oAdmin_Form_Field, $oAdmin_Form_Controller)
 	{
+		if (strlen($this->color))
+		{
+			?><span class="list-item-color-badge" style="background-color: <?php echo htmlspecialchars($this->color)?>; box-shadow: 0 0 0 1px <?php echo Core_Str::hex2darker($this->color, 0.1)?>"></span><?php
+		}
+
 		$count = $this->List_Items->getCount();
 		$count && Core::factory('Core_Html_Entity_Span')
-			->class('badge badge-hostcms badge-square')
+			->class('badge badge-hostcms badge-square margin-left-5')
 			->value($count)
 			->execute();
 	}
@@ -228,5 +233,22 @@ class List_Item_Model extends Core_Entity
 		}
 
 		return $this;
+	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event list_item.onBeforeGetRelatedSite
+	 * @hostcms-event list_item.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->List->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
 	}
 }

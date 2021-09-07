@@ -39,7 +39,7 @@ class Shop_Warehouse_Type_Controller_Edit extends Admin_Form_Action_Controller_T
 		$oMainTab
 			->move($this->getField('name')->divAttr(array('class' => 'form-group col-xs-12')), $oMainRow1)
 			->move($this->getField('color')->set('data-control', 'hue')->divAttr(array('class' => 'form-group col-xs-12 col-sm-4')), $oMainRow2)
-			->move($this->getField('sorting')->divAttr(array('class' => 'form-group col-xs-12 col-sm-4')), $oMainRow2)
+			->move($this->getField('sorting')->divAttr(array('class' => 'form-group col-xs-12 col-sm-5 col-md-4 ')), $oMainRow2)
 			->move($this->getField('description')->divAttr(array('class' => 'form-group col-xs-12')), $oMainRow3);
 
 		$title = $this->_object->id

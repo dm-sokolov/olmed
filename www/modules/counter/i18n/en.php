@@ -84,4 +84,6 @@ return array(
 	'type_12' => 'Counter 12',
 	'type_13' => 'Counter 13',
 	'type_14' => 'Counter 14',
+
+	'option_gethostbyaddr' => 'Get hostname by IP'
 );

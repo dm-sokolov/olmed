@@ -18,7 +18,7 @@ class Event_Group_Model extends Core_Entity
 	 * @var array
 	 */
 	protected $_hasMany = array(
-		'event' =>  array()
+		'event' => array()
 	);
 
 	/**

@@ -73,13 +73,13 @@ class Directory_Controller_Tab_Website extends Directory_Controller_Tab
 				Admin_Form_Entity::factory('Checkbox')
 					->divAttr(array('class' => 'col-xs-3 col-sm-2 no-padding margin-top-23'))
 					->name($this->prefix . 'website_public' . $sNameSuffix)
-					->checked($iWebsitePublic ? $iWebsitePublic : NULL)
-					->value($iWebsitePublic)
+					->value(1)
+					->checked($iWebsitePublic ? $iWebsitePublic : FALSE)
 					->caption(Core::_('Directory_Website.website_public'))
 			);
 			
 			// Для нового свойства добавляет скрытое поле, хранящее состояние чекбокса
-			if (!$oUser_Directory_Website)
+			/*if (!$oUser_Directory_Website)
 			{
 				$oRowElements->add(
 					Core::factory('Core_Html_Entity_Input')
@@ -87,9 +87,95 @@ class Directory_Controller_Tab_Website extends Directory_Controller_Tab
 						->value(0)
 						->name($this->prefix . 'website_public_value' . $sNameSuffix)
 				);
-			}
+			}*/
 		}
 
 		return $oRowElements;
+	}
+	
+	public function applyObjectProperty($Admin_Form_Controller, $object)
+	{
+		$windowId = $Admin_Form_Controller->getWindowId();
+
+		$prefix = preg_replace('/[^A-Za-z0-9_-]/', '', $this->prefix);
+
+		// Cайты, установленные значения
+		$aDirectory_Websites = $object->Directory_Websites->findAll(FALSE);
+		foreach ($aDirectory_Websites as $oDirectory_Website)
+		{
+			$sWebsite_Address = Core_Array::getPost("{$prefix}website_address#{$oDirectory_Website->id}", NULL, 'trim');
+
+			if (!empty($sWebsite_Address))
+			{
+				$aUrl = @parse_url($sWebsite_Address);
+
+				// Если не был указан протокол, или
+				// указанный протокол некорректен для url
+				!array_key_exists('scheme', $aUrl)
+					&& $sWebsite_Address = 'http://' . $sWebsite_Address;
+
+				$oDirectory_Website
+					->description(Core_Array::getPost("{$prefix}website_description#{$oDirectory_Website->id}", NULL, 'string'))
+					->public(Core_Array::getPost("{$prefix}website_public#{$oDirectory_Website->id}", 0, 'int'))
+					->value($sWebsite_Address)
+					->save();
+			}
+			else
+			{
+				// Удаляем пустую строку с полями
+				ob_start();
+				Core::factory('Core_Html_Entity_Script')
+					->value("$.deleteFormRow($(\"#{$windowId} input[name='{$prefix}website_address#{$oDirectory_Website->id}']\").closest('.row').find('.btn-delete').get(0));")
+					->execute();
+
+				$Admin_Form_Controller->addMessage(ob_get_clean());
+				$oDirectory_Website->delete();
+			}
+		}
+
+		// Сайты, новые значения
+		$aWebsiteAddresses = Core_Array::getPost("{$prefix}website_address", array());
+		$aWebsiteNames = Core_Array::getPost("{$prefix}website_description", array());
+		$aWebsitePublic = Core_Array::getPost("{$prefix}website_public", array());
+
+		if (is_array($aWebsiteAddresses) && count($aWebsiteAddresses))
+		{
+			$i = 0;
+			foreach ($aWebsiteAddresses as $key => $sWebsite_Address)
+			{
+				$sWebsite_Address = trim($sWebsite_Address);
+
+				if (!empty($sWebsite_Address))
+				{
+					$aUrl = @parse_url($sWebsite_Address);
+
+					// Если не был указан протокол, или
+					// указанный протокол некорректен для url
+					!array_key_exists('scheme', $aUrl)
+						&& $sWebsite_Address = 'http://' . $sWebsite_Address;
+
+					$oDirectory_Website = Core_Entity::factory('Directory_Website')
+						->public(Core_Array::get($aWebsitePublic, $key, 0, 'int'))
+						->description(Core_Array::get($aWebsiteNames, $key, NULL, 'string'))
+						->value($sWebsite_Address);
+
+					$object->add($oDirectory_Website);
+
+					ob_start();
+					Core::factory('Core_Html_Entity_Script')
+						->value("$(\"#{$windowId} input[name='{$prefix}website_address\\[\\]']\").eq({$i}).prop('name', '{$prefix}website_address#{$oDirectory_Website->id}').closest('.row').find('.btn-delete').removeClass('hide');
+						$(\"#{$windowId} input[name='{$prefix}website_description\\[\\]']\").eq({$i}).prop('name', '{$prefix}website_description#{$oDirectory_Website->id}');
+						$(\"#{$windowId} input[name='{$prefix}website_public\\[\\]']\").eq({$i}).prop('name', '{$prefix}website_public#{$oDirectory_Website->id}');
+						")
+						->execute();
+
+					$Admin_Form_Controller->addMessage(ob_get_clean());
+				}
+				else
+				{
+					$i++;
+				}
+			}
+		}
 	}
 }

@@ -219,11 +219,55 @@ class List_Model extends Core_Entity
 		{
 			foreach ($this->_aListItemsTree[$parent_id] as $oList_Item)
 			{
-				$aReturn[$oList_Item->id] = str_repeat('  ', $iLevel) . $oList_Item->value;
+				$aAttr = array();
+
+				if (strlen($oList_Item->color))
+				{
+					$color = $oList_Item->color;
+
+					$colorVal = hexdec(ltrim($color, '#'));
+
+					if (strlen($colorVal) == 6)
+					{
+						$red = 0xFF & ($colorVal >> 16);
+						$green = 0xFF & ($colorVal >> 8);
+						$blue = 0xFF & $colorVal;
+
+						if ($red < 224 && $green < 224 && $blue < 224)
+						{
+							$color = '#000';
+						}
+					}
+
+					$aAttr['style'] = 'color: ' . $color;
+				}
+
+				$aReturn[$oList_Item->id] = array(
+					'value' => str_repeat('  ', $iLevel) . $oList_Item->value,
+					'attr' => $aAttr
+				);
+
 				$aReturn += $this->getListItemsTree($oList_Item->id, $iLevel + 1);
 			}
 		}
 
 		return $aReturn;
+	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event list.onBeforeGetRelatedSite
+	 * @hostcms-event list.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
 	}
 }

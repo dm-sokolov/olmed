@@ -6,7 +6,7 @@
  * @subpackage Company
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2018 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 return array(
 	'model_name' => 'Companies',
@@ -52,5 +52,7 @@ return array(
 	'show_phone_types' => 'Phone types',
 	'show_address_types' => 'Address types',
 	'show_socials' => 'Socials',
-	'show_messengers' => 'Messengers'
+	'show_messengers' => 'Messengers',
+	'sorting' => 'Sorting',
+	'apply_success' =>	'Item changed successfully!',
 );

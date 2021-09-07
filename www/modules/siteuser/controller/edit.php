@@ -218,13 +218,14 @@ class Siteuser_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 			}
 		}
 
+		$windowId = $this->_Admin_Form_Controller->getWindowId();
+
 		$oPropertyTab = Admin_Form_Entity::factory('Tab')
 			->caption(Core::_('Admin_Form.tabProperties'))
 			->name('Property');
 
 		$this->addTabAfter($oPropertyTab, $oDealTab);
 
-		// Вкладку с группами пользователя добавляем и показываем при редактировании пользователя и пользователь входит хотя бы в одну группу
 		if ($this->_object->id)
 		{
 			$isOnline = $this->_object->isOnline();
@@ -241,87 +242,103 @@ class Siteuser_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 				Admin_Form_Entity::factory('Code')
 					->html('
 						<script>
-							$("h5.row-title").append("<span title=\"' . htmlspecialchars($sStatusTitle) . '\" class=\"' . htmlspecialchars($sStatus) . ' margin-left-5\"></span>");
+							$("#' . $windowId . ' h5.row-title").append("<span title=\"' . htmlspecialchars($sStatusTitle) . '\" class=\"' . htmlspecialchars($sStatus) . ' margin-left-5\"></span>");
 						</script>
 				')
 			);
+		}
 
-			$aSiteuser_Groups = $oSite->Siteuser_Groups->findAll(FALSE);
-			if (count($aSiteuser_Groups))
+		$aSiteuser_Groups = $oSite->Siteuser_Groups->findAll(FALSE);
+		if (count($aSiteuser_Groups))
+		{
+			$oSiteuserGroupsTab = Admin_Form_Entity::factory('Tab')
+				->caption(Core::_('Siteuser.siteuser_groups'))
+				->name('SiteuserGroups');
+
+			$this->addTabAfter($oSiteuserGroupsTab, $oPropertyTab);
+
+			$sTableBody = '';
+
+			$aTmp = array();
+
+			if ($this->_object->id)
 			{
-				$oSiteuserGroupsTab = Admin_Form_Entity::factory('Tab')
-					->caption(Core::_('Siteuser.siteuser_groups'))
-					->name('SiteuserGroups');
-
-				$this->addTabAfter($oSiteuserGroupsTab, $oPropertyTab);
-
-				$sTableBody = '';
-
-				$aTmp = array();
-
 				$aGroupsForSiteuser = $this->_object->Siteuser_Groups->findAll(FALSE);
 				foreach ($aGroupsForSiteuser as $oSiteuser_Group)
 				{
 					$aTmp[] = $oSiteuser_Group->id;
 				}
-
-				foreach ($aSiteuser_Groups as $oSiteuser_Group)
-				{
-					$checked = in_array($oSiteuser_Group->id, $aTmp)
-						? 'checked="checked"'
-						: '';
-
-					$sTableBody .= '<tr>
-						<td class="text-align-center">
-							<label>
-								<input type="checkbox" ' . $checked . ' name="siteuser_group_' . $oSiteuser_Group->id . '" value="1"/>
-								<span class="text"></span>
-							</label>
-						</td>
-						<td>
-							<a href="/admin/siteuser/group/list/index.php?siteuser_group_id=' . $oSiteuser_Group->id .'" onclick="$.adminLoad({path: \'/admin/siteuser/group/list/index.php\', additionalParams: \'siteuser_group_id=' . $oSiteuser_Group->id . '\', windowId: \'' . $this->_Admin_Form_Controller->getWindowId() . '\'}); return false">'
-								. htmlspecialchars($oSiteuser_Group->name)
-								. '</a>
-						</td>
-						<td>' . htmlspecialchars($oSiteuser_Group->description) . '</td>
-						<td>' . ($oSiteuser_Group->default ? '<i class="fa fa-lightbulb-o"></i>' : '') . '</td>
-						</tr>';
-				}
-
-				ob_start();
-
-				Admin_Form_Entity::factory('code')
-					->html($sTableBody)
-					->execute();
-
-				$sHtmlTableBody = ob_get_clean();
-
-				$oSiteuserGroupRow = Admin_Form_Entity::factory('Div')
-					->class('row')
-					->add(
-						 Admin_Form_Entity::factory('Div')
-							->class("form-group col-lg-12")
-							->add(
-								Admin_Form_Entity::factory('code')
-									->html('
-										<table class="table">
-											<thead>
-												<tr>
-													<th></th>
-													<th>' . Core::_('Siteuser.siteuser_group') . '</th>
-													<th>' . Core::_('Siteuser.siteuser_group_description') . '</th>
-													<th width="120px">' . Core::_('Siteuser.siteuser_group_default') . '</th>
-												</tr>
-												<tbody>' . $sHtmlTableBody . '</tbody>
-											</thead>
-										</table>
-									')
-							)
-
-					);
-
-				$oSiteuserGroupsTab->add($oSiteuserGroupRow);
 			}
+			else
+			{
+				$oSiteuser_Group = $oSite->Siteuser_Groups->getDefault();
+
+				!is_null($oSiteuser_Group)
+					&& $aTmp[] = $oSiteuser_Group->id;
+			}
+
+			$countGroups = count($aTmp);
+
+			$countGroups && $oSiteuserGroupsTab
+				->badge($countGroups)
+				->badgeColor('sky');
+
+			foreach ($aSiteuser_Groups as $oSiteuser_Group)
+			{
+				$checked = in_array($oSiteuser_Group->id, $aTmp)
+					? 'checked="checked"'
+					: '';
+
+				$sTableBody .= '<tr>
+					<td class="text-align-center">
+						<label>
+							<input type="checkbox" ' . $checked . ' name="siteuser_group_' . $oSiteuser_Group->id . '" value="1"/>
+							<span class="text"></span>
+						</label>
+					</td>
+					<td>
+						<a href="/admin/siteuser/group/list/index.php?siteuser_group_id=' . $oSiteuser_Group->id .'" onclick="$.adminLoad({path: \'/admin/siteuser/group/list/index.php\', additionalParams: \'siteuser_group_id=' . $oSiteuser_Group->id . '\', windowId: \'' . $windowId . '\'}); return false">'
+							. htmlspecialchars($oSiteuser_Group->name)
+							. '</a>
+					</td>
+					<td>' . htmlspecialchars($oSiteuser_Group->description) . '</td>
+					<td>' . ($oSiteuser_Group->default ? '<i class="fa fa-lightbulb-o"></i>' : '') . '</td>
+					</tr>';
+			}
+
+			ob_start();
+
+			Admin_Form_Entity::factory('code')
+				->html($sTableBody)
+				->execute();
+
+			$sHtmlTableBody = ob_get_clean();
+
+			$oSiteuserGroupRow = Admin_Form_Entity::factory('Div')
+				->class('row')
+				->add(
+					 Admin_Form_Entity::factory('Div')
+						->class("form-group col-lg-12")
+						->add(
+							Admin_Form_Entity::factory('code')
+								->html('
+									<table class="table">
+										<thead>
+											<tr>
+												<th></th>
+												<th>' . Core::_('Siteuser.siteuser_group') . '</th>
+												<th>' . Core::_('Siteuser.siteuser_group_description') . '</th>
+												<th width="120px">' . Core::_('Siteuser.siteuser_group_default') . '</th>
+											</tr>
+											<tbody>' . $sHtmlTableBody . '</tbody>
+										</thead>
+									</table>
+								')
+						)
+
+				);
+
+			$oSiteuserGroupsTab->add($oSiteuserGroupRow);
 		}
 
 		$oMainTab
@@ -806,7 +823,7 @@ class Siteuser_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 
 		$oScriptResponsibleEmployees = Admin_Form_Entity::factory('Script')
 			->value('
-				$("#siteuser_user_id").select2({
+				$("#' . $windowId . ' #siteuser_user_id").select2({
 					placeholder: "",
 					allowClear: true,
 					//multiple: true,
@@ -854,7 +871,7 @@ class Siteuser_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 		// Siteuser's Affiliate
 		$oSiteuser_Affiliate = Core_Entity::factory('Siteuser_Affiliate')->getByReferral_siteuser_id($this->_object->id);
 
-		if (!is_null($oSiteuser_Affiliate))
+		if (!is_null($oSiteuser_Affiliate) && $oSiteuser_Affiliate->Siteuser->id)
 		{
 			$oSiteuserLink = Admin_Form_Entity::factory('Link');
 			$oSiteuserLink
@@ -940,16 +957,12 @@ class Siteuser_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 
 		if ($bNewSiteuser)
 		{
-			/*$placeholder = Core::_('Siteuser.select_siteuser');
-			$language = Core_i18n::instance()->getLng();
 			$windowId = $this->_Admin_Form_Controller->getWindowId();
-
-			$windowIdEscaped = Core_Str::escapeJavascriptVariable($windowId);*/
 
 			ob_start();
 			Core::factory('Core_Html_Entity_Script')
 				->value('
-					var objectSiteuserSelect = $("#object_siteuser_id");
+					var objectSiteuserSelect = $("#' . $windowId . ' #object_siteuser_id");
 
 					$.ajax({
 						type: "GET",
@@ -1070,7 +1083,7 @@ class Siteuser_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 				: NULL;
 		}
 
-		// Добавление компании
+		// Компания
 		if ($oSiteuser_Company && strlen(Core_Array::getPost('company_name')))
 		{
 			$oSiteuser_Company->name = strval(Core_Array::getPost('company_name'));
@@ -1081,469 +1094,19 @@ class Siteuser_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 			$oSiteuser_Company->annual_turnover = intval(Core_Array::getPost('company_annual_turnover'));
 			$oSiteuser_Company->business_area = strval(Core_Array::getPost('company_business_area'));
 
-			if ($bNewSiteuser)
-			{
-				$oSiteuser->add($oSiteuser_Company);
-			}
-			else
-			{
-				$oSiteuser_Company->save();
-			}
-
-			// Адреса, установленные значения
-			$aSiteuser_Company_Directory_Addresses = $oSiteuser_Company->Siteuser_Company_Directory_Addresses->findAll();
-			foreach ($aSiteuser_Company_Directory_Addresses as $oSiteuser_Company_Directory_Address)
-			{
-				$oDirectory_Adress = $oSiteuser_Company_Directory_Address->Directory_Address;
-
-				$sAdress = trim(Core_Array::getPost("company_address#{$oDirectory_Adress->id}"));
-				$sCountry = strval(Core_Array::getPost("company_address_country#{$oDirectory_Adress->id}"));
-				$sPostcode = strval(Core_Array::getPost("company_address_postcode#{$oDirectory_Adress->id}"));
-				$sCity = strval(Core_Array::getPost("company_address_city#{$oDirectory_Adress->id}"));
-
-				if (strlen($sAdress) || strlen($sCountry) || strlen($sPostcode) || strlen($sCity))
-				{
-					$oDirectory_Adress
-						->directory_address_type_id(intval(Core_Array::getPost("company_address_type#{$oDirectory_Adress->id}", 0)))
-						->public(intval(Core_Array::getPost("company_address_public#{$oDirectory_Adress->id}", 0)))
-						->country($sCountry)
-						->postcode($sPostcode)
-						->city($sCity)
-						->value($sAdress)
-						->save();
-				}
-				else
-				{
-					// Удаляем пустую строку с полями
-					ob_start();
-					Core::factory('Core_Html_Entity_Script')
-						->value("$.deleteFormRow($(\"#{$windowId} select[name='company_address_type#{$oDirectory_Adress->id}']\").closest('.row').find('.btn-delete').get(0));")
-						->execute();
-					$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-
-					$oSiteuser_Company_Directory_Address->Directory_Address->delete();
-				}
-			}
-
-			// Адреса, новые значения
-			$aCompanyAddresses = Core_Array::getPost('company_address', array());
-			$aCompanyAddressTypes = Core_Array::getPost('company_address_type', array());
-			$aCompanyAddressPublic = Core_Array::getPost('company_address_public', array());
-			$aCompanyAddressCountry = Core_Array::getPost('company_address_country', array());
-			$aCompanyAddressPostcode = Core_Array::getPost('company_address_postcode', array());
-			$aCompanyAddressCity = Core_Array::getPost('company_address_city', array());
-
-			if (is_array($aCompanyAddresses) && count($aCompanyAddresses))
-			{
-				$i = 0;
-				foreach ($aCompanyAddresses as $key => $sAddress)
-				{
-					$sAddress = trim($sAddress);
-					$sCountry = strval(Core_Array::get($aCompanyAddressCountry, $key));
-					$sPostcode = strval(Core_Array::get($aCompanyAddressPostcode, $key));
-					$sCity = strval(Core_Array::get($aCompanyAddressCity, $key));
-
-					if (strlen($sAddress) || strlen($sCountry) || strlen($sPostcode) || strlen($sCity))
-					{
-						$oDirectory_Address = Core_Entity::factory('Directory_Address')
-							->directory_address_type_id(intval(Core_Array::get($aCompanyAddressTypes, $key)))
-							->public(intval(Core_Array::get($aCompanyAddressPublic, $key)))
-							->country($sCountry)
-							->postcode($sPostcode)
-							->city($sCity)
-							->value($sAddress)
-							->save();
-
-						$oSiteuser_Company->add($oDirectory_Address);
-
-						ob_start();
-						Core::factory('Core_Html_Entity_Script')
-							->value("$(\"#{$windowId} select[name='company_address_type\\[\\]']\").eq({$i}).prop('name', 'company_address_type#{$oDirectory_Address->id}').closest('.row').find('.btn-delete').removeClass('hide');
-							$(\"#{$windowId} input[name='company_address\\[\\]']\").eq({$i}).prop('name', 'company_address#{$oDirectory_Address->id}');
-							$(\"#{$windowId} input[name='company_address_public\\[\\]']\").eq({$i}).prop('name', 'company_address_public#{$oDirectory_Address->id}');
-							$(\"#{$windowId} input[name='company_address_country\\[\\]']\").eq({$i}).prop('name', 'company_address_country#{$oDirectory_Address->id}');
-							$(\"#{$windowId} input[name='company_address_postcode\\[\\]']\").eq({$i}).prop('name', 'company_address_postcode#{$oDirectory_Address->id}');
-							$(\"#{$windowId} input[name='company_address_city\\[\\]']\").eq({$i}).prop('name', 'company_address_city#{$oDirectory_Address->id}');
-							")
-							->execute();
-
-						$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-					}
-					else
-					{
-						$i++;
-					}
-				}
-			}
-
-			// Телефоны, установленные значения
-			$aSiteuser_Company_Directory_Phones = $oSiteuser_Company->Siteuser_Company_Directory_Phones->findAll();
-			foreach ($aSiteuser_Company_Directory_Phones as $oSiteuser_Company_Directory_Phone)
-			{
-				$oDirectory_Phone = $oSiteuser_Company_Directory_Phone->Directory_Phone;
-
-				$sPhone = trim(Core_Array::getPost("company_phone#{$oDirectory_Phone->id}"));
-
-				if (!empty($sPhone))
-				{
-					$oDirectory_Phone
-						->directory_phone_type_id(intval(Core_Array::getPost("company_phone_type#{$oDirectory_Phone->id}", 0)))
-						->public(intval(Core_Array::getPost("company_phone_public#{$oDirectory_Phone->id}", 0)))
-						->value($sPhone)
-						->save();
-				}
-				else
-				{
-					// Удаляем пустую строку с полями
-					ob_start();
-					Core::factory('Core_Html_Entity_Script')
-						->value("$.deleteFormRow($(\"#{$windowId} select[name='company_phone_type#{$oDirectory_Phone->id}']\").closest('.row').find('.btn-delete').get(0));")
-						->execute();
-					$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-
-					$oSiteuser_Company_Directory_Phone->Directory_Phone->delete();
-				}
-			}
-
-			// Телефоны, новые значения
-			$aCompanyPhones = Core_Array::getPost('company_phone', array());
-			$aCompanyPhoneTypes = Core_Array::getPost('company_phone_type', array());
-			$aCompanyPhonePublic = Core_Array::getPost('company_phone_public', array());
-
-			if (is_array($aCompanyPhones) && count($aCompanyPhones))
-			{
-				$i = 0;
-				foreach ($aCompanyPhones as $key => $sPhone)
-				{
-					$sPhone = trim($sPhone);
-
-					if (!empty($sPhone))
-					{
-						$oDirectory_Phone = Core_Entity::factory('Directory_Phone')
-							->directory_phone_type_id(intval(Core_Array::get($aCompanyPhoneTypes, $key)))
-							->public(intval(Core_Array::get($aCompanyPhonePublic, $key)))
-							->value($sPhone)
-							->save();
-
-						$oSiteuser_Company->add($oDirectory_Phone);
-
-						ob_start();
-						Core::factory('Core_Html_Entity_Script')
-							->value("$(\"#{$windowId} select[name='company_phone_type\\[\\]']\").eq({$i}).prop('name', 'company_phone_type#{$oDirectory_Phone->id}').closest('.row').find('.btn-delete').removeClass('hide');
-							$(\"#{$windowId} input[name='company_phone\\[\\]']\").eq({$i}).prop('name', 'company_phone#{$oDirectory_Phone->id}');
-							$(\"#{$windowId} input[name='company_phone_public\\[\\]']\").eq({$i}).prop('name', 'company_phone_public#{$oDirectory_Phone->id}');
-							")
-							->execute();
-
-						$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-					}
-					else
-					{
-						$i++;
-					}
-				}
-			}
-
-			// Электронные адреса, установленные значения
-			$aSiteuser_Company_Directory_Emails = $oSiteuser_Company->Siteuser_Company_Directory_Emails->findAll();
-			foreach ($aSiteuser_Company_Directory_Emails as $oSiteuser_Company_Directory_Email)
-			{
-				$oDirectory_Email = $oSiteuser_Company_Directory_Email->Directory_Email;
-
-				$sEmail = trim(Core_Array::getPost("company_email#{$oDirectory_Email->id}"));
-
-				if (!empty($sEmail))
-				{
-					$oDirectory_Email
-						->directory_email_type_id(intval(Core_Array::getPost("company_email_type#{$oDirectory_Email->id}", 0)))
-						->public(intval(Core_Array::getPost("company_email_public#{$oDirectory_Email->id}", 0)))
-						->value($sEmail)
-						->save();
-				}
-				else
-				{
-					// Удаляем пустую строку с полями
-					ob_start();
-					Core::factory('Core_Html_Entity_Script')
-						->value("$.deleteFormRow($(\"#{$windowId} select[name='company_email_type#{$oDirectory_Email->id}']\").closest('.row').find('.btn-delete111').get(0));")
-						->execute();
-
-					$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-					$oSiteuser_Company_Directory_Email->Directory_Email->delete();
-				}
-			}
-
-			// Электронные адреса, новые значения
-			$aCompanyEmails = Core_Array::getPost('company_email', array());
-			$aCompanyEmailTypes = Core_Array::getPost('company_email_type', array());
-			$aCompanyEmailPublic = Core_Array::getPost('company_email_public', array());
-
-			if (is_array($aCompanyEmails) && count($aCompanyEmails))
-			{
-				$i = 0;
-				foreach ($aCompanyEmails as $key => $sEmail)
-				{
-					$sEmail = trim($sEmail);
-
-					if (!empty($sEmail))
-					{
-						$oDirectory_Email = Core_Entity::factory('Directory_Email')
-							->directory_email_type_id(intval(Core_Array::get($aCompanyEmailTypes, $key)))
-							->public(intval(Core_Array::get($aCompanyEmailPublic, $key)))
-							->value($sEmail)
-							->save();
-
-						$oSiteuser_Company->add($oDirectory_Email);
-
-						ob_start();
-						Core::factory('Core_Html_Entity_Script')
-							->value("$(\"#{$windowId} select[name='company_email_type\\[\\]']\").eq({$i}).prop('name', 'company_email_type#{$oDirectory_Email->id}').closest('.row').find('.btn-delete').removeClass('hide');
-							$(\"#{$windowId} input[name='company_email\\[\\]']\").eq({$i}).prop('name', 'company_email#{$oDirectory_Email->id}');
-							$(\"#{$windowId} input[name='company_email_public\\[\\]']\").eq({$i}).prop('name', 'company_email_public#{$oDirectory_Email->id}');
-							")
-							->execute();
-
-						$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-					}
-					else
-					{
-						$i++;
-					}
-				}
-			}
-
-			// Социальные сети, установленные значения
-			$aSiteuser_Company_Directory_Socials = $oSiteuser_Company->Siteuser_Company_Directory_Socials->findAll();
-			foreach ($aSiteuser_Company_Directory_Socials as $oSiteuser_Company_Directory_Social)
-			{
-				$oDirectory_Social = $oSiteuser_Company_Directory_Social->Directory_Social;
-
-				$sSocial_Address = trim(Core_Array::getPost("company_social_address#{$oDirectory_Social->id}"));
-
-				if (!empty($sSocial_Address))
-				{
-					$aUrl = @parse_url($sSocial_Address);
-
-					// Если не был указан протокол, или
-					// указанный протокол некорректен для url
-					!array_key_exists('scheme', $aUrl)
-						&& $sSocial_Address = 'https://' . $sSocial_Address;
-
-					$oDirectory_Social
-						->directory_social_type_id(intval(Core_Array::getPost("company_social#{$oDirectory_Social->id}", 0)))
-						->public(intval(Core_Array::getPost("company_social_public#{$oDirectory_Social->id}", 0)))
-						->value($sSocial_Address)
-						->save();
-				}
-				else
-				{
-					// Удаляем пустую строку с полями
-					ob_start();
-					Core::factory('Core_Html_Entity_Script')
-						->value("$.deleteFormRow($(\"#{$windowId} select[name='company_social#{$oDirectory_Social->id}']\").closest('.row').find('.btn-delete').get(0));")
-						->execute();
-					$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-					$oSiteuser_Company_Directory_Social->Directory_Social->delete();
-				}
-			}
-
-			// Социальные сети, новые значения
-			$aCompanySocialAddresses = Core_Array::getPost('company_social_address', array());
-			$aCompanySocials = Core_Array::getPost('company_social', array());
-			$aCompanySocialPublic = Core_Array::getPost('company_social_public', array());
-
-			if (is_array($aCompanySocialAddresses) && count($aCompanySocialAddresses))
-			{
-				$i = 0;
-				foreach ($aCompanySocialAddresses as $key => $sSocial_Address)
-				{
-					$sSocial_Address = trim($sSocial_Address);
-
-					if (!empty($sSocial_Address))
-					{
-						$aUrl = @parse_url($sSocial_Address);
-
-						// Если не был указан протокол, или
-						// указанный протокол некорректен для url
-						!array_key_exists('scheme', $aUrl)
-							&& $sSocial_Address = 'https://' . $sSocial_Address;
-
-						$oDirectory_Social = Core_Entity::factory('Directory_Social')
-							->directory_social_type_id(intval(Core_Array::get($aCompanySocials, $key)))
-							->public(intval(Core_Array::get($aCompanySocialPublic, $key)))
-							->value($sSocial_Address)
-							->save();
-
-						$oSiteuser_Company->add($oDirectory_Social);
-
-						ob_start();
-						Core::factory('Core_Html_Entity_Script')
-							->value("$(\"#{$windowId} select[name='company_social\\[\\]']\").eq({$i}).prop('name', 'company_social#{$oDirectory_Social->id}').closest('.row').find('.btn-delete').removeClass('hide');
-							$(\"#{$windowId} input[name='company_social_address\\[\\]']\").eq({$i}).prop('name', 'company_social_address#{$oDirectory_Social->id}');
-							$(\"#{$windowId} input[name='company_social_public\\[\\]']\").eq({$i}).prop('name', 'company_social_public#{$oDirectory_Social->id}');
-							")
-							->execute();
-
-						$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-					}
-					else
-					{
-						$i++;
-					}
-				}
-			}
-
-			// Мессенджеры, установленные значения
-			$aSiteuser_Company_Directory_Messengers = $oSiteuser_Company->Siteuser_Company_Directory_Messengers->findAll();
-			foreach ($aSiteuser_Company_Directory_Messengers as $oSiteuser_Company_Directory_Messenger)
-			{
-				$oDirectory_Messenger = $oSiteuser_Company_Directory_Messenger->Directory_Messenger;
-
-				$sMessenger_Address = trim(Core_Array::getPost("company_messenger_username#{$oDirectory_Messenger->id}"));
-
-				if (!empty($sMessenger_Address))
-				{
-					$oDirectory_Messenger
-						->directory_messenger_type_id(intval(Core_Array::getPost("company_messenger#{$oDirectory_Messenger->id}", 0)))
-						->public(intval(Core_Array::getPost("company_messenger_public#{$oDirectory_Messenger->id}", 0)))
-						->value($sMessenger_Address)
-						->save();
-				}
-				else
-				{
-					// Удаляем пустую строку с полями
-					ob_start();
-					Core::factory('Core_Html_Entity_Script')
-						->value("$.deleteFormRow($(\"#{$windowId} select[name='company_messenger#{$oDirectory_Messenger->id}']\").closest('.row').find('.btn-delete').get(0));")
-						->execute();
-					$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-
-					$oSiteuser_Company_Directory_Messenger->Directory_Messenger->delete();
-				}
-			}
-
-			// Мессенджеры, новые значения
-			$aCompanyMessengerAddresses = Core_Array::getPost('company_messenger_username', array());
-			$aCompanyMessengers = Core_Array::getPost('company_messenger', array());
-			$aCompanyMessengerPublic = Core_Array::getPost('company_messenger_public', array());
-
-			if (is_array($aCompanyMessengerAddresses) && count($aCompanyMessengerAddresses))
-			{
-				$i = 0;
-				foreach ($aCompanyMessengerAddresses as $key => $sMessenger_Address)
-				{
-					$sMessenger_Address = trim($sMessenger_Address);
-
-					if (!empty($sMessenger_Address))
-					{
-						$oDirectory_Messenger = Core_Entity::factory('Directory_Messenger')
-							->directory_messenger_type_id(intval(Core_Array::get($aCompanyMessengers, $key)))
-							->public(intval(Core_Array::get($aCompanyMessengerPublic, $key)))
-							->value($sMessenger_Address)
-							->save();
-
-						$oSiteuser_Company->add($oDirectory_Messenger);
-
-						ob_start();
-						Core::factory('Core_Html_Entity_Script')
-							->value("$(\"#{$windowId} select[name='company_messenger\\[\\]']\").eq({$i}).prop('name', 'company_messenger#{$oDirectory_Messenger->id}').closest('.row').find('.btn-delete').removeClass('hide');
-							$(\"#{$windowId} input[name='company_messenger_username\\[\\]']\").eq({$i}).prop('name', 'company_messenger_username#{$oDirectory_Messenger->id}');
-							$(\"#{$windowId} input[name='company_messenger_public\\[\\]']\").eq({$i}).prop('name', 'company_messenger_public#{$oDirectory_Messenger->id}');
-							")
-							->execute();
-
-						$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-					}
-					else
-					{
-						$i++;
-					}
-				}
-			}
-
-			// Cайты, установленные значения
-			$aSiteuser_Company_Directory_Websites = $oSiteuser_Company->Siteuser_Company_Directory_Websites->findAll();
-			foreach ($aSiteuser_Company_Directory_Websites as $oSiteuser_Company_Directory_Website)
-			{
-				$oDirectory_Website = $oSiteuser_Company_Directory_Website->Directory_Website;
-
-				$sWebsite_Address = trim(Core_Array::getPost("company_website_address#{$oDirectory_Website->id}"));
-
-				if (!empty($sWebsite_Address))
-				{
-					$aUrl = @parse_url($sWebsite_Address);
-
-					// Если не был указан протокол, или
-					// указанный протокол некорректен для url
-					!array_key_exists('scheme', $aUrl)
-						&& $sWebsite_Address = 'http://' . $sWebsite_Address;
-
-					$oDirectory_Website
-						->description(strval(Core_Array::getPost("company_website_description#{$oDirectory_Website->id}")))
-						->public(intval(Core_Array::getPost("company_website_public#{$oDirectory_Website->id}")))
-						->value($sWebsite_Address)
-						->save();
-				}
-				else
-				{
-					// Удаляем пустую строку с полями
-					ob_start();
-					Core::factory('Core_Html_Entity_Script')
-						->value("$.deleteFormRow($(\"#{$windowId} input[name='company_website_address#{$oDirectory_Website->id}']\").closest('.row').find('.btn-delete').get(0));")
-						->execute();
-
-					$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-					$oSiteuser_Company_Directory_Website->Directory_Website->delete();
-				}
-			}
-
-			// Сайты, новые значения
-			$aCompanyWebsiteAddresses = Core_Array::getPost('company_website_address', array());
-			$aCompanyWebsiteNames = Core_Array::getPost('company_website_description', array());
-			$aCompanyWebsitePublic = Core_Array::getPost('company_website_public', array());
-
-			if (is_array($aCompanyWebsiteAddresses) && count($aCompanyWebsiteAddresses))
-			{
-				$i = 0;
-				foreach ($aCompanyWebsiteAddresses as $key => $sWebsite_Address)
-				{
-					$sWebsite_Address = trim($sWebsite_Address);
-
-					if (!empty($sWebsite_Address))
-					{
-						$aUrl = @parse_url($sWebsite_Address);
-
-						// Если не был указан протокол, или
-						// указанный протокол некорректен для url
-						!array_key_exists('scheme', $aUrl)
-							&& $sWebsite_Address = 'http://' . $sWebsite_Address;
-
-						$oDirectory_Website = Core_Entity::factory('Directory_Website')
-							->public(intval(Core_Array::get($aCompanyWebsitePublic, $key)))
-							->description(Core_Array::get($aCompanyWebsiteNames, $key))
-							->value($sWebsite_Address);
-
-						$oSiteuser_Company->add($oDirectory_Website);
-
-						ob_start();
-						Core::factory('Core_Html_Entity_Script')
-							->value("$(\"#{$windowId} input[name='company_website_address\\[\\]']\").eq({$i}).prop('name', 'company_website_address#{$oDirectory_Website->id}').closest('.row').find('.btn-delete').removeClass('hide');
-							$(\"#{$windowId} input[name='company_website_description\\[\\]']\").eq({$i}).prop('name', 'company_website_description#{$oDirectory_Website->id}');
-							$(\"#{$windowId} input[name='company_website_public\\[\\]']\").eq({$i}).prop('name', 'company_website_public#{$oDirectory_Website->id}');
-							")
-							->execute();
-
-						$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-					}
-					else
-					{
-						$i++;
-					}
-				}
-			}
+			$bNewSiteuser
+				? $oSiteuser->add($oSiteuser_Company)
+				: $oSiteuser_Company->save();
+
+			Directory_Controller_Tab::instance('address')->prefix('company_')->applyObjectProperty($this->_Admin_Form_Controller, $oSiteuser_Company);
+			Directory_Controller_Tab::instance('phone')->prefix('company_')->applyObjectProperty($this->_Admin_Form_Controller, $oSiteuser_Company);
+			Directory_Controller_Tab::instance('email')->prefix('company_')->applyObjectProperty($this->_Admin_Form_Controller, $oSiteuser_Company);
+			Directory_Controller_Tab::instance('social')->prefix('company_')->applyObjectProperty($this->_Admin_Form_Controller, $oSiteuser_Company);
+			Directory_Controller_Tab::instance('website')->prefix('company_')->applyObjectProperty($this->_Admin_Form_Controller, $oSiteuser_Company);
+			Directory_Controller_Tab::instance('messenger')->prefix('company_')->applyObjectProperty($this->_Admin_Form_Controller, $oSiteuser_Company);
 		}
 
-		// Добавление представителя
+		// Представитель
 		if ($oSiteuser_Person
 			&& (strlen(Core_Array::getPost('person_surname')) || strlen(Core_Array::getPost('person_name')) || strlen(Core_Array::getPost('person_patronymic')))
 		)
@@ -1566,371 +1129,11 @@ class Siteuser_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 				$oSiteuser_Person->save();
 			}
 
-			// Телефоны, установленные значения
-			$aSiteuser_Person_Directory_Phones = $oSiteuser_Person->Siteuser_Person_Directory_Phones->findAll();
-			foreach ($aSiteuser_Person_Directory_Phones as $oSiteuser_Person_Directory_Phone)
-			{
-				$oDirectory_Phone = $oSiteuser_Person_Directory_Phone->Directory_Phone;
-
-				$sPhone = trim(Core_Array::getPost("person_phone#{$oDirectory_Phone->id}"));
-
-				if (!empty($sPhone))
-				{
-					$oDirectory_Phone
-						->directory_phone_type_id(intval(Core_Array::getPost("person_phone_type#{$oDirectory_Phone->id}", 0)))
-						->public(intval(Core_Array::getPost("person_phone_public#{$oDirectory_Phone->id}", 0)))
-						->value($sPhone)
-						->save();
-				}
-				else
-				{
-					// Удаляем пустую строку с полями
-					ob_start();
-					Core::factory('Core_Html_Entity_Script')
-						->value("$.deleteFormRow($(\"#{$windowId} select[name='person_phone_type#{$oDirectory_Phone->id}']\").closest('.row').find('.btn-delete').get(0));")
-						->execute();
-					$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-
-					$oSiteuser_Person_Directory_Phone->Directory_Phone->delete();
-				}
-			}
-
-			// Телефоны, новые значения
-			$aPersonPhones = Core_Array::getPost('person_phone', array());
-			$aPersonPhoneTypes = Core_Array::getPost('person_phone_type', array());
-			$aPersonPhonePublic = Core_Array::getPost('person_phone_public', array());
-
-			if (is_array($aPersonPhones) && count($aPersonPhones))
-			{
-				$i = 0;
-				foreach ($aPersonPhones as $key => $sPhone)
-				{
-					$sPhone = trim($sPhone);
-
-					if (!empty($sPhone))
-					{
-						$oDirectory_Phone = Core_Entity::factory('Directory_Phone')
-							->directory_phone_type_id(intval(Core_Array::get($aPersonPhoneTypes, $key)))
-							->public(intval(Core_Array::get($aPersonPhonePublic, $key)))
-							->value($sPhone)
-							->save();
-
-						$oSiteuser_Person->add($oDirectory_Phone);
-
-						ob_start();
-						Core::factory('Core_Html_Entity_Script')
-							->value("$(\"#{$windowId} select[name='person_phone_type\\[\\]']\").eq({$i}).prop('name', 'person_phone_type#{$oDirectory_Phone->id}').closest('.row').find('.btn-delete').removeClass('hide');
-							$(\"#{$windowId} input[name='person_phone\\[\\]']\").eq({$i}).prop('name', 'person_phone#{$oDirectory_Phone->id}');
-							$(\"#{$windowId} input[name='person_phone_public\\[\\]']\").eq({$i}).prop('name', 'person_phone_public#{$oDirectory_Phone->id}');
-							")
-							->execute();
-
-						$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-					}
-					else
-					{
-						$i++;
-					}
-				}
-			}
-
-			// Электронные адреса, установленные значения
-			$aSiteuser_Person_Directory_Emails = $oSiteuser_Person->Siteuser_Person_Directory_Emails->findAll();
-			foreach ($aSiteuser_Person_Directory_Emails as $oSiteuser_Person_Directory_Email)
-			{
-				$oDirectory_Email = $oSiteuser_Person_Directory_Email->Directory_Email;
-
-				$sEmail = trim(Core_Array::getPost("person_email#{$oDirectory_Email->id}"));
-
-				if (!empty($sEmail))
-				{
-					$oDirectory_Email
-						->directory_email_type_id(intval(Core_Array::getPost("person_email_type#{$oDirectory_Email->id}", 0)))
-						->public(intval(Core_Array::getPost("person_email_public#{$oDirectory_Email->id}", 0)))
-						->value($sEmail)
-						->save();
-				}
-				else
-				{
-					// Удаляем пустую строку с полями
-					ob_start();
-					Core::factory('Core_Html_Entity_Script')
-						->value("$.deleteFormRow($(\"#{$windowId} select[name='person_email_type#{$oDirectory_Email->id}']\").closest('.row').find('.btn-delete111').get(0));")
-						->execute();
-
-					$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-					$oSiteuser_Person_Directory_Email->Directory_Email->delete();
-				}
-			}
-
-			// Электронные адреса, новые значения
-			$aPersonEmails = Core_Array::getPost('person_email', array());
-			$aPersonEmailTypes = Core_Array::getPost('person_email_type', array());
-			$aPersonEmailPublic = Core_Array::getPost('person_email_public', array());
-
-			if (is_array($aPersonEmails) && count($aPersonEmails))
-			{
-				$i = 0;
-				foreach ($aPersonEmails as $key => $sEmail)
-				{
-					$sEmail = trim($sEmail);
-
-					if (!empty($sEmail))
-					{
-						$oDirectory_Email = Core_Entity::factory('Directory_Email')
-							->directory_email_type_id(intval(Core_Array::get($aPersonEmailTypes, $key)))
-							->public(intval(Core_Array::get($aPersonEmailPublic, $key)))
-							->value($sEmail)
-							->save();
-
-						$oSiteuser_Person->add($oDirectory_Email);
-
-						ob_start();
-						Core::factory('Core_Html_Entity_Script')
-							->value("$(\"#{$windowId} select[name='person_email_type\\[\\]']\").eq({$i}).prop('name', 'person_email_type#{$oDirectory_Email->id}').closest('.row').find('.btn-delete').removeClass('hide');
-							$(\"#{$windowId} input[name='person_email\\[\\]']\").eq({$i}).prop('name', 'person_email#{$oDirectory_Email->id}');
-							$(\"#{$windowId} input[name='person_email_public\\[\\]']\").eq({$i}).prop('name', 'person_email_public#{$oDirectory_Email->id}');
-							")
-							->execute();
-
-						$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-					}
-					else
-					{
-						$i++;
-					}
-				}
-			}
-
-			// Социальные сети, установленные значения
-			$aSiteuser_Person_Directory_Socials = $oSiteuser_Person->Siteuser_Person_Directory_Socials->findAll();
-			foreach ($aSiteuser_Person_Directory_Socials as $oSiteuser_Person_Directory_Social)
-			{
-				$oDirectory_Social = $oSiteuser_Person_Directory_Social->Directory_Social;
-
-				$sSocial_Address = trim(Core_Array::getPost("person_social_address#{$oDirectory_Social->id}"));
-
-				if (!empty($sSocial_Address))
-				{
-					$aUrl = @parse_url($sSocial_Address);
-
-					// Если не был указан протокол, или
-					// указанный протокол некорректен для url
-					!array_key_exists('scheme', $aUrl)
-						&& $sSocial_Address = 'https://' . $sSocial_Address;
-
-					$oDirectory_Social
-						->directory_social_type_id(intval(Core_Array::getPost("person_social#{$oDirectory_Social->id}", 0)))
-						->public(intval(Core_Array::getPost("person_social_public#{$oDirectory_Social->id}", 0)))
-						->value($sSocial_Address)
-						->save();
-				}
-				else
-				{
-					// Удаляем пустую строку с полями
-					ob_start();
-					Core::factory('Core_Html_Entity_Script')
-						->value("$.deleteFormRow($(\"#{$windowId} select[name='person_social#{$oDirectory_Social->id}']\").closest('.row').find('.btn-delete').get(0));")
-						->execute();
-					$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-					$oSiteuser_Person_Directory_Social->Directory_Social->delete();
-				}
-			}
-
-			// Социальные сети, новые значения
-			$aPersonSocialAddresses = Core_Array::getPost('person_social_address', array());
-			$aPersonSocials = Core_Array::getPost('person_social', array());
-			$aPersonSocialPublic = Core_Array::getPost('person_social_public', array());
-
-			if (is_array($aPersonSocialAddresses) && count($aPersonSocialAddresses))
-			{
-				$i = 0;
-				foreach ($aPersonSocialAddresses as $key => $sSocial_Address)
-				{
-					$sSocial_Address = trim($sSocial_Address);
-
-					if (!empty($sSocial_Address))
-					{
-						$aUrl = @parse_url($sSocial_Address);
-
-						// Если не был указан протокол, или
-						// указанный протокол некорректен для url
-						!array_key_exists('scheme', $aUrl)
-							&& $sSocial_Address = 'https://' . $sSocial_Address;
-
-						$oDirectory_Social = Core_Entity::factory('Directory_Social')
-							->directory_social_type_id(intval(Core_Array::get($aPersonSocials, $key)))
-							->public(intval(Core_Array::get($aPersonSocialPublic, $key)))
-							->value($sSocial_Address)
-							->save();
-
-						$oSiteuser_Person->add($oDirectory_Social);
-
-						ob_start();
-						Core::factory('Core_Html_Entity_Script')
-							->value("$(\"#{$windowId} select[name='person_social\\[\\]']\").eq({$i}).prop('name', 'person_social#{$oDirectory_Social->id}').closest('.row').find('.btn-delete').removeClass('hide');
-							$(\"#{$windowId} input[name='person_social_address\\[\\]']\").eq({$i}).prop('name', 'person_social_address#{$oDirectory_Social->id}');
-							$(\"#{$windowId} input[name='person_social_public\\[\\]']\").eq({$i}).prop('name', 'person_social_public#{$oDirectory_Social->id}');
-							")
-							->execute();
-
-						$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-					}
-					else
-					{
-						$i++;
-					}
-				}
-			}
-
-			// Мессенджеры, установленные значения
-			$aSiteuser_Person_Directory_Messengers = $oSiteuser_Person->Siteuser_Person_Directory_Messengers->findAll();
-			foreach ($aSiteuser_Person_Directory_Messengers as $oSiteuser_Person_Directory_Messenger)
-			{
-				$oDirectory_Messenger = $oSiteuser_Person_Directory_Messenger->Directory_Messenger;
-
-				$sMessenger_Address = trim(Core_Array::getPost("person_messenger_username#{$oDirectory_Messenger->id}"));
-
-				if (!empty($sMessenger_Address))
-				{
-					$oDirectory_Messenger
-						->directory_messenger_type_id(intval(Core_Array::getPost("person_messenger#{$oDirectory_Messenger->id}", 0)))
-						->public(intval(Core_Array::getPost("person_messenger_public#{$oDirectory_Messenger->id}", 0)))
-						->value($sMessenger_Address)
-						->save();
-				}
-				else
-				{
-					// Удаляем пустую строку с полями
-					ob_start();
-					Core::factory('Core_Html_Entity_Script')
-						->value("$.deleteFormRow($(\"#{$windowId} select[name='person_messenger#{$oDirectory_Messenger->id}']\").closest('.row').find('.btn-delete').get(0));")
-						->execute();
-					$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-
-					$oSiteuser_Person_Directory_Messenger->Directory_Messenger->delete();
-				}
-			}
-
-			// Мессенджеры, новые значения
-			$aPersonMessengerAddresses = Core_Array::getPost('person_messenger_username', array());
-			$aPersonMessengers = Core_Array::getPost('person_messenger', array());
-			$aPersonMessengerPublic = Core_Array::getPost('person_messenger_public', array());
-
-			if (is_array($aPersonMessengerAddresses) && count($aPersonMessengerAddresses))
-			{
-				$i = 0;
-				foreach ($aPersonMessengerAddresses as $key => $sMessenger_Address)
-				{
-					$sMessenger_Address = trim($sMessenger_Address);
-
-					if (!empty($sMessenger_Address))
-					{
-						$oDirectory_Messenger = Core_Entity::factory('Directory_Messenger')
-							->directory_messenger_type_id(intval(Core_Array::get($aPersonMessengers, $key)))
-							->public(intval(Core_Array::get($aPersonMessengerPublic, $key)))
-							->value($sMessenger_Address)
-							->save();
-
-						$oSiteuser_Person->add($oDirectory_Messenger);
-
-						ob_start();
-						Core::factory('Core_Html_Entity_Script')
-							->value("$(\"#{$windowId} select[name='person_messenger\\[\\]']\").eq({$i}).prop('name', 'person_messenger#{$oDirectory_Messenger->id}').closest('.row').find('.btn-delete').removeClass('hide');
-							$(\"#{$windowId} input[name='person_messenger_username\\[\\]']\").eq({$i}).prop('name', 'person_messenger_username#{$oDirectory_Messenger->id}');
-							$(\"#{$windowId} input[name='person_messenger_public\\[\\]']\").eq({$i}).prop('name', 'person_messenger_public#{$oDirectory_Messenger->id}');
-							")
-							->execute();
-
-						$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-					}
-					else
-					{
-						$i++;
-					}
-				}
-			}
-
-			// Cайты, установленные значения
-			$aSiteuser_Person_Directory_Websites = $oSiteuser_Person->Siteuser_Person_Directory_Websites->findAll();
-			foreach ($aSiteuser_Person_Directory_Websites as $oSiteuser_Person_Directory_Website)
-			{
-				$oDirectory_Website = $oSiteuser_Person_Directory_Website->Directory_Website;
-
-				$sWebsite_Address = trim(Core_Array::getPost("person_website_address#{$oDirectory_Website->id}"));
-
-				if (!empty($sWebsite_Address))
-				{
-					$aUrl = @parse_url($sWebsite_Address);
-
-					// Если не был указан протокол, или
-					// указанный протокол некорректен для url
-					!array_key_exists('scheme', $aUrl)
-						&& $sWebsite_Address = 'http://' . $sWebsite_Address;
-
-					$oDirectory_Website
-						->description(strval(Core_Array::getPost("person_website_description#{$oDirectory_Website->id}")))
-						->public(intval(Core_Array::getPost("person_website_public#{$oDirectory_Website->id}")))
-						->value($sWebsite_Address)
-						->save();
-				}
-				else
-				{
-					// Удаляем пустую строку с полями
-					ob_start();
-					Core::factory('Core_Html_Entity_Script')
-						->value("$.deleteFormRow($(\"#{$windowId} input[name='person_website_address#{$oDirectory_Website->id}']\").closest('.row').find('.btn-delete').get(0));")
-						->execute();
-
-					$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-					$oSiteuser_Person_Directory_Website->Directory_Website->delete();
-				}
-			}
-
-			// Сайты, новые значения
-			$aPersonWebsiteAddresses = Core_Array::getPost('person_website_address', array());
-			$aPersonWebsiteNames = Core_Array::getPost('person_website_description', array());
-			$aPersonWebsitePublic = Core_Array::getPost('person_website_public', array());
-
-			if (is_array($aPersonWebsiteAddresses) && count($aPersonWebsiteAddresses))
-			{
-				$i = 0;
-				foreach ($aPersonWebsiteAddresses as $key => $sWebsite_Address)
-				{
-					$sWebsite_Address = trim($sWebsite_Address);
-
-					if (!empty($sWebsite_Address))
-					{
-						$aUrl = @parse_url($sWebsite_Address);
-
-						// Если не был указан протокол, или
-						// указанный протокол некорректен для url
-						!array_key_exists('scheme', $aUrl)
-							&& $sWebsite_Address = 'http://' . $sWebsite_Address;
-
-						$oDirectory_Website = Core_Entity::factory('Directory_Website')
-							->public(intval(Core_Array::get($aPersonWebsitePublic, $key)))
-							->description(Core_Array::get($aPersonWebsiteNames, $key))
-							->value($sWebsite_Address);
-
-						$oSiteuser_Person->add($oDirectory_Website);
-
-						ob_start();
-						Core::factory('Core_Html_Entity_Script')
-							->value("$(\"#{$windowId} input[name='person_website_address\\[\\]']\").eq({$i}).prop('name', 'person_website_address#{$oDirectory_Website->id}').closest('.row').find('.btn-delete').removeClass('hide');
-							$(\"#{$windowId} input[name='person_website_description\\[\\]']\").eq({$i}).prop('name', 'person_website_description#{$oDirectory_Website->id}');
-							$(\"#{$windowId} input[name='person_website_public\\[\\]']\").eq({$i}).prop('name', 'person_website_public#{$oDirectory_Website->id}');
-							")
-							->execute();
-
-						$this->_Admin_Form_Controller->addMessage(ob_get_clean());
-					}
-					else
-					{
-						$i++;
-					}
-				}
-			}
+			Directory_Controller_Tab::instance('phone')->prefix('person_')->applyObjectProperty($this->_Admin_Form_Controller, $oSiteuser_Person);
+			Directory_Controller_Tab::instance('email')->prefix('person_')->applyObjectProperty($this->_Admin_Form_Controller, $oSiteuser_Person);
+			Directory_Controller_Tab::instance('social')->prefix('person_')->applyObjectProperty($this->_Admin_Form_Controller, $oSiteuser_Person);
+			Directory_Controller_Tab::instance('website')->prefix('person_')->applyObjectProperty($this->_Admin_Form_Controller, $oSiteuser_Person);
+			Directory_Controller_Tab::instance('messenger')->prefix('person_')->applyObjectProperty($this->_Admin_Form_Controller, $oSiteuser_Person);
 		}
 
 		// Отправка письма с подтверждением регистрации
@@ -1938,14 +1141,25 @@ class Siteuser_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 		{
 			$Siteuser_Controller_Show = new Siteuser_Controller_Show($oSiteuser);
 
-			$oXsl = Core_Entity::factory('Xsl')->getByName('ПисьмоПодтверждениеРегистрации');
+			$aConfig = Core_Config::instance()->get('siteuser_config', array());
+
+			$aSiteuser_Config = is_array($aConfig) && isset($aConfig[$oSiteuser->site_id])
+				? $aConfig[$oSiteuser->site_id]
+				: array();
+
+			$oSite_Alias = $oSiteuser->Site->getCurrentAlias();
+
+			$aSiteuser_Config += array(
+				'confirmationMailXsl' => 'ПисьмоПодтверждениеРегистрации',
+				'confirmationMailSubject' => Core::_('Siteuser.confirm_subject', !is_null($oSite_Alias) ? $oSite_Alias->alias_name_without_mask : '')
+			);
+
+			$oXsl = Core_Entity::factory('Xsl')->getByName($aSiteuser_Config['confirmationMailXsl']);
 
 			if (!is_null($oXsl))
 			{
-				$oSite_Alias = $oSiteuser->Site->getCurrentAlias();
-				$Siteuser_Controller_Show->subject(
-						Core::_('Siteuser.confirm_subject', !is_null($oSite_Alias) ? $oSite_Alias->alias_name_without_mask : '')
-					)
+				$Siteuser_Controller_Show
+					->subject($aSiteuser_Config['confirmationMailSubject'])
 					->sendConfirmationMail($oXsl);
 			}
 		}
@@ -2057,54 +1271,139 @@ class Siteuser_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 		$placeholder = Core::_('Siteuser.select_siteuser');
 		$language = Core_i18n::instance()->getLng();
 
-		$windowIdEscaped = Core_Str::escapeJavascriptVariable($windowId);
-
 		$oCore_Html_Entity_Script = Core::factory('Core_Html_Entity_Script')
-			->value("$('#{$windowIdEscaped} select[name = {$oSiteuserSelect->name}]')
-				.selectSiteuser({language: '{$language}', placeholder: '{$placeholder}'})
+			->value("$('#{$windowId} select[name = {$oSiteuserSelect->name}]')
+				.selectSiteuser({language: '{$language}', placeholder: '{$placeholder}', dropdownParent: $('#{$windowId}')})
 				.val('{$siteuser_id}')
 				.trigger('change.select2')
 				.parent()
 				.addClass('col-xs-12');
 
-				$('#{$windowIdEscaped} select[name = {$oSiteuserSelect->name}]').on('select2:unselect', function (){
-					$(this)
-						.nextAll('.input-group-addon.siteuser-link')
-						.toggleClass('hidden');
+			$('#{$windowId} select[name = {$oSiteuserSelect->name}]').on('select2:unselect', function (){
+				$(this)
+					.nextAll('.input-group-addon.siteuser-link')
+					.toggleClass('hidden');
 
-					$('.siteuser-representative-list').empty();
-				});
+				$('#{$windowId} .siteuser-representative-list').empty();
+			});
 
-				var siteuserLink = $('#{$windowIdEscaped} .siteuser-link');
+			var siteuserLink = $('#{$windowId} .siteuser-link');
 
-				if (siteuserLink.length)
-				{
-					$('select[name = {$oSiteuserSelect->name}]').on('select2:select', function (e) {
-						var data = e.params.data;
+			if (siteuserLink.length)
+			{
+				$('#{$windowId} select[name = {$oSiteuserSelect->name}]').on('select2:select', function (e) {
+					var data = e.params.data;
 
-						siteuserLink.removeClass('hidden');
+					var shop_country_id = $('#{$windowId} select[name = shop_country_id]'),
+						shop_country_location_id = $('#{$windowId} select[name = shop_country_location_id]'),
+						shop_country_location_city_id = $('#{$windowId} select[name = shop_country_location_city_id]'),
+						phone = $('#{$windowId} input[name = phone]'),
+						email = $('#{$windowId} input[name = email]'),
+						postcode = $('#{$windowId} input[name = postcode]'),
+						address = $('#{$windowId} input[name = address]'),
+						house = $('#{$windowId} input[name = house]'),
+						flat = $('#{$windowId} input[name = flat]'),
+						surname = $('#{$windowId} input[name = surname]'),
+						name = $('#{$windowId} input[name = name]'),
+						patronymic = $('#{$windowId} input[name = patronymic]'),
+						company = $('#{$windowId} input[name = company]'),
+						tin = $('#{$windowId} input[name = tin]'),
+						oCompany,
+						oPerson;
 
-						siteuserLink.find('a.show-user-info')
-							.attr('href', '/admin/siteuser/index.php?hostcms[action]=edit&hostcms[checked][0][' + data.id + ']=1')
-							.attr('onclick', 'mainFormLocker.unlock(); $.modalLoad({path: \'/admin/siteuser/index.php\',action: \'edit\', operation: \'modal\',additionalParams: \'hostcms[checked][0][' + data.id + ']=1\',view: \'list\', windowId: \'id_content\'}); return false');
-
-						// Замена аватарок представителей
-						$.ajax({
-							url: '/admin/siteuser/index.php',
-							data: { 'loadSelect2Avatars': 1, 'siteuser_id': data.id },
-							dataType: 'json',
-							type: 'POST',
-							success: function(answer){
-								$('.siteuser-representative-list').empty();
-
-								if (answer.result == 'success')
-								{
-									$('.siteuser-representative-list').append(answer.html);
-								}
+					switch(data.type)
+					{
+						case 'company':
+							oCompany = data;
+						break;
+						case 'person':
+							oPerson = data;
+						break;
+						case 'siteuser':
+							if (data.companies.length)
+							{
+								oCompany = data.companies[0];
 							}
-						});
+
+							if (data.people.length)
+							{
+								oPerson = data.people[0];
+							}
+						break;
+					}
+
+					if (oCompany)
+					{
+						if (oCompany.addresses.length)
+						{
+							oCompany.postcode = oCompany.addresses[0].postcode;
+							oCompany.country = oCompany.addresses[0].country;
+							oCompany.location = oCompany.addresses[0].location;
+							oCompany.city = oCompany.addresses[0].city;
+							oCompany.address = oCompany.addresses[0].address;
+						}
+					}
+
+					var mainData = oCompany ? oCompany : oPerson;
+
+					if (shop_country_id.val() == 0
+						&& shop_country_location_id.val() == 0
+						&& shop_country_location_city_id.val() == 0
+						&& postcode.val() == ''
+						&& address.val() == ''
+						&& house.val() == ''
+						&& flat.val() == ''
+					)
+					{
+						shop_country_location_id.data('setOptionId', mainData.location);
+						shop_country_location_city_id.data('setOptionId', mainData.city);
+
+						shop_country_id.val(mainData.country).change();
+
+						postcode.val(mainData.postcode);
+						address.val(mainData.address);
+					}
+
+					phone.val() == '' && phone.val(mainData.phone);
+					email.val() == '' && email.val(mainData.email);
+
+					if (oCompany && company.val() == '')
+					{
+						company.val(oCompany.name);
+						tin.val(oCompany.tin);
+					}
+
+					if (oPerson
+						&& surname.val() == '' && name.val() == '' && patronymic.val() == '')
+					{
+						surname.val(oPerson.surname);
+						name.val(oPerson.name);
+						patronymic.val(oPerson.patronymic);
+					}
+
+					siteuserLink.removeClass('hidden');
+
+					siteuserLink.find('a.show-user-info')
+						.attr('href', '/admin/siteuser/index.php?hostcms[action]=edit&hostcms[checked][0][' + data.id + ']=1')
+						.attr('onclick', 'mainFormLocker.unlock(); $.modalLoad({path: \'/admin/siteuser/index.php\',action: \'edit\', operation: \'modal\',additionalParams: \'hostcms[checked][0][' + data.id + ']=1\',view: \'list\', windowId: \'id_content\'}); return false');
+
+					// Замена аватарок представителей
+					$.ajax({
+						url: '/admin/siteuser/index.php',
+						data: { 'loadSelect2Avatars': 1, 'siteuser_id': data.id },
+						dataType: 'json',
+						type: 'POST',
+						success: function(answer){
+							$('#{$windowId} .siteuser-representative-list').empty();
+
+							if (answer.result == 'success')
+							{
+								$('#{$windowId} .siteuser-representative-list').append(answer.html);
+							}
+						}
 					});
-				}");
+				});
+			}");
 
 		$oSiteuserSelect->add($oCore_Html_Entity_Script);
 	}
@@ -2118,9 +1417,9 @@ class Siteuser_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 		{
 			$aObjects[] = array(
 				'id' => $oSiteuser_Company->id,
-				'name' =>  htmlspecialchars($oSiteuser_Company->name),
+				'name' => htmlspecialchars($oSiteuser_Company->name),
 				'src' => $oSiteuser_Company->getAvatar(),
-				'type' =>  'company'
+				'type' => 'company'
 			);
 		}
 
@@ -2131,9 +1430,9 @@ class Siteuser_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 
 			$aObjects[] = array(
 				'id' => $oSiteuser_Person->id,
-				'name' =>  htmlspecialchars($fullName),
+				'name' => htmlspecialchars($fullName),
 				'src' => $oSiteuser_Person->getAvatar(),
-				'type' =>  'person'
+				'type' => 'person'
 			);
 		}
 

@@ -45,6 +45,7 @@ if (!is_null(Core_Array::getGet('autocomplete'))
 		$oShop = Core_Entity::factory('Shop', $shop_id);
 
 		$shop_warehouse_id = Core_Array::getGet('shop_warehouse_id');
+		$price_mode = Core_Array::getGet('price_mode', 'shop'); // 'shop' or 'item'
 		$datetime = Core_Array::getGet('datetime');
 
 		$aTypes = Core_Array::getGet('types', array('items'));
@@ -71,6 +72,7 @@ if (!is_null(Core_Array::getGet('autocomplete'))
 			$oShop_Items = $oShop->Shop_Items;
 			$oShop_Items->queryBuilder()
 				->select('shop_items.*', array(Core_QueryBuilder::expression("IF(shop_items.modification_id, CONCAT((SELECT m.name FROM shop_items AS m WHERE m.id = shop_items.modification_id AND m.deleted = 0), ', ', shop_items.name), shop_items.name)"), 'dataName'))
+				->where('shop_items.shortcut_id', '=', 0)
 				->havingOpen()
 					->having('dataName', 'LIKE', $sQueryLike)
 					->setOr()
@@ -87,12 +89,15 @@ if (!is_null(Core_Array::getGet('autocomplete'))
 			foreach ($aShop_Items as $oShop_Item)
 			{
 				$oShop_Item_Controller = new Shop_Item_Controller();
-				$fCurrencyCoefficient = $oShop_Item->Shop_Currency->id > 0 && $oShop->Shop_Currency->id > 0
-					? $oShop_Controller->getCurrencyCoefficientInShopCurrency(
-						$oShop_Item->Shop_Currency,
-						$oShop_Currency
+				$fCurrencyCoefficient = $price_mode == 'shop'
+					? ($oShop_Item->Shop_Currency->id > 0 && $oShop->Shop_Currency->id > 0
+						? $oShop_Controller->getCurrencyCoefficientInShopCurrency(
+							$oShop_Item->Shop_Currency,
+							$oShop_Currency
+						)
+						: 0
 					)
-					: 0;
+					: 1;
 
 				$price = $oShop_Item_Controller->getSpecialprice($oShop_Item->price, $oShop_Item, FALSE);
 
@@ -105,7 +110,7 @@ if (!is_null(Core_Array::getGet('autocomplete'))
 				$aPrices = array();
 				$aPrices[] = array(
 					'id' => 0,
-					'price' => $price
+					'price' => $price * $fCurrencyCoefficient
 				);
 
 				foreach ($aAllPricesIDs as $shop_price_id)
@@ -118,7 +123,7 @@ if (!is_null(Core_Array::getGet('autocomplete'))
 
 					$aPrices[] = array(
 						'id' => $shop_price_id,
-						'price' => $fTmp
+						'price' => $fTmp * $fCurrencyCoefficient
 					);
 				}
 
@@ -153,8 +158,8 @@ if (!is_null(Core_Array::getGet('autocomplete'))
 					'price_with_tax' => $aPrice['price_tax'],
 					'rate' => $aPrice['rate'],
 					'marking' => strval($oShop_Item->marking), // NULL => ''
-					'currency_id' => $oShop_Currency->id,
-					'currency' => $oShop_Currency->name,
+					'currency_id' => $price_mode == 'shop' ? $oShop_Currency->id : $oShop_Item->Shop_Currency->id,
+					'currency' => $price_mode == 'shop' ? $oShop_Currency->name : $oShop_Item->Shop_Currency->name,
 					'measure' => $measureName,
 					'count' => $rest,
 					'image_small' => $imageSmall,
@@ -260,14 +265,24 @@ $oAdmin_Form_Entity_Menus->add(
 		->icon('fa fa-book')
 		->add(
 			Admin_Form_Entity::factory('Menu')
-				->name(Core::_('Shop_Order_Status.shop_orders_status'))
-				->icon('fa fa-shopping-cart')
-				->img('/admin/images/order_status.gif')
+				->name(Core::_('Shop_Order_Status.model_name'))
+				->icon('fa fa-circle')
 				->href(
 					$oAdmin_Form_Controller->getAdminLoadHref($sOrderStatusFormPath = '/admin/shop/order/status/index.php', NULL, NULL, $sAdditionalParam = "&shop_dir_id=" . intval(Core_Array::getGet('shop_dir_id', 0)))
 				)
 				->onclick(
 					$oAdmin_Form_Controller->getAdminLoadAjax($sOrderStatusFormPath, NULL, NULL, $sAdditionalParam)
+				)
+		)
+		->add(
+			Admin_Form_Entity::factory('Menu')
+				->name(Core::_('Shop_Order_Item_Status.model_name'))
+				->icon('fa fa-circle-o')
+				->href(
+					$oAdmin_Form_Controller->getAdminLoadHref($sOrderItemStatusFormPath = '/admin/shop/order/item/status/index.php', NULL, NULL, $sAdditionalParam = "&shop_dir_id=" . intval(Core_Array::getGet('shop_dir_id', 0)))
+				)
+				->onclick(
+					$oAdmin_Form_Controller->getAdminLoadAjax($sOrderItemStatusFormPath, NULL, NULL, $sAdditionalParam)
 				)
 		)
 		->add(
@@ -457,6 +472,25 @@ if ($oAdminFormActionRebuildFilter && $oAdmin_Form_Controller->getAction() == 'r
 	$oAdmin_Form_Controller->addAction($oShop_Filter_Controller_Rebuild);
 }
 
+// Действие "Удалить файл watermark"
+$oAdminFormActionDeleteWatermarkFile = Core_Entity::factory('Admin_Form', $iAdmin_Form_Id)
+	->Admin_Form_Actions
+	->getByName('deleteWatermarkFile');
+
+if ($oAdminFormActionDeleteWatermarkFile && $oAdmin_Form_Controller->getAction() == 'deleteWatermarkFile')
+{
+	$oShopControllerDeleteWatermarkFile = Admin_Form_Action_Controller::factory(
+		'Admin_Form_Action_Controller_Type_Delete_File', $oAdminFormActionDeleteWatermarkFile
+	);
+
+	$oShopControllerDeleteWatermarkFile
+		->methodName('deleteWatermarkFile')
+		->divId(array('preview_large_watermark_file', 'delete_large_watermark_file'));
+
+	// Добавляем контроллер редактирования контроллеру формы
+	$oAdmin_Form_Controller->addAction($oShopControllerDeleteWatermarkFile);
+}
+
 // Источник данных 0
 $oAdmin_Form_Dataset = new Admin_Form_Dataset_Entity(
 	Core_Entity::factory('Shop_Dir')
@@ -516,25 +550,6 @@ $oAdmin_Form_Dataset->addCondition(
 $oAdmin_Form_Controller->addDataset(
 	$oAdmin_Form_Dataset
 );
-
-// Действие "Удалить файл watermark"
-$oAdminFormActionDeleteWatermarkFile = Core_Entity::factory('Admin_Form', $iAdmin_Form_Id)
-	->Admin_Form_Actions
-	->getByName('deleteWatermarkFile');
-
-if ($oAdminFormActionDeleteWatermarkFile && $oAdmin_Form_Controller->getAction() == 'deleteWatermarkFile')
-{
-	$oShopControllerDeleteWatermarkFile = Admin_Form_Action_Controller::factory(
-		'Admin_Form_Action_Controller_Type_Delete_File', $oAdminFormActionDeleteWatermarkFile
-	);
-
-	$oShopControllerDeleteWatermarkFile
-		->methodName('deleteWatermarkFile')
-		->divId(array('preview_large_watermark_file', 'delete_large_watermark_file'));
-
-	// Добавляем контроллер редактирования контроллеру формы
-	$oAdmin_Form_Controller->addAction($oShopControllerDeleteWatermarkFile);
-}
 
 // Показ формы
 $oAdmin_Form_Controller->execute();

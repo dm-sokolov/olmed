@@ -524,6 +524,8 @@ class Informationsystem_Controller_Show extends Core_Controller
 	 * @hostcms-event Informationsystem_Controller_Show.onBeforeRedeclaredShow
 	 * @hostcms-event Informationsystem_Controller_Show.onBeforeAddGroupsPropertiesList
 	 * @hostcms-event Informationsystem_Controller_Show.onBeforeAddItemsPropertiesList
+	 * @hostcms-event Informationsystem_Controller_Show.onBeforeAddCommentsPropertiesList
+	 * @hostcms-event Informationsystem_Controller_Show.onBeforeAddInformationsystemItems
 	 * @hostcms-event Informationsystem_Controller_Show.onBeforeAddShortcut
 	 */
 	public function show()
@@ -589,12 +591,6 @@ class Informationsystem_Controller_Show extends Core_Controller
 		if (!$this->item)
 		{
 			$this->applyFilter();
-
-			/*$this->addEntity(
-				Core::factory('Core_Xml_Entity')
-					->name('filter_path')
-					->value($this->_filterPath)
-			);*/
 		}
 
 		// До вывода свойств групп
@@ -602,10 +598,17 @@ class Informationsystem_Controller_Show extends Core_Controller
 		{
 			$this->_itemCondition();
 
-			// Group's conditions for information system item
-			$this->group !== FALSE && $this->applyGroupCondition();
+			if (!$this->item)
+			{
+				// Group's conditions for information system item
+				$this->group !== FALSE && $this->applyGroupCondition();
 
-			!$this->item && $this->_setLimits();
+				$this->_setLimits();
+
+				$this->_Informationsystem_Items
+					->queryBuilder()
+					->where('informationsystem_items.closed', '=', 0);
+			}
 
 			$aInformationsystem_Items = $this->_Informationsystem_Items->findAll();
 
@@ -776,8 +779,10 @@ class Informationsystem_Controller_Show extends Core_Controller
 
 		if ($this->limit > 0)
 		{
-			//Ярлык может ссылаться на элемент с истекшим или не наступившим сроком публикации
+			// Ярлык может ссылаться на элемент с истекшим или не наступившим сроком публикации
 			$iCurrentTimestamp = time();
+
+			Core_Event::notify(get_class($this) . '.onBeforeAddInformationsystemItems', $this, array($aInformationsystem_Items));
 
 			foreach ($aInformationsystem_Items as $oInformationsystem_Item)
 			{
@@ -987,10 +992,6 @@ class Informationsystem_Controller_Show extends Core_Controller
 	 */
 	protected function _groupCondition()
 	{
-		/*$this->_Informationsystem_Items
-			->queryBuilder()
-			->where('informationsystem_items.informationsystem_group_id', '=', intval($this->group));*/
-
 		$this->applyFilterGroupCondition($this->_Informationsystem_Items->queryBuilder(), 'informationsystem_items.informationsystem_group_id');
 
 		return $this;
@@ -1655,7 +1656,8 @@ class Informationsystem_Controller_Show extends Core_Controller
 
 		// Panel
 		$oXslPanel = Core::factory('Core_Html_Entity_Div')
-			->class('hostcmsPanel');
+			->class('hostcmsPanel')
+			->style('display: none');
 
 		$oXslSubPanel = Core::factory('Core_Html_Entity_Div')
 			->class('hostcmsSubPanel hostcmsXsl')

@@ -14,4 +14,5 @@ return array(
 	'settings' => 'Налаштування',
 	'calendar_auth_code' => 'Код авторизації',
 	'calendar_auth_code_text' => 'Скопіруйте цей код у текстовому полі на сторінках, з яким задається токен.',
+	'option_entityLimit' => 'Ліміт сутностей'
 );

@@ -488,8 +488,8 @@ abstract class Core_Mail
 				/*
 				1. Multipart/Mixed
 				1.1. multipart/related для рассылок, чтобы картинки были внутри письма || Multipart/Alternative для остальных случаев
-				  1.1.1.1. Text/Plain или Text/HTML
-				  1.1.1.2. Файлы, если есть
+					1.1.1.1. Text/Plain или Text/HTML
+					1.1.1.2. Файлы, если есть
 				*/
 				$content .= "--{$this->_bound}{$sSingleSeparator}";
 
@@ -566,20 +566,20 @@ abstract class Core_Mail
 	 * @return string
 	 */
 	public function getServerHostname()
-    {
-        if (isset($_SERVER['SERVER_NAME']))
+	{
+		if (isset($_SERVER['SERVER_NAME']))
 		{
-            return $_SERVER['SERVER_NAME'];
-        }
+			return $_SERVER['SERVER_NAME'];
+		}
 
 		$gethostname = gethostname();
 		if ($gethostname !== FALSE)
 		{
-            return $gethostname;
-        }
+			return $gethostname;
+		}
 
-        return 'localhost.localdomain';
-    }
+		return 'localhost.localdomain';
+	}
 
 	/**
 	 * Generate Message-ID

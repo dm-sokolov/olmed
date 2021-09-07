@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Informationsystem
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Informationsystem_Item_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 {
@@ -95,6 +95,8 @@ class Informationsystem_Item_Controller_Edit extends Admin_Form_Action_Controlle
 		$oMainTab = $this->getTab('main');
 		$oAdditionalTab = $this->getTab('additional');
 
+		$windowId = $this->_Admin_Form_Controller->getWindowId();
+
 		switch ($modelName)
 		{
 			case 'informationsystem_item':
@@ -116,7 +118,7 @@ class Informationsystem_Item_Controller_Edit extends Admin_Form_Action_Controlle
 					->caption(Core::_('Admin_Form.tabProperties'))
 					->name('Property');
 
-				$this->addTabBefore($oPropertyTab, $oAdditionalTab);
+				$this->addTabAfter($oPropertyTab, $oMainTab);
 
 				// Properties
 				Property_Controller_Tab::factory($this->_Admin_Form_Controller)
@@ -173,34 +175,34 @@ class Informationsystem_Item_Controller_Edit extends Admin_Form_Action_Controlle
 
 				$html2 = '
 					<script>
-						$(function(){
-							$(".shortcut-group-tags").select2({
-								language: "' . Core_i18n::instance()->getLng() . '",
-								minimumInputLength: 1,
-								placeholder: "' . Core::_('Informationsystem_Item.select_group') . '",
-								tags: true,
-								allowClear: true,
-								multiple: true,
-								ajax: {
-									url: "/admin/informationsystem/item/index.php?shortcuts&informationsystem_id=' . $this->_object->informationsystem_id .'",
-									dataType: "json",
-									type: "GET",
-									processResults: function (data) {
-										var aResults = [];
-										$.each(data, function (index, item) {
-											aResults.push({
-												"id": item.id,
-												"text": item.text
-											});
+					$(function(){
+						$("#' . $windowId . ' .shortcut-group-tags").select2({
+							language: "' . Core_i18n::instance()->getLng() . '",
+							minimumInputLength: 1,
+							placeholder: "' . Core::_('Informationsystem_Item.select_group') . '",
+							tags: true,
+							allowClear: true,
+							multiple: true,
+							ajax: {
+								url: "/admin/informationsystem/item/index.php?shortcuts&informationsystem_id=' . $this->_object->informationsystem_id .'",
+								dataType: "json",
+								type: "GET",
+								processResults: function (data) {
+									var aResults = [];
+									$.each(data, function (index, item) {
+										aResults.push({
+											"id": item.id,
+											"text": item.text
 										});
-										return {
-											results: aResults
-										};
-									}
-								},
-							});
-						})</script>
-					';
+									});
+									return {
+										results: aResults
+									};
+								}
+							},
+							dropdownParent: $("#' . $windowId . '")
+						});
+					})</script>';
 
 				$oMainRow3->add(Admin_Form_Entity::factory('Code')->html($html2));
 
@@ -226,9 +228,12 @@ class Informationsystem_Item_Controller_Edit extends Admin_Form_Action_Controlle
 					->divAttr(array('class' => 'form-group col-xs-6 col-sm-4'));
 				$this->getField('indexing')
 					->divAttr(array('class' => 'form-group col-xs-6 col-sm-4'));
+				$this->getField('closed')
+					->divAttr(array('class' => 'form-group col-xs-6 col-sm-4'));
 
 				$oMainTab->move($this->getField('active'), $oMainRow5);
 				$oMainTab->move($this->getField('indexing'), $oMainRow5);
+				$oMainTab->move($this->getField('closed'), $oMainRow5);
 
 				$this->getField('sorting')
 					->divAttr(array('class' => 'form-group col-xs-6 col-sm-3'));
@@ -285,7 +290,6 @@ class Informationsystem_Item_Controller_Edit extends Admin_Form_Action_Controlle
 					: '';
 
 				$sFormPath = $this->_Admin_Form_Controller->getPath();
-				$windowId = $this->_Admin_Form_Controller->getWindowId();
 
 				$oImageField
 					//->caption(Core::_('Informationsystem_Group.image_large'))
@@ -314,7 +318,7 @@ class Informationsystem_Item_Controller_Edit extends Admin_Form_Action_Controlle
 							'place_watermark_checkbox_checked' => $oInformationsystem->watermark_default_use_large_image,
 
 							// onclick_delete_big_image - значение onclick для удаления большой картинки
-							'delete_onclick' => "$.adminLoad({path: '{$sFormPath}', additionalParams: 'hostcms[checked][{$this->_datasetId}][{$this->_object->id}]=1', action: 'deleteLargeImage', windowId: '{$windowId}'}); return false",
+							'delete_onclick' => "$.adminLoad({path: '{$sFormPath}', additionalParams: 'hostcms[checked][{$this->_datasetId}][{$this->_object->id}]=1', action: 'deleteLargeImage', windowId: '{$windowId}'}); return FALSE",
 
 							'caption' => Core::_('Informationsystem_Item.image_large'),
 
@@ -338,7 +342,7 @@ class Informationsystem_Item_Controller_Edit extends Admin_Form_Action_Controlle
 							'place_watermark_checkbox_checked' => $oInformationsystem->watermark_default_use_small_image,
 
 							// onclick_delete_small_image - значение onclick для удаления малой картинки
-							'delete_onclick' => "$.adminLoad({path: '{$sFormPath}', additionalParams: 'hostcms[checked][{$this->_datasetId}][{$this->_object->id}]=1', action: 'deleteSmallImage', windowId: '{$windowId}'}); return false",
+							'delete_onclick' => "$.adminLoad({path: '{$sFormPath}', additionalParams: 'hostcms[checked][{$this->_datasetId}][{$this->_object->id}]=1', action: 'deleteSmallImage', windowId: '{$windowId}'}); return FALSE",
 
 							// load_small_image_caption - заголовок поля загрузки малого изображения
 							'caption' => Core::_('Informationsystem_Item.image_small'),
@@ -537,14 +541,6 @@ class Informationsystem_Item_Controller_Edit extends Admin_Form_Action_Controlle
 
 				if (Core::moduleIsActive('tag'))
 				{
-					/*$oTagsTab = Admin_Form_Entity::factory('Tab')
-						->caption(Core::_('Informationsystem_Item.tab_3'))
-						->name('Tags');
-					$this->addTabAfter($oTagsTab, $oInformationsystemTabSeo);
-
-					$oTagsTab
-						->add($oTagRow1 = Admin_Form_Entity::factory('Div')->class('row'));*/
-
 					$oAdditionalGroupsSelect = Admin_Form_Entity::factory('Select')
 						->caption(Core::_('Informationsystem_Item.tags'))
 						->options($this->_fillTagsList($this->_object))
@@ -556,36 +552,35 @@ class Informationsystem_Item_Controller_Edit extends Admin_Form_Action_Controlle
 
 					$oMainRow5->add($oAdditionalGroupsSelect);
 
-					$html = '
-						<script>
-							$(function(){
-								$(".informationsystem-item-tags").select2({
-									language: "' . Core_i18n::instance()->getLng() . '",
-									minimumInputLength: 2,
-									placeholder: "' . Core::_('Informationsystem_Item.type_tag') . '",
-									tags: true,
-									allowClear: true,
-									multiple: true,
-									ajax: {
-										url: "/admin/tag/index.php?hostcms[action]=loadTagsList&hostcms[checked][0][0]=1",
-										dataType: "json",
-										type: "GET",
-										processResults: function (data) {
-											var aResults = [];
-											$.each(data, function (index, item) {
-												aResults.push({
-													"id": item.id,
-													"text": item.text
-												});
-											});
-											return {
-												results: aResults
-											};
-										}
-									},
-								});
-							})</script>
-						';
+					$html = '<script>
+					$(function(){
+						$("#' . $windowId . ' .informationsystem-item-tags").select2({
+							language: "' . Core_i18n::instance()->getLng() . '",
+							minimumInputLength: 2,
+							placeholder: "' . Core::_('Informationsystem_Item.type_tag') . '",
+							tags: true,
+							allowClear: true,
+							multiple: true,
+							ajax: {
+								url: "/admin/tag/index.php?hostcms[action]=loadTagsList&hostcms[checked][0][0]=1",
+								dataType: "json",
+								type: "GET",
+								processResults: function (data) {
+									var aResults = [];
+									$.each(data, function (index, item) {
+										aResults.push({
+											"id": item.id,
+											"text": item.text
+										});
+									});
+									return {
+										results: aResults
+									};
+								}
+							},
+							dropdownParent: $("#' . $windowId . '")
+						});
+					});</script>';
 
 					$oMainRow5->add(Admin_Form_Entity::factory('Code')->html($html));
 				}
@@ -606,7 +601,7 @@ class Informationsystem_Item_Controller_Edit extends Admin_Form_Action_Controlle
 					->caption(Core::_('Admin_Form.tabProperties'))
 					->name('Property');
 
-				$this->addTabBefore($oPropertyTab, $oAdditionalTab);
+				$this->addTabAfter($oPropertyTab, $oMainTab);
 
 				// Properties
 				Property_Controller_Tab::factory($this->_Admin_Form_Controller)
@@ -804,7 +799,7 @@ class Informationsystem_Item_Controller_Edit extends Admin_Form_Action_Controlle
 						'place_watermark_checkbox_checked' => $oInformationsystem->watermark_default_use_large_image,
 
 						// onclick_delete_big_image - значение onclick для удаления большой картинки
-						'delete_onclick' => "$.adminLoad({path: '{$sFormPath}', additionalParams: 'hostcms[checked][{$this->_datasetId}][{$this->_object->id}]=1', action: 'deleteLargeImage', windowId: '{$windowId}'}); return false",
+						'delete_onclick' => "$.adminLoad({path: '{$sFormPath}', additionalParams: 'hostcms[checked][{$this->_datasetId}][{$this->_object->id}]=1', action: 'deleteLargeImage', windowId: '{$windowId}'}); return FALSE",
 
 						'caption' => Core::_('Informationsystem_Group.image_large'),
 
@@ -829,7 +824,7 @@ class Informationsystem_Item_Controller_Edit extends Admin_Form_Action_Controlle
 						'place_watermark_checkbox_checked' => $oInformationsystem->watermark_default_use_small_image,
 
 						// onclick_delete_small_image - значение onclick для удаления малой картинки
-						'delete_onclick' => "$.adminLoad({path: '{$sFormPath}', additionalParams: 'hostcms[checked][{$this->_datasetId}][{$this->_object->id}]=1', action: 'deleteSmallImage', windowId: '{$windowId}'}); return false",
+						'delete_onclick' => "$.adminLoad({path: '{$sFormPath}', additionalParams: 'hostcms[checked][{$this->_datasetId}][{$this->_object->id}]=1', action: 'deleteSmallImage', windowId: '{$windowId}'}); return FALSE",
 
 						// load_small_image_caption - заголовок поля загрузки малого изображения
 						'caption' => Core::_('Informationsystem_Group.image_small'),
@@ -957,7 +952,7 @@ class Informationsystem_Item_Controller_Edit extends Admin_Form_Action_Controlle
 	/**
 	 * Показ списка групп или поле ввода с autocomplete для большого количества групп
 	 * @param string $fieldName имя поля группы
-	 * @return array  массив элементов, для доабвления в строку
+	 * @return array массив элементов, для доабвления в строку
 	 */
 	public function informationsystemGroupShow($fieldName)
 	{
@@ -1008,42 +1003,44 @@ class Informationsystem_Item_Controller_Edit extends Admin_Form_Action_Controlle
 				->value($this->_object->$fieldName)
 				->type('hidden');
 
+			$windowId = $this->_Admin_Form_Controller->getWindowId();
+
 			$oCore_Html_Entity_Script = Core::factory('Core_Html_Entity_Script')
 			->value("
-				$('[name = informationsystem_group_name]').autocomplete({
-					  source: function(request, response) {
+				$('#{$windowId} [name = informationsystem_group_name]').autocomplete({
+					source: function(request, response) {
 
 						$.ajax({
-						  url: '/admin/informationsystem/item/index.php?autocomplete=1&show_group=1&informationsystem_id={$this->_object->informationsystem_id}',
-						  dataType: 'json',
-						  data: {
+						url: '/admin/informationsystem/item/index.php?autocomplete=1&show_group=1&informationsystem_id={$this->_object->informationsystem_id}',
+						dataType: 'json',
+						data: {
 							queryString: request.term
-						  },
-						  success: function( data ) {
-							response( data );
-						  }
+						},
+						success: function(data) {
+							response(data);
+						}
 						});
-					  },
-					  minLength: 1,
-					  create: function() {
-						$(this).data('ui-autocomplete')._renderItem = function( ul, item ) {
+					},
+					minLength: 1,
+					create: function() {
+						$(this).data('ui-autocomplete')._renderItem = function(ul, item) {
 							return $('<li></li>')
 								.data('item.autocomplete', item)
 								.append($('<a>').text(item.label))
 								.appendTo(ul);
 						}
 
-						 $(this).prev('.ui-helper-hidden-accessible').remove();
-					  },
-					  select: function( event, ui ) {
-						$('[name = {$fieldName}]').val(ui.item.id);
-					  },
-					  open: function() {
+						$(this).prev('.ui-helper-hidden-accessible').remove();
+					},
+					select: function(event, ui) {
+						$('#{$windowId} [name = {$fieldName}]').val(ui.item.id);
+					},
+					open: function() {
 						$(this).removeClass('ui-corner-all').addClass('ui-corner-top');
-					  },
-					  close: function() {
+					},
+					close: function() {
 						$(this).removeClass('ui-corner-top').addClass('ui-corner-all');
-					  }
+					}
 				});
 			");
 
@@ -1340,8 +1337,7 @@ class Informationsystem_Item_Controller_Edit extends Admin_Form_Action_Controlle
 
 		$param = array();
 
-		$large_image = '';
-		$small_image = '';
+		$large_image = $small_image = '';
 
 		$aCore_Config = Core::$mainConfig;
 
@@ -1416,9 +1412,7 @@ class Informationsystem_Item_Controller_Edit extends Admin_Form_Action_Controlle
 				// Для инфогруппы ранее задано изображение
 				if ($this->_object->image_large != '')
 				{
-					// Существует ли большое изображение
-					$param['large_image_isset'] = true;
-					$create_large_image = false;
+					$create_large_image = FALSE;
 				}
 				else // Для информационной группы ранее не задано большое изображение
 				{
@@ -1530,10 +1524,10 @@ class Informationsystem_Item_Controller_Edit extends Admin_Form_Action_Controlle
 			// Позиция "водяного знака" по оси Y
 			$param['watermark_position_y'] = Core_Array::getPost('watermark_position_y_image');
 
-			// Наложить "водяной знак" на большое изображение (true - наложить (по умолчанию), false - не наложить);
+			// Наложить "водяной знак" на большое изображение (true - наложить (по умолчанию), FALSE - не наложить);
 			$param['large_image_watermark'] = !is_null(Core_Array::getPost('large_place_watermark_checkbox_image'));
 
-			// Наложить "водяной знак" на малое изображение (true - наложить (по умолчанию), false - не наложить);
+			// Наложить "водяной знак" на малое изображение (true - наложить (по умолчанию), FALSE - не наложить);
 			$param['small_image_watermark'] = !is_null(Core_Array::getPost('small_place_watermark_checkbox_small_image'));
 
 			// Сохранять пропорции изображения для большого изображения

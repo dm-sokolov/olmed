@@ -167,8 +167,9 @@
 										}
 									});
 
-									jEditInPlace.tinymce({
-										theme: "silver",
+									jEditInPlace.tinymce(hQuery.extend({
+										// theme: "silver",
+										// toolbar_items_size: "small",
 										language: backendLng,
 										language_url: '/admin/wysiwyg/langs/' + backendLng + '.js',
 										init_instance_callback: function (editor) {
@@ -176,7 +177,6 @@
 												settings.blur(jEditInPlace);
 											});
 										},
-										toolbar_items_size: "small",
 										script_url: "/admin/wysiwyg/tinymce.min.js",
 										menubar: false,
 										plugins: [
@@ -186,7 +186,7 @@
 										],
 										toolbar: 'undo redo | styleselect formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | code help',
 										content_css: aCss
-									});
+									}, settings.wysiwygConfig));
 								}, 300);
 							}
 
@@ -213,7 +213,8 @@
 						original_height = uiDialog.height(),
 						original_position = uiDialog.position(),
 						textareaBlock = uiDialog.find('textarea'),
-						textareaBlockHeight = textareaBlock.height();
+						// textareaBlockHeight = textareaBlock.height();
+						textareaBlockOuterHeight = textareaBlock.parents('div.hostcmsWindow').outerHeight();
 
 					hQuery("#btnMaximize")
 						.hover(function () {
@@ -232,6 +233,12 @@
 								textareaBlock.height(hQuery(window).height() - 25 + 'px');
 								textareaBlock.parents('div.hostcmsWindow').height('');
 
+								// console.log('original_height_max', uiDialog.height());
+
+								original_height = uiDialog.height();
+								original_width = uiDialog.width();
+								original_position = uiDialog.position();
+
 								uiDialog.animate({
 									height: hQuery(window).height() - 3 + "px",
 									width: hQuery(window).width() + "px",
@@ -246,8 +253,10 @@
 
 								hQuery('body').removeClass('bodyMaximize');
 
-								textareaBlock.height(textareaBlockHeight + 'px');
-								textareaBlock.parents('div.hostcmsWindow').height(textareaBlockHeight + 'px');
+								// textareaBlock.height(textareaBlockHeight + 'px');
+								// textareaBlock.parents('div.hostcmsWindow').height(textareaBlockHeight + 'px');
+								textareaBlock.removeAttr('style');
+								textareaBlock.parents('div.hostcmsWindow').height(textareaBlockOuterHeight + 'px');
 
 								uiDialog.animate({
 								  height: original_height + "px",

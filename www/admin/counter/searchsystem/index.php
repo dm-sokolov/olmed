@@ -6,7 +6,7 @@
  * @package HostCMS
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 require_once('../../../bootstrap.php');
 
@@ -116,6 +116,8 @@ if ($iCount)
 {
 	ob_start();
 
+	$sWindowId = $oAdmin_Form_Controller->getWindowId();
+
 	$aColors = Core_Array::get(Core::$config->get('counter_color'), 'Column3D', array());
 	$iCountColors = count($aColors);
 	?>
@@ -215,7 +217,7 @@ if ($iCount)
 					content: "<b>%s</b> : <span>%y</span>",
 				}
 			};
-			var placeholder = $("#searchSystemDiagram");
+			var placeholder = $("#<?php echo $sWindowId?> #searchSystemDiagram");
 			var plot = $.plot(placeholder, searchSystemDiagramData, options);
 		});
 	});

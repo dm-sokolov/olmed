@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Lead
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Lead_Controller_Morph extends Admin_Form_Action_Controller
 {
@@ -143,7 +143,7 @@ class Lead_Controller_Morph extends Admin_Form_Action_Controller
 				->value($this->buttonName)
 				->onclick(
 					'bootbox.hideAll(); '
-					. $this->_Admin_Form_Controller->getAdminSendForm(NULL, 'apply')
+					. $this->_Admin_Form_Controller->getAdminSendForm(array('operation' => 'apply'))
 				)
 				->controller($this->_Admin_Form_Controller);
 

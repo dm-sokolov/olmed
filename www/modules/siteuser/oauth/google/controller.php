@@ -123,7 +123,7 @@ class Siteuser_Oauth_Google_Controller extends Siteuser_Oauth_Controller
 						return array(
 							'user_id' => Core_Array::get($aReturnData, 'id'),
 							'email' => Core_Array::get($aReturnData, 'email'),
-							'name' =>  Core_Array::get($aReturnData, 'given_name', ''),
+							'name' => Core_Array::get($aReturnData, 'given_name', ''),
 							'surname' => Core_Array::get($aReturnData, 'family_name', ''),
 							'login' => '',
 							'company' => '',

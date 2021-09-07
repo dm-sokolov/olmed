@@ -15,16 +15,15 @@
 						->show();
 				?>
 			</div>
-			<script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
 			<?php
 				Core_Page::instance()->execute();
 			?>
 		</div>
-		<div class="col-sm-3">
+		<div class="col-sm-3 olmed_sidebar">
 			<?php
 				// Услуги справа
 				$Informationsystem_Controller_Show_Observer = new Informationsystem_Controller_Show_Observer(
-					Core_Entity::factory('Informationsystem', 62)
+					Core_Entity::factory('Informationsystem', Core_Page::instance()->config['informationsystemId2'])
 				);
 
 				$Informationsystem_Controller_Show_Observer

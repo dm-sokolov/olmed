@@ -194,4 +194,12 @@ return array(
 	'certificate_subject' => 'Тема листа',
 	'certificate_text' => 'Текст листа',
 	'certificate_template_coupon_id' => 'ID купона',
+
+	'option_itemEditWarehouseLimit' => 'Кількість складів, що виводяться при редагуванні товару, якщо складів більше, то блок не виводиться',
+	'option_smallImagePrefix' => 'Префікс при іменуванні малих зображень',
+	'option_itemLargeImage' => 'Шаблон іменування великого зображення товару',
+	'option_itemSmallImage' => 'Шаблон іменування малого зображення товару',
+	'option_groupLargeImage' => 'Шаблон іменування великого зображення групи',
+	'option_groupSmallImage' => 'Шаблон іменування малого зображення групи',
+	'option_shop_item_card_xsl' => 'XSL-шаблон цінників'
 );

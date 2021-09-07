@@ -77,9 +77,12 @@ return array(
 
 	'siteuser_id' => "Client ID",
 	'digital_item_name' => "Digital Item Name",
-	'item_yandex_market_sales_notes' => "Sales notes",
-	'item_parent_associated' => "Associated item, Parent Item Marking",
-	'item_associated_markings' => "Associated item's margings",
+	'item_yandex_market_sales_notes' => "Sales Notes",
+	'item_parent_associated' => "Associated Goods, Parent Goods Marking",
+	'item_associated_markings' => "Associated Goods's margings",
+	'item_tabs' => "Tabs of Goods",
+	'caprion_modifications' => "Modifications by Properties",
+	'modification_by_property' => "Modifications by %s",
 
 	'order_guid' => "Order GUID",
 	'order_number' => "Order number",

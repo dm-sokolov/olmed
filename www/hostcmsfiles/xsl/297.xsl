@@ -16,10 +16,10 @@
 		
 		<xsl:if test="informationsystem_item">
 			
-			<div class="h2 text-center mb-4">Наши лицензии</div>
+			<h2 class="h2 text-left mb-4 font-weight-bold main-title license-title">Наши лицензии</h2>
 			
 			<div class="row justify-content-md-center">
-				<div class="col-sm-11">
+				<div class="col col-lg-11">
 					<div id="licenseSlider" class="owl-carousel owl-theme owl-arrow-black mb-4">
 						<xsl:apply-templates select="informationsystem_item"/>
 					</div>

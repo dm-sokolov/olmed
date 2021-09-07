@@ -238,6 +238,7 @@ class Core_Sitemap extends Core_Servant_Properties
 	 * Add structure nodes by parent
 	 * @param int $structure_id structure ID
 	 * @return self
+	 * @hostcms-event Core_Sitemap.onBeforeAddStructure
 	 */
 	protected function _structure($structure_id = 0)
 	{
@@ -251,7 +252,20 @@ class Core_Sitemap extends Core_Servant_Properties
 		{
 			$sProtocol = $this->getProtocol($oStructure);
 
-			$this->addNode($sProtocol . $this->_siteAlias . $oStructure->getPath(), $oStructure->changefreq, $oStructure->priority, $oStructure);
+			$loc = $sProtocol . $this->_siteAlias . $oStructure->getPath();
+			$changefreq = $oStructure->changefreq;
+			$priority = $oStructure->priority;
+			$entity = $oStructure;
+
+			Core_Event::notify('Core_Sitemap.onBeforeAddStructure', $this, array($loc, $changefreq, $priority, $entity));
+
+			$lastReturn = Core_Event::getLastReturn();
+			if (is_array($lastReturn) && count($lastReturn) == 4)
+			{
+				list($loc, $changefreq, $priority, $entity) = $lastReturn;
+			}
+
+			$this->addNode($loc, $changefreq, $priority, $entity);
 
 			// Informationsystem
 			if ($this->showInformationsystemGroups && isset($this->_Informationsystems[$oStructure->id]) && Core::moduleIsActive('informationsystem'))
@@ -283,7 +297,11 @@ class Core_Sitemap extends Core_Servant_Properties
 	 * @param Informationsystem_Model $oInformationsystem
 	 * @return self
 	 * @hostcms-event Core_Sitemap.onBeforeSelectInformationsystemGroups
+	 * @hostcms-event Core_Sitemap.onBeforeAddInformationsystemGroup
 	 * @hostcms-event Core_Sitemap.onBeforeSelectInformationsystemItems
+	 * @hostcms-event Core_Sitemap.onBeforeAddInformationsystemItem
+	 * @hostcms-event Core_Sitemap.onBeforeSelectInformationsystemTags
+	 * @hostcms-event Core_Sitemap.onBeforeAddInformationsystemTag
 	 */
 	protected function _fillInformationsystem(Structure_Model $oStructure, Informationsystem_Model $oInformationsystem)
 	{
@@ -317,8 +335,8 @@ class Core_Sitemap extends Core_Servant_Properties
 				->where('informationsystem_groups.id', 'BETWEEN', array($iFrom + 1, $iFrom + $this->limit))
 				->where('informationsystem_groups.siteuser_group_id', 'IN', $this->_aSiteuserGroups)
 				->where('informationsystem_groups.active', '=', 1)
-				->where('informationsystem_groups.shortcut_id', '=', 0)
-				->where('informationsystem_groups.indexing', '=', 1);
+				->where('informationsystem_groups.indexing', '=', 1)
+				->where('informationsystem_groups.shortcut_id', '=', 0);
 
 			Core_Event::notify('Core_Sitemap.onBeforeSelectInformationsystemGroups', $this, array($oInformationsystem_Groups));
 
@@ -328,7 +346,20 @@ class Core_Sitemap extends Core_Servant_Properties
 			{
 				$aGroupsIDs[$oInformationsystem_Group->id] = $oInformationsystem_Group->id;
 
-				$this->addNode($path . $oInformationsystem_Group->getPath(), $oStructure->changefreq, $oStructure->priority, $oInformationsystem_Group);
+				$loc = $path . $oInformationsystem_Group->getPath();
+				$changefreq = $oStructure->changefreq;
+				$priority = $oStructure->priority;
+				$entity = $oInformationsystem_Group;
+
+				Core_Event::notify('Core_Sitemap.onBeforeAddInformationsystemGroup', $this, array($loc, $changefreq, $priority, $entity));
+
+				$lastReturn = Core_Event::getLastReturn();
+				if (is_array($lastReturn) && count($lastReturn) == 4)
+				{
+					list($loc, $changefreq, $priority, $entity) = $lastReturn;
+				}
+
+				$this->addNode($loc, $changefreq, $priority, $entity);
 			}
 			$iFrom += $this->limit;
 		}
@@ -370,8 +401,9 @@ class Core_Sitemap extends Core_Servant_Properties
 					->close()
 					->where('informationsystem_items.siteuser_group_id', 'IN', $this->_aSiteuserGroups)
 					->where('informationsystem_items.active', '=', 1)
-					->where('informationsystem_items.shortcut_id', '=', 0)
-					->where('informationsystem_items.indexing', '=', 1);
+					->where('informationsystem_items.indexing', '=', 1)
+					->where('informationsystem_items.closed', '=', 0)
+					->where('informationsystem_items.shortcut_id', '=', 0);
 
 				Core_Event::notify('Core_Sitemap.onBeforeSelectInformationsystemItems', $this, array($oInformationsystem_Items));
 
@@ -381,7 +413,20 @@ class Core_Sitemap extends Core_Servant_Properties
 					if ($oInformationsystem_Item->informationsystem_group_id == 0
 						|| isset($aGroupsIDs[$oInformationsystem_Item->informationsystem_group_id]))
 					{
-						$this->addNode($path . $oInformationsystem_Item->getPath(), $oStructure->changefreq, $oStructure->priority, $oInformationsystem_Item);
+						$loc = $path . $oInformationsystem_Item->getPath();
+						$changefreq = $oStructure->changefreq;
+						$priority = $oStructure->priority;
+						$entity = $oInformationsystem_Item;
+
+						Core_Event::notify('Core_Sitemap.onBeforeAddInformationsystemItem', $this, array($loc, $changefreq, $priority, $entity));
+
+						$lastReturn = Core_Event::getLastReturn();
+						if (is_array($lastReturn) && count($lastReturn) == 4)
+						{
+							list($loc, $changefreq, $priority, $entity) = $lastReturn;
+						}
+
+						$this->addNode($loc, $changefreq, $priority, $entity);
 					}
 				}
 
@@ -431,7 +476,20 @@ class Core_Sitemap extends Core_Servant_Properties
 				$aTags = $oTags->findAll(FALSE);
 				foreach ($aTags as $oTag)
 				{
-					$this->addNode($path . 'tag/' . rawurlencode($oTag->path) . '/', $oStructure->changefreq, $oStructure->priority, $oTag);
+					$loc = $path . 'tag/' . rawurlencode($oTag->path) . '/';
+					$changefreq = $oStructure->changefreq;
+					$priority = $oStructure->priority;
+					$entity = $oTag;
+
+					Core_Event::notify('Core_Sitemap.onBeforeAddInformationsystemTag', $this, array($loc, $changefreq, $priority, $entity));
+
+					$lastReturn = Core_Event::getLastReturn();
+					if (is_array($lastReturn) && count($lastReturn) == 4)
+					{
+						list($loc, $changefreq, $priority, $entity) = $lastReturn;
+					}
+
+					$this->addNode($loc, $changefreq, $priority, $entity);
 				}
 
 				$iFrom += $this->limit;
@@ -449,8 +507,12 @@ class Core_Sitemap extends Core_Servant_Properties
 	 * @param Shop_Model $oInformationsystem
 	 * @return self
 	 * @hostcms-event Core_Sitemap.onBeforeSelectShopGroups
+	 * @hostcms-event Core_Sitemap.onBeforeAddShopGroup
 	 * @hostcms-event Core_Sitemap.onBeforeSelectShopItems
+	 * @hostcms-event Core_Sitemap.onBeforeAddShopItem
 	 * @hostcms-event Core_Sitemap.onBeforeSelectShopTags
+	 * @hostcms-event Core_Sitemap.onBeforeAddShopTag
+	 * @hostcms-event Core_Sitemap.onBeforeAddShopFilter
 	 */
 	protected function _fillShop(Structure_Model $oStructure, Shop_Model $oShop)
 	{
@@ -495,7 +557,20 @@ class Core_Sitemap extends Core_Servant_Properties
 			{
 				$aGroupsIDs[$oShop_Group->id] = $oShop_Group->id;
 
-				$this->addNode($path . $oShop_Group->getPath(), $oStructure->changefreq, $oStructure->priority, $oShop_Group);
+				$loc = $path . $oShop_Group->getPath();
+				$changefreq = $oStructure->changefreq;
+				$priority = $oStructure->priority;
+				$entity = $oShop_Group;
+
+				Core_Event::notify('Core_Sitemap.onBeforeAddShopGroup', $this, array($loc, $changefreq, $priority, $entity));
+
+				$lastReturn = Core_Event::getLastReturn();
+				if (is_array($lastReturn) && count($lastReturn) == 4)
+				{
+					list($loc, $changefreq, $priority, $entity) = $lastReturn;
+				}
+
+				$this->addNode($loc, $changefreq, $priority, $entity);
 			}
 
 			$iFrom += $this->limit;
@@ -539,8 +614,8 @@ class Core_Sitemap extends Core_Servant_Properties
 					->close()
 					->where('shop_items.siteuser_group_id', 'IN', $this->_aSiteuserGroups)
 					->where('shop_items.active', '=', 1)
-					->where('shop_items.shortcut_id', '=', 0)
-					->where('shop_items.indexing', '=', 1);
+					->where('shop_items.indexing', '=', 1)
+					->where('shop_items.shortcut_id', '=', 0);
 
 				// Modifications
 				!$this->showModifications
@@ -554,7 +629,20 @@ class Core_Sitemap extends Core_Servant_Properties
 					if ($oShop_Item->shop_group_id == 0
 						|| isset($aGroupsIDs[$oShop_Item->shop_group_id]))
 					{
-						$this->addNode($path . $oShop_Item->getPath(), $oStructure->changefreq, $oStructure->priority, $oShop_Item);
+						$loc = $path . $oShop_Item->getPath();
+						$changefreq = $oStructure->changefreq;
+						$priority = $oStructure->priority;
+						$entity = $oShop_Item;
+
+						Core_Event::notify('Core_Sitemap.onBeforeAddShopItem', $this, array($loc, $changefreq, $priority, $entity));
+
+						$lastReturn = Core_Event::getLastReturn();
+						if (is_array($lastReturn) && count($lastReturn) == 4)
+						{
+							list($loc, $changefreq, $priority, $entity) = $lastReturn;
+						}
+
+						$this->addNode($loc, $changefreq, $priority, $entity);
 					}
 				}
 
@@ -604,7 +692,20 @@ class Core_Sitemap extends Core_Servant_Properties
 				$aTags = $oTags->findAll(FALSE);
 				foreach ($aTags as $oTag)
 				{
-					$this->addNode($path . 'tag/' . rawurlencode($oTag->path) . '/', $oStructure->changefreq, $oStructure->priority, $oTag);
+					$loc = $path . 'tag/' . rawurlencode($oTag->path) . '/';
+					$changefreq = $oStructure->changefreq;
+					$priority = $oStructure->priority;
+					$entity = $oTag;
+
+					Core_Event::notify('Core_Sitemap.onBeforeAddShopTag', $this, array($loc, $changefreq, $priority, $entity));
+
+					$lastReturn = Core_Event::getLastReturn();
+					if (is_array($lastReturn) && count($lastReturn) == 4)
+					{
+						list($loc, $changefreq, $priority, $entity) = $lastReturn;
+					}
+
+					$this->addNode($loc, $changefreq, $priority, $entity);
 				}
 
 				$iFrom += $this->limit;
@@ -617,7 +718,20 @@ class Core_Sitemap extends Core_Servant_Properties
 			$aShop_Filter_Seos = $oShop->Shop_Filter_Seos->getAllByActive(1, FALSE);
 			foreach ($aShop_Filter_Seos as $oShop_Filter_Seo)
 			{
-				$this->addNode($path . $oShop_Filter_Seo->getUrl(), $oStructure->changefreq, $oStructure->priority, $oShop_Filter_Seo);
+				$loc = $path . $oShop_Filter_Seo->getUrl();
+				$changefreq = $oStructure->changefreq;
+				$priority = $oStructure->priority;
+				$entity = $oShop_Filter_Seo;
+
+				Core_Event::notify('Core_Sitemap.onBeforeAddShopFilter', $this, array($loc, $changefreq, $priority, $entity));
+
+				$lastReturn = Core_Event::getLastReturn();
+				if (is_array($lastReturn) && count($lastReturn) == 4)
+				{
+					list($loc, $changefreq, $priority, $entity) = $lastReturn;
+				}
+					
+				$this->addNode($loc, $changefreq, $priority, $entity);
 			}
 		}
 

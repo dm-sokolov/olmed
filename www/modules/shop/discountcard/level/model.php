@@ -143,4 +143,21 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
 
 		return parent::delete($primaryKey);
 	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event shop_discountcard_level.onBeforeGetRelatedSite
+	 * @hostcms-event shop_discountcard_level.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Shop->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
+	}
 }

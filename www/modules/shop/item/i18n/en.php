@@ -148,7 +148,6 @@ return array(
 	'input_file_encoding0' => 'Windows-1251',
 	'input_file_encoding1' => 'UTF-8',
 	'import_price_list_parent_group' => "Parent group",
-	'import_price_list_producer' => "Producer",
 	'import_price_list_images_path' => "<acronym title=\"Path for external files, e.g. /upload_images/\">Path for external files</acronym>",
 	'import_price_list_action_items' => "<acronym title=\"Action for existing products\">Action for existing products</acronym>",
 	'import_price_action_items0' => "Delete existing products in all groups",
@@ -347,5 +346,9 @@ return array(
 	'certificate_discount' => 'Discount',
 	'certificate_item_header' => 'Certificate',
 	'item_type_selection_group_buttons_name_certificate' => "Certificate",
-	'create_modification_use_property_name' => 'Use property name',	
+	'create_modification_use_property_name' => 'Use property name',
+
+	'delete_unsent_modifications_by_properties' => 'Delete unsent modifications created by property',
+	'shortcut' => 'Shortcut',
+	'include_modifications' => 'Include modifications',
 );

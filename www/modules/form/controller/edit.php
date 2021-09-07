@@ -71,58 +71,61 @@ class Form_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 				->wysiwyg(Core::moduleIsActive('wysiwyg')
 			), $oMainRow6);
 
-			// Notification subscribers
-			if (Core::moduleIsActive('notification'))
+		$windowId = $this->_Admin_Form_Controller->getWindowId();
+
+		// Notification subscribers
+		if (Core::moduleIsActive('notification'))
+		{
+			$oSite = Core_Entity::factory('Site', CURRENT_SITE);
+			$aSelectSubscribers = $oSite->Companies->getUsersOptions();
+
+			$oModule = Core::$modulesList['form'];
+
+			$aSubscribers = array();
+
+			$oNotification_Subscribers = Core_Entity::factory('Notification_Subscriber');
+			$oNotification_Subscribers->queryBuilder()
+				->where('notification_subscribers.module_id', '=', $oModule->id)
+				->where('notification_subscribers.type', '=', 0)
+				->where('notification_subscribers.entity_id', '=', $this->_object->id);
+
+			$aNotification_Subscribers = $oNotification_Subscribers->findAll(FALSE);
+
+			foreach ($aNotification_Subscribers as $oNotification_Subscriber)
 			{
-				$oSite = Core_Entity::factory('Site', CURRENT_SITE);
-				$aSelectSubscribers = $oSite->Companies->getUsersOptions();
-
-				$oModule = Core::$modulesList['form'];
-
-				$aSubscribers = array();
-
-				$oNotification_Subscribers = Core_Entity::factory('Notification_Subscriber');
-				$oNotification_Subscribers->queryBuilder()
-					->where('notification_subscribers.module_id', '=', $oModule->id)
-					->where('notification_subscribers.type', '=', 0)
-					->where('notification_subscribers.entity_id', '=', $this->_object->id);
-
-				$aNotification_Subscribers = $oNotification_Subscribers->findAll(FALSE);
-
-				foreach ($aNotification_Subscribers as $oNotification_Subscriber)
-				{
-					$aSubscribers[] = $oNotification_Subscriber->user_id;
-				}
-
-				$oNotificationSubscribersSelect = Admin_Form_Entity::factory('Select')
-					->caption(Core::_('Form.notification_subscribers'))
-					->options($aSelectSubscribers)
-					->name('notification_subscribers[]')
-					->class('form-notification-subscribers')
-					->value($aSubscribers)
-					->style('width: 100%')
-					->multiple('multiple')
-					->divAttr(array('class' => 'form-group col-xs-12'));
-
-				$oMainRowNotification->add($oNotificationSubscribersSelect);
-
-				$html = '
-					<script>
-						$(function(){
-							$(".form-notification-subscribers").select2({
-								language: "' . Core_i18n::instance()->getLng() . '",
-								placeholder: "' . Core::_('Form.type_subscriber') . '",
-								allowClear: true,
-								templateResult: $.templateResultItemResponsibleEmployees,
-								escapeMarkup: function(m) { return m; },
-								templateSelection: $.templateSelectionItemResponsibleEmployees,
-								width: "100%"
-							});
-						})</script>
-					';
-
-				$oMainRowNotification->add(Admin_Form_Entity::factory('Code')->html($html));
+				$aSubscribers[] = $oNotification_Subscriber->user_id;
 			}
+
+			$oNotificationSubscribersSelect = Admin_Form_Entity::factory('Select')
+				->caption(Core::_('Form.notification_subscribers'))
+				->options($aSelectSubscribers)
+				->name('notification_subscribers[]')
+				->class('form-notification-subscribers')
+				->value($aSubscribers)
+				->style('width: 100%')
+				->multiple('multiple')
+				->divAttr(array('class' => 'form-group col-xs-12'));
+
+			$oMainRowNotification->add($oNotificationSubscribersSelect);
+
+			$html = '
+				<script>
+					$(function(){
+						$("#' . $windowId . ' .form-notification-subscribers").select2({
+							dropdownParent: $("#' . $windowId . '"),
+							language: "' . Core_i18n::instance()->getLng() . '",
+							placeholder: "' . Core::_('Form.type_subscriber') . '",
+							allowClear: true,
+							templateResult: $.templateResultItemResponsibleEmployees,
+							escapeMarkup: function(m) { return m; },
+							templateSelection: $.templateSelectionItemResponsibleEmployees,
+							width: "100%"
+						});
+					})</script>
+				';
+
+			$oMainRowNotification->add(Admin_Form_Entity::factory('Code')->html($html));
+		}
 
 		$oMainTab->move($this->getField('use_captcha')->divAttr(array('class' => 'form-group col-xs-12 col-sm-6 col-md-4 margin-top-21')), $oMainRowCaptcha);
 
@@ -170,8 +173,8 @@ class Form_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 			$script = '
 				<script>
 					$(function(){
-						$("input[name = create_lead]").on("change", function(){
-							$(".lead-tab, .crm-source").toggleClass("hidden");
+						$("#' . $windowId . ' input[name = create_lead]").on("change", function(){
+							$("#' . $windowId . ' .lead-tab, #' . $windowId . ' .crm-source").toggleClass("hidden");
 						});
 					})</script>
 				';
@@ -182,7 +185,7 @@ class Form_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 
 			$aMasFormField = array('...');
 
-			$aAvailableFieldTypes = array(0, 5);
+			$aAvailableFieldTypes = array(0, 5, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
 
 			$oForm_Fields = $this->_object->Form_Fields;
 			$oForm_Fields->queryBuilder()
@@ -285,7 +288,7 @@ class Form_Controller_Edit extends Admin_Form_Action_Controller_Type_Edit
 	protected function _applyObjectProperty()
 	{
 		// Backup revision
-		if (Core::moduleIsActive('revision')  && $this->_object->id)
+		if (Core::moduleIsActive('revision') && $this->_object->id)
 		{
 			$this->_object->backupRevision();
 		}

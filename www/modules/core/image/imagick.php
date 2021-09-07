@@ -262,20 +262,24 @@ class Core_Image_Imagick extends Core_Image
 			if (!is_null($watermarkX))
 			{
 				// Если передан атрибут в %-ах
-				if (preg_match("/^([0-9]*)%$/", $watermarkX, $regs) && $regs[1] > 0)
+				if (preg_match("/^([0-9]*)%$/", $watermarkX, $regs))
 				{
 					// Вычисляем позицию в %-х
-					$watermarkX = ($sourceImage->getImageWidth() - $watermarkImage->getImageWidth()) * ($regs[1] / 100);
+					$watermarkX = $regs[1] > 0
+						? ($sourceImage->getImageWidth() - $watermarkImage->getImageWidth()) * ($regs[1] / 100)
+						: 0;
 				}
 			}
 
 			if (!is_null($watermarkY))
 			{
 				// Если передан атрибут в %-ах
-				if (preg_match("/^([0-9]*)%$/", $watermarkY, $regs) && $regs[1] > 0)
+				if (preg_match("/^([0-9]*)%$/", $watermarkY, $regs))
 				{
 					// Вычисляем позицию в %-х
-					$watermarkY = ($sourceImage->getImageHeight() - $watermarkImage->getImageHeight()) * ($regs[1] / 100);
+					$watermarkY = $regs[1] > 0
+						? ($sourceImage->getImageHeight() - $watermarkImage->getImageHeight()) * ($regs[1] / 100)
+						: 0;
 				}
 			}
 

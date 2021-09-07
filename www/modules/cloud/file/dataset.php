@@ -27,12 +27,6 @@ class Cloud_File_Dataset extends Admin_Form_Dataset
 	}
 
 	/**
-	 * Dataset objects list
-	 * @var array
-	 */
-	protected $_objects = array();
-
-	/**
 	 * Get count of finded objects
 	 * @return int
 	 */
@@ -54,6 +48,8 @@ class Cloud_File_Dataset extends Admin_Form_Dataset
 	 */
 	public function load()
 	{
+		!is_array($this->_objects) && $this->_fillObjectsArray();
+		
 		return array_slice($this->_objects, $this->_offset, $this->_limit);
 	}
 
@@ -76,7 +72,7 @@ class Cloud_File_Dataset extends Admin_Form_Dataset
 	 */
 	public function getObject($primaryKey)
 	{
-		!count($this->_objects) && $this->_fillObjectsArray();
+		!is_array($this->_objects) && $this->_fillObjectsArray();
 
 		if (isset($this->_objects[$primaryKey]))
 		{

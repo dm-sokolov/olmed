@@ -99,4 +99,7 @@ return array(
 	'from' => 'E-mail отправителя',
 	'sender_name' => 'Имя отправителя',
 	'title' => 'Заголовок',
+
+	'option_max_height' => 'Максимальная высота аватара',
+	'option_max_width' => 'Максимальная ширина аватара',
 );

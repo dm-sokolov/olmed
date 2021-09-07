@@ -9,52 +9,49 @@
 	
 	<!-- УслугиНаГлавнойNEW -->
 	<xsl:variable name="group" select="/informationsystem/group"/>
-	
 	<xsl:template match="/">
-		<xsl:apply-templates select="informationsystem"/>
+		<div class="mb-3 service-box-wrap owl-carousel owl-theme owl-drag">
+			<xsl:apply-templates select="informationsystem"/>
+		</div>
 	</xsl:template>
-	
 	<xsl:variable name="count" select="count(/informationsystem//informationsystem_group[parent_id=$group and name != 'Акции' and name != 'Вакансии' and name != 'Поликлиника']) + 1"/>
 	<xsl:variable name="n" select="ceiling($count div 3)"/>
-	
 	<xsl:template match="informationsystem">
-		<div class="h1 text-center mb-4">Услуги медицинского центра</div>
-		
 		<xsl:if test=".//informationsystem_group[parent_id=$group]">
-			<div class="row mb-3 service-box-wrap">
-				<div class="col-sm-4">
-					<div class="service-box">
-						<xsl:apply-templates select=".//informationsystem_group[parent_id=$group]" />
-				<div class="mb-1"><a href="/services/gift-certificate/"><i class="fa fa-chevron-circle-right" aria-hidden="true"></i> Подарочный сертификат</a></div>
-					</div>
-				</div>
-			</div>
-		</xsl:if>
-	</xsl:template>
-	
-	<xsl:variable name="current_group" select="/informationsystem/current_group"/>
-	
-	<xsl:template match="informationsystem_group">
-		<xsl:if test="name != 'Акции' and name != 'Вакансии' and name != 'Поликлиника'">
-			<div class="mb-1">
-				<a href="{url}">
-					<xsl:if test="$current_group = @id or property_value[tag_name = 'red']/value = 1">
-						<xsl:attribute name="class">active</xsl:attribute>
-					</xsl:if>
-					<i class="fa fa-chevron-circle-right" aria-hidden="true"></i>
-					<xsl:text> </xsl:text>
-					<xsl:value-of select="name"/>
-				</a>
-			</div>
-			
-			<xsl:if test="position() mod $n  = 0 and position() != last()">
-				<xsl:text disable-output-escaping="yes">
-					&lt;/div&gt;
-					&lt;/div&gt;
-					&lt;div class="col-sm-4"&gt;
-					&lt;div class="service-box"&gt;
-				</xsl:text>
+			<div class="service-box">
+				<xsl:apply-templates select=".//informationsystem_group[parent_id=$group]" />
+				<xsl:if test="($count - 1) mod 3  != 0">
+				<!--div class="mb-1"><a href="/services/gift-certificate/"> <xsl:value-of select="$count"/>Подарочный сертификат</a></div-->
 			</xsl:if>
-		</xsl:if>
-	</xsl:template>
+		</div>
+		<!--xsl:if test="($count - 1) mod 3  = 0">
+		<div class="service-box">
+		<div class="mb-1"><a href="/services/gift-certificate/"><xsl:value-of select="$count"/>Подарочный сертификат</a></div>
+		</div>
+	</xsl:if-->
+</xsl:if>
+</xsl:template>
+
+<xsl:variable name="current_group" select="/informationsystem/current_group"/>
+
+<xsl:template match="informationsystem_group">
+<xsl:if test="name != 'Акции' and name != 'Вакансии' and name != 'Поликлиника'">
+	<div class="mb-1">
+		<a href="{url}">
+			<xsl:if test="$current_group = @id or property_value[tag_name = 'red']/value = 1">
+				<xsl:attribute name="class">active</xsl:attribute>
+			</xsl:if>
+			
+			<xsl:text> </xsl:text>
+			<xsl:value-of select="name"/>
+		</a>
+	</div>
+	<xsl:if test="position() mod 3  = 0 and position() != last()">
+		<xsl:text disable-output-escaping="yes">
+			&lt;/div&gt;
+			&lt;div class="service-box"&gt;
+		</xsl:text>
+	</xsl:if>
+</xsl:if>
+</xsl:template>
 </xsl:stylesheet>

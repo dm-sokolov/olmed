@@ -3,13 +3,13 @@
 defined('HOSTCMS') || exit('HostCMS: access denied.');
 
 /**
- * Admin forms.
+ * Lead_Controller_Kanban
  *
  * @package HostCMS
- * @subpackage Skin
+ * @subpackage Lead
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Lead_Controller_Kanban extends Admin_Form_Controller_View
 {

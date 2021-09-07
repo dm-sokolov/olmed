@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Search
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2018 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Search_Log_Model extends Core_Entity
 {
@@ -81,11 +81,11 @@ class Search_Log_Model extends Core_Entity
 	}
 
 	/**
-	 * Count 
+	 * Count
 	 * @var int
 	 */
 	static protected $_count = NULL;
-	
+
 	/**
 	 * Backend callback method
 	 * @param Admin_Form_Field $oAdmin_Form_Field
@@ -107,5 +107,22 @@ class Search_Log_Model extends Core_Entity
 		{
 			return sprintf("%.2f%%", $this->count * 100 / self::$_count);
 		}
+	}
+
+	/**
+	 * Get Related Site
+	 * @return Site_Model|NULL
+	 * @hostcms-event search_log.onBeforeGetRelatedSite
+	 * @hostcms-event search_log.onAfterGetRelatedSite
+	 */
+	public function getRelatedSite()
+	{
+		Core_Event::notify($this->_modelName . '.onBeforeGetRelatedSite', $this);
+
+		$oSite = $this->Site;
+
+		Core_Event::notify($this->_modelName . '.onAfterGetRelatedSite', $this, array($oSite));
+
+		return $oSite;
 	}
 }

@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Trash
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2018 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Trash_Table_Dataset extends Admin_Form_Dataset
 {
@@ -75,19 +75,13 @@ class Trash_Table_Dataset extends Admin_Form_Dataset
 	}
 
 	/**
-	 * Dataset objects list
-	 * @var array
-	 */
-	protected $_objects = array();
-
-	/**
 	 * Load objects
 	 * @return array
 	 */
 	public function load()
 	{
-		//return array_slice($this->_objects, $this->_offset, $this->_limit);
-		$this->_getItems();
+		!is_array($this->_objects) && $this->_getItems();
+
 		return $this->_objects;
 	}
 
@@ -160,7 +154,9 @@ class Trash_Table_Dataset extends Admin_Form_Dataset
 	public function getObject($primaryKey)
 	{
 		$this->_getItems($primaryKey);
+
 		$this->_count = NULL;
+
 		return isset($this->_objects[$primaryKey])
 			? $this->_objects[$primaryKey]
 			: NULL;
@@ -188,11 +184,8 @@ class Trash_Table_Dataset extends Admin_Form_Dataset
 			ini_set("max_execution_time", "240");
 		}
 
-		if (!count($this->_objects))
-		{
-			//$this->_limit = $this->_offset = NULL;
-			$this->_getItems();
-		}
+		!is_array($this->_objects) && $this->_getItems();
+
 		return $this->_objects;
 	}
 }

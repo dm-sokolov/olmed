@@ -6,7 +6,7 @@
  * @package HostCMS
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 require_once('../../../bootstrap.php');
 
@@ -199,7 +199,7 @@ if (count($aObjects))
 				}
 
 				var percent = parseFloat(obj.series.percent).toFixed(2);
-				$("#hover").html("<span style='font-weight:bold; color:" + obj.series.color + "'>" + obj.series.label + " (" + percent + "%)</span>");
+				$("#<?php echo $sWindowId?> #hover").html("<span style='font-weight:bold; color:" + obj.series.color + "'>" + obj.series.label + " (" + percent + "%)</span>");
 			});
 
 			placeholderUserAgentsDiagram.bind("plotclick", function (event, pos, obj) {

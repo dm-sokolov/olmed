@@ -9,4 +9,6 @@ return array(
 	'address_country' => 'Країна',
 	'address_postcode' => 'Індекс',
 	'address_city' => 'Місто',
+	'latitude' => 'Широта',
+	'longitude' => 'Довгота',
 );

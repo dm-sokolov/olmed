@@ -5,7 +5,7 @@
  * @package HostCMS
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 require_once('../../../bootstrap.php');
 
@@ -29,7 +29,9 @@ $oAdmin_Form_Controller
 	->path($sAdminFormAction)
 	->addView('bot', 'Bot_Controller_View')
 	->view('bot')
-	->Admin_View('Admin_Internal_View');
+	->Admin_View(
+		Admin_View::getClassName('Admin_Internal_View')
+	);
 
 if (Core_Array::getPost('show_settings'))
 {

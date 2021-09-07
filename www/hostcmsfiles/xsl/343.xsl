@@ -16,9 +16,9 @@
 	
 	<xsl:template match="informationsystem">
 		<xsl:if test=".//informationsystem_group[parent_id=$group]">
-			<div class="service-box-right">
+			<div class="navbar">
 				<div class="h4 text-center">Наши услуги</div>
-				<div class="list-group">
+				<div class="navbar-nav">
 					<xsl:apply-templates select=".//informationsystem_group[parent_id=$group]" />
 				</div>
 			</div>
@@ -28,11 +28,13 @@
 	<xsl:variable name="current_group" select="/informationsystem/current_group"/>
 	
 	<xsl:template match="informationsystem_group">
-		<a href="{url}" class="list-group-item">
-			<xsl:if test="$current_group = @id or property_value[tag_name = 'red']/value = 1">
-				<xsl:attribute name="class">list-group-item active</xsl:attribute>
-			</xsl:if>
-			<xsl:value-of select="name"/>
-		</a>
+		<li class="nav-item text-center text-sm-left">
+			<a href="{url}" class="nav-link">
+				<xsl:if test="$current_group = @id or property_value[tag_name = 'red']/value = 1">
+					<xsl:attribute name="class">list-group-item active</xsl:attribute>
+				</xsl:if>
+				<xsl:value-of select="name"/>
+			</a>
+		</li>
 	</xsl:template>
 </xsl:stylesheet>

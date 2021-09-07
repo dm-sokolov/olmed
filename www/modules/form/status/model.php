@@ -18,7 +18,7 @@ class Form_Status_Model extends Core_Entity
 	 * @var array
 	 */
 	protected $_hasMany = array(
-		'form' =>  array()
+		'form' => array()
 	);
 
 	/**

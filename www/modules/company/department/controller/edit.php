@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Company
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Company_Department_Controller_Edit extends Admin_Form_Action_Controller
 {
@@ -63,7 +63,7 @@ class Company_Department_Controller_Edit extends Admin_Form_Action_Controller
 						->html('<div class="btn btn-palegreen" onclick="$.cloneFormRow(this); event.stopPropagation();">
 									<i class="fa fa-plus-circle close"></i>
 								</div>
-								<div class="btn btn-darkorange btn-delete' . (count($aCompany_Department_Directory_Emails) ? '' : ' hide')  . '" onclick="$.deleteFormRow(this); event.stopPropagation();">
+								<div class="btn btn-darkorange btn-delete' . (count($aCompany_Department_Directory_Emails) ? '' : ' hide') . '" onclick="$.deleteFormRow(this); event.stopPropagation();">
 									<i class="fa fa-minus-circle close"></i>
 								</div>')
 				);
@@ -135,6 +135,10 @@ class Company_Department_Controller_Edit extends Admin_Form_Action_Controller
 														->caption(Core::_('Company_Department.name'))
 														->divAttr(array('class' => 'form-group col-lg-12 col-md-6 col-sm-6'))
 												)
+										)
+										->add(
+											Admin_Form_Entity::factory('Div')
+												->class('row')
 												->add(
 													Admin_Form_Entity::factory('Select')
 														->name('department_parent_id')
@@ -146,6 +150,10 @@ class Company_Department_Controller_Edit extends Admin_Form_Action_Controller
 														->filter(TRUE)
 														->caseSensitive(FALSE)
 												)
+										)
+										->add(
+											Admin_Form_Entity::factory('Div')
+												->class('row')
 												->add(
 													Admin_Form_Entity::factory('Input')
 														->type('text')
@@ -155,6 +163,10 @@ class Company_Department_Controller_Edit extends Admin_Form_Action_Controller
 														->caption(Core::_('Company_Department.address'))
 														->divAttr(array('class' => 'form-group col-lg-12 col-md-6 col-sm-6'))
 												)
+										)
+										->add(
+											Admin_Form_Entity::factory('Div')
+												->class('row')
 												->add(
 													Admin_Form_Entity::factory('Textarea')
 														->class('form-control')
@@ -163,21 +175,21 @@ class Company_Department_Controller_Edit extends Admin_Form_Action_Controller
 														->caption(Core::_('Company_Department.description'))
 														->divAttr(array('class' => 'form-group col-lg-12 col-md-6 col-sm-6'))
 												)
-												->add(
-													Admin_Form_Entity::factory('Input')
-														->divAttr(array('class' => ''))
-														->type('hidden')
-														->name('department_id')
-														->value($iDepartmentId)
-												)
-												->add(
-													Admin_Form_Entity::factory('Input')
-														->divAttr(array('class' => ''))
-														->type('hidden')
-														->name('company_id')
-														->value($iCompanyId)
-												)
 										)
+										->add(
+											Admin_Form_Entity::factory('Input')
+												->divAttr(array('class' => ''))
+												->type('hidden')
+												->name('department_id')
+												->value($iDepartmentId)
+										)
+										->add(
+											Admin_Form_Entity::factory('Input')
+												->divAttr(array('class' => ''))
+												->type('hidden')
+												->name('company_id')
+												->value($iCompanyId)
+										)										
 								)
 								->add(
 									Admin_Form_Entity::factory('Div')

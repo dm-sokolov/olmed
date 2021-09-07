@@ -6,7 +6,7 @@
  * @subpackage Company
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2018 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 return array(
 	'model_name' => 'Компании',
@@ -29,6 +29,7 @@ return array(
 	'bank_address' => 'Адрес банка',
 	'legal_name' => 'ФИО директора',
 	'accountant_legal_name' => 'ФИО главного бухгалтера',
+	'sorting' => 'Порядок сортировки',
 	'address' => 'Адрес',
 	'phone' => 'Телефон',
 	'fax' => 'Факс',
@@ -39,6 +40,7 @@ return array(
 	'tabBankingDetails' => 'Банковские реквизиты',
 	'guid' => 'GUID',
 	'edit_success' =>	'Данные о компании успешно обновлены.',
+	'apply_success' =>	'Информация изменена',
 	'edit_error' => 'Ошибка добавления данных о компании!',
 	'markDeleted_success' => "Информация о компании успешно удалена",
 	'id' => "Идентификатор",

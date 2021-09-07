@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Company
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Company_Department_User_Controller_Edit extends Admin_Form_Action_Controller
 {
@@ -84,7 +84,7 @@ class Company_Department_User_Controller_Edit extends Admin_Form_Action_Controll
 					->controller($this->_Admin_Form_Controller)
 					->id('editUserDepartmentModal')
 					->add(
-						Admin_Form_Entity::factory('Form')
+					 	Admin_Form_Entity::factory('Form')
 							->action($this->_Admin_Form_Controller->getPath())
 							->add(
 								Admin_Form_Entity::factory('Div')
@@ -98,6 +98,10 @@ class Company_Department_User_Controller_Edit extends Admin_Form_Action_Controll
 											->filter(TRUE)
 											->caseSensitive(FALSE)
 									)
+							)
+							->add(
+								Admin_Form_Entity::factory('Div')
+									->class('row')
 									->add(
 										Admin_Form_Entity::factory('Select')
 											->name('department_id')
@@ -109,6 +113,10 @@ class Company_Department_User_Controller_Edit extends Admin_Form_Action_Controll
 											->filter(TRUE)
 											->caseSensitive(FALSE)
 									)
+							)
+							->add(
+								Admin_Form_Entity::factory('Div')
+									->class('row')
 									->add(
 										Admin_Form_Entity::factory('Select')
 											->name('company_post_id')
@@ -118,6 +126,10 @@ class Company_Department_User_Controller_Edit extends Admin_Form_Action_Controll
 											->filter(TRUE)
 											->caseSensitive(FALSE)
 									)
+							)
+							->add(
+								Admin_Form_Entity::factory('Div')
+									->class('row')
 									->add(
 										Admin_Form_Entity::factory('Checkbox')
 											->class('form-control')
@@ -127,34 +139,34 @@ class Company_Department_User_Controller_Edit extends Admin_Form_Action_Controll
 											->value($iDepartmentPostHead)
 											->divAttr(array('class' => 'form-group col-lg-12 col-md-6 col-sm-6'))
 									)
-									->add(
-										Admin_Form_Entity::factory('Input')
-											->divAttr(array('class' => ''))
-											->type('hidden')
-											->name('company_id')
-											->value($iCompanyId)
-									)
-									->add(
-										Admin_Form_Entity::factory('Input')
-											->divAttr(array('class' => ''))
-											->type('hidden')
-											->name('original_department_id')
-											->value($oDepartment->id)
-									)
-									->add(
-										Admin_Form_Entity::factory('Input')
-											->divAttr(array('class' => ''))
-											->type('hidden')
-											->name('original_company_post_id')
-											->value($iCompanyPostId)
-									)
-									->add(
-										Admin_Form_Entity::factory('Input')
-											->divAttr(array('class' => ''))
-											->type('hidden')
-											->name('original_user_id')
-											->value($iUserId)
-									)
+							)
+							->add(
+								Admin_Form_Entity::factory('Input')
+									->divAttr(array('class' => ''))
+									->type('hidden')
+									->name('company_id')
+									->value($iCompanyId)
+							)
+							->add(
+								Admin_Form_Entity::factory('Input')
+									->divAttr(array('class' => ''))
+									->type('hidden')
+									->name('original_department_id')
+									->value($oDepartment->id)
+							)
+							->add(
+								Admin_Form_Entity::factory('Input')
+									->divAttr(array('class' => ''))
+									->type('hidden')
+									->name('original_company_post_id')
+									->value($iCompanyPostId)
+							)
+							->add(
+								Admin_Form_Entity::factory('Input')
+									->divAttr(array('class' => ''))
+									->type('hidden')
+									->name('original_user_id')
+									->value($iUserId)
 							)
 							->add(
 								Admin_Form_Entity::factory('Code')
@@ -173,7 +185,7 @@ class Company_Department_User_Controller_Edit extends Admin_Form_Action_Controll
 					->html('
 						<script>
 							bootbox.dialog({
-								message: \'' . $sAddEditUserFormContent  . '\',
+								message: \'' . $sAddEditUserFormContent . '\',
 								title: "' . ($iUserId ? Core::_('Company_Department.edit_user_title') : Core::_('Company_Department.add_user_title')) . '",
 								className: "modal-darkorange",
 								backdrop: false,
@@ -213,7 +225,7 @@ class Company_Department_User_Controller_Edit extends Admin_Form_Action_Controll
 
 			if (!is_null($oDepartment->id) && $oDepartment->company_id == $iCompanyId)
 			{
-				$iUserId =  intval(Core_Array::getPost('user_id'));
+				$iUserId = intval(Core_Array::getPost('user_id'));
 
 				$oUser = Core_Entity::factory('User', $iUserId);
 

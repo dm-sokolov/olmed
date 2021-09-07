@@ -73,7 +73,7 @@
 							</xsl:choose>
 						</div>
 						<div class="text-center mb-3">Заполните форму и наш специалист подберет удобное время визита для Вас</div>
-					<div class="text-center mb-3"><a href="/personalnie-dannie/" target="_blank" class="text-white">Политика обработки персональных данных</a></div>
+					
 						<xsl:choose>
 							<xsl:when test="error != ''">
 								<div id="error">

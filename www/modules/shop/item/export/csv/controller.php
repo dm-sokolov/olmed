@@ -27,6 +27,7 @@ class Shop_Item_Export_Csv_Controller extends Core_Servant_Properties
 		'exportItemShortcuts',
 		'exportOrders',
 		'producer',
+		'seller',
 		'shopId',
 		'startOrderDate',
 		'endOrderDate',
@@ -167,6 +168,7 @@ class Shop_Item_Export_Csv_Controller extends Core_Servant_Properties
 			'"' . Core::_('Shop_Exchange.item_id') . '"',
 			'"' . Core::_('Shop_Exchange.item_marking') . '"',
 			'"' . Core::_('Shop_Exchange.item_parent_marking') . '"',
+			'"' . Core::_('Shop_Exchange.item_parent_guid') . '"',
 			'"' . Core::_('Shop_Exchange.item_name') . '"',
 			'"' . Core::_('Shop_Exchange.item_description') . '"',
 			'"' . Core::_('Shop_Exchange.item_text') . '"',
@@ -205,6 +207,7 @@ class Shop_Item_Export_Csv_Controller extends Core_Servant_Properties
 			'"' . Core::_('Shop_Exchange.item_additional_group') . '"',
 			'"' . Core::_('Shop_Exchange.item_barcode') . '"',
 			'"' . Core::_('Shop_Exchange.item_sets_guid') . '"',
+			'"' . Core::_('Shop_Exchange.item_tabs') . '"',
 			'"' . Core::_('Shop_Exchange.siteuser_id') . '"',
 			'"' . Core::_('Shop_Exchange.item_yandex_market_sales_notes') . '"',
 		);
@@ -248,7 +251,7 @@ class Shop_Item_Export_Csv_Controller extends Core_Servant_Properties
 
 			$oSite_Alias = $oShop->Site->getCurrentAlias();
 			$this->_shopUrl = $oSite_Alias
-				? ($oShop->Site->https ? 'https://' : 'http://') . $oSite_Alias->name .  $oShop->Structure->getPath()
+				? ($oShop->Site->https ? 'https://' : 'http://') . $oSite_Alias->name . $oShop->Structure->getPath()
 				: '';
 
 			// Заполняем склады
@@ -335,7 +338,7 @@ class Shop_Item_Export_Csv_Controller extends Core_Servant_Properties
 
 	/**
 	 * Get Full Shop Item Data
-	 * @param int $oShopItem
+	 * @param object $oShopItem
 	 * @return array
 	 * @hostcms-event Shop_Item_Export_Csv_Controller.onAfterGetItemData
 	 */
@@ -380,7 +383,7 @@ class Shop_Item_Export_Csv_Controller extends Core_Servant_Properties
 
 	/**
 	 * Get Basic Item Data
-	 * @param int $oShopItem
+	 * @param object $oShopItem
 	 * @return array
 	 * @hostcms-event Shop_Item_Export_Csv_Controller.onAfterItemBasicData
 	 */
@@ -438,7 +441,6 @@ class Shop_Item_Export_Csv_Controller extends Core_Servant_Properties
 		if ($oShopItem->type == 3)
 		{
 			$aShop_Item_Sets = $oShopItem->Shop_Item_Sets->findAll(FALSE);
-
 			foreach ($aShop_Item_Sets as $oShop_Item_Set)
 			{
 				$aTmpSets[] = $oShop_Item_Set->Shop_Item->guid;
@@ -446,12 +448,25 @@ class Shop_Item_Export_Csv_Controller extends Core_Servant_Properties
 			unset($aShop_Item_Sets);
 		}
 
+		// Вкладки
+		$aTmpTabs = array();
+
+		$aShop_Tab_Items = $oShopItem->Shop_Tab_Items->findAll(FALSE);
+		foreach ($aShop_Tab_Items as $oShop_Tab_Item)
+		{
+			$aTmpTabs[] = $oShop_Tab_Item->Shop_Tab->name;
+		}
+		unset($aShop_Item_Tabs);
+
 		$result = array(
 			sprintf('"%s"', $this->prepareString($oShopItem->guid)),
 			sprintf('"%s"', $oShopItem->id),
 			sprintf('"%s"', $this->prepareString($oShopItem->marking)),
 			sprintf('"%s"', $oShopItem->modification_id
 				? $this->prepareString($oShopItem->Modification->marking)
+				: ''),
+			sprintf('"%s"', $oShopItem->modification_id
+				? $this->prepareString($oShopItem->Modification->guid)
 				: ''),
 			sprintf('"%s"', $this->prepareString($oShopItem->name)),
 			sprintf('"%s"', $this->prepareString($oShopItem->description)),
@@ -506,6 +521,7 @@ class Shop_Item_Export_Csv_Controller extends Core_Servant_Properties
 			sprintf('"%s"', implode(',', $aTmpShortcuts)),
 			sprintf('"%s"', implode(',', $aTmpBarcodes)),
 			sprintf('"%s"', implode(',', $aTmpSets)),
+			sprintf('"%s"', implode(',', $aTmpTabs)),
 			sprintf('"%s"', $oShopItem->siteuser_id),
 			sprintf('"%s"', $oShopItem->yandex_market_sales_notes)
 		);
@@ -799,6 +815,9 @@ class Shop_Item_Export_Csv_Controller extends Core_Servant_Properties
 
 				$this->producer
 					&& $oShopItems->queryBuilder()->where('shop_producer_id', '=', $this->producer);
+
+				$this->seller
+					&& $oShopItems->queryBuilder()->where('shop_seller_id', '=', $this->seller);
 
 				if ($iShopGroupId != 0)
 				{

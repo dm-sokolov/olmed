@@ -6,7 +6,7 @@
  * @subpackage Calendar
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2019 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 return array(
 	'model_name' => 'Календарь',
@@ -22,4 +22,5 @@ return array(
 	'settings' => 'Настройки',
 	'calendar_auth_code' => 'Код авторизации',
 	'calendar_auth_code_text' => 'Скопируйте этот код в текстовое поле на странице, с которой запрашивается токен.',
+	'option_entityLimit' => 'Лимит сущностей'
 );

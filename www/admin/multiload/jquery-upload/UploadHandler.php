@@ -223,7 +223,10 @@ class UploadHandler
         if (empty($version)) {
             $version_path = '';
         } else {
-            $version_dir = @$this->options['image_versions'][$version]['upload_dir'];
+            $version_dir = isset($this->options['image_versions'][$version]['upload_dir'])
+				? $this->options['image_versions'][$version]['upload_dir']
+				: NULL;
+
             if ($version_dir) {
                 return $version_dir.$this->get_user_path().$file_name;
             }
@@ -251,7 +254,10 @@ class UploadHandler
         if (empty($version)) {
             $version_path = '';
         } else {
-            $version_url = @$this->options['image_versions'][$version]['upload_url'];
+            $version_url = isset($this->options['image_versions'][$version]['upload_url'])
+				? $this->options['image_versions'][$version]['upload_url']
+				: NULL;
+
             if ($version_url) {
                 return $version_url.$this->get_user_path().rawurlencode($file_name);
             }
@@ -405,10 +411,10 @@ class UploadHandler
             $file->error = $this->get_error_message('max_number_of_files');
             return false;
         }
-        $max_width = @$this->options['max_width'];
-        $max_height = @$this->options['max_height'];
-        $min_width = @$this->options['min_width'];
-        $min_height = @$this->options['min_height'];
+        $max_width = Core_Array::get($this->options, 'max_width');
+        $max_height = Core_Array::get($this->options, 'max_height');
+        $min_width = Core_Array::get($this->options, 'min_width');
+        $min_height = Core_Array::get($this->options, 'min_height');
         if (($max_width || $max_height || $min_width || $min_height)
            && preg_match($this->options['image_file_types'], $file->name)) {
             list($img_width, $img_height) = $this->get_image_size($uploaded_file);
@@ -416,10 +422,11 @@ class UploadHandler
             // If we are auto rotating the image by default, do the checks on
             // the correct orientation
             if (
-                @$this->options['image_versions']['']['auto_orient'] &&
+                isset($this->options['image_versions']['']['auto_orient']) &&
+				$this->options['image_versions']['']['auto_orient'] &&
                 function_exists('exif_read_data') &&
                 ($exif = @exif_read_data($uploaded_file)) &&
-                (((int) @$exif['Orientation']) >= 5 )
+                (((int) Core_Array::get($exif, 'Orientation')) >= 5 )
             ) {
               $tmp = $img_width;
               $img_width = $img_height;
@@ -505,7 +512,7 @@ class UploadHandler
             if (!empty($extensions)) {
                 $parts = explode('.', $name);
                 $extIndex = count($parts) - 1;
-                $ext = strtolower(@$parts[$extIndex]);
+                $ext = strtolower(Core_Array::get($parts, $extIndex));
                 if (!in_array($ext, $extensions)) {
                     $parts[$extIndex] = $extensions[0];
                     $name = implode('.', $parts);
@@ -626,7 +633,7 @@ class UploadHandler
         if ($exif === false) {
             return false;
         }
-        $orientation = (int)@$exif['Orientation'];
+        $orientation = (int)Core_Array::get($exif, 'Orientation');
         if ($orientation < 2 || $orientation > 8) {
             return false;
         }
@@ -928,7 +935,7 @@ class UploadHandler
     protected function imagemagick_create_scaled_image($file_name, $version, $options) {
         list($file_path, $new_file_path) =
             $this->get_scaled_image_file_paths($file_name, $version);
-        $resize = @$options['max_width']
+        $resize = Core_Array::get($options, 'max_width')
             .(empty($options['max_height']) ? '' : 'X'.$options['max_height']);
         if (!$resize && empty($options['auto_orient'])) {
             if ($file_path !== $new_file_path) {
@@ -1137,19 +1144,19 @@ class UploadHandler
     }
 
     protected function get_upload_data($id) {
-        return @$_FILES[$id];
+        return Core_Array::getFiles($id);
     }
 
     protected function get_post_param($id) {
-        return @$_POST[$id];
+        return Core_Array::getPost($id);
     }
 
     protected function get_query_param($id) {
-        return @$_GET[$id];
+        return Core_Array::getGet($id);
     }
 
     protected function get_server_var($id) {
-        return @$_SERVER[$id];
+        return Core_Array::get($_SERVER, $id);
     }
 
     protected function handle_form_data($file, $index) {

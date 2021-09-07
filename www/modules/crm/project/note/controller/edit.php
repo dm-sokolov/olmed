@@ -79,17 +79,14 @@ class Crm_Project_Note_Controller_Edit extends Admin_Form_Action_Controller_Type
 	 */
 	public function execute($operation = NULL)
 	{
-		$iCrmProjectId = intval(Core_Array::getPost('crm_project_id'));
+		$iCrmProjectId = Core_Array::getPost('crm_project_id', 0, 'int');
 
-		$parentWindowId = Core_Array::getGet('parentWindowId');
-
+		// Всегда id_content
 		$sJsRefresh = '<script>
-			if ($(".timeline-crm").length && typeof _windowSettings != \'undefined\') {
-				$.adminLoad({ path: \'/admin/crm/project/entity/index.php\', additionalParams: \'crm_project_id=' . $iCrmProjectId . '\', windowId: \'' . $parentWindowId . '\' });
+			if ($("#id_content .timeline-crm").length && typeof _windowSettings != \'undefined\') {
+				$.adminLoad({ path: \'/admin/crm/project/entity/index.php\', additionalParams: \'crm_project_id=' . $iCrmProjectId . '\', windowId: \'id_content\' });
 			}
-
-			if ($("#crm-project-notes").length)
-			{
+			if ($("#id_content #crm-project-notes").length) {
 				$.adminLoad({ path: \'/admin/crm/project/note/index.php\', additionalParams: \'crm_project_id=' . $iCrmProjectId . '\', windowId: \'crm-project-notes\' });
 			}
 		</script>';

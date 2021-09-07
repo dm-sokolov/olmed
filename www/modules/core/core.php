@@ -112,6 +112,42 @@ class Core
 		try
 		{
 			Core_DataBase::instance()->connect();
+
+			// Constants init
+			$oConstants = Core_Entity::factory('Constant');
+			$oConstants
+				->queryBuilder()
+				->where('active', '=', 1);
+
+			$aConstants = $oConstants->findAll();
+			foreach ($aConstants as $oConstant)
+			{
+				$oConstant->define();
+			}
+
+			!defined('TMP_DIR') && define('TMP_DIR', 'hostcmsfiles/tmp/');
+			!defined('DEFAULT_LNG') && define('DEFAULT_LNG', 'ru');
+			!defined('BACKUP_DIR') && define('BACKUP_DIR', CMS_FOLDER . 'hostcmsfiles' . DIRECTORY_SEPARATOR . 'backup' . DIRECTORY_SEPARATOR);
+
+			// Права доступа к директории
+			define('CHMOD', self::$mainConfig['dirMode']);
+
+			// Права доступа к файлу
+			define('CHMOD_FILE', self::$mainConfig['fileMode']);
+
+			// Если есть ID сессии и сессия еще не запущена - то стартуем ее
+			// Запускается здесь для получения языка из сессии.
+			//Core_Session::hasSessionId() && Core_Session::start();
+
+			self::$_logged = Core_Auth::logged();
+
+			// Before _loadModuleList()
+			if (self::$_logged && isset($_REQUEST['lng_value']))
+			{
+				Core_Auth::setCurrentLng($_REQUEST['lng_value']);
+			}
+
+			self::_loadModuleList();
 		}
 		catch (Exception $e)
 		{
@@ -131,33 +167,6 @@ class Core
 
 			die();
 		}
-
-		// Constants init
-		$oConstants = Core_Entity::factory('Constant');
-		$oConstants->queryBuilder()->where('active', '=', 1);
-		$aConstants = $oConstants->findAll();
-		foreach ($aConstants as $oConstant)
-		{
-			$oConstant->define();
-		}
-
-		!defined('TMP_DIR') && define('TMP_DIR', 'hostcmsfiles/tmp/');
-		!defined('DEFAULT_LNG') && define('DEFAULT_LNG', 'ru');
-		!defined('BACKUP_DIR') && define('BACKUP_DIR', CMS_FOLDER . 'hostcmsfiles' . DIRECTORY_SEPARATOR . 'backup' . DIRECTORY_SEPARATOR);
-
-		// Если есть ID сессии и сессия еще не запущена - то стартуем ее
-		// Запускается здесь для получения языка из сессии.
-		//Core_Session::hasSessionId() && Core_Session::start();
-
-		self::$_logged = Core_Auth::logged();
-
-		// Before _loadModuleList()
-		if (self::$_logged && isset($_REQUEST['lng_value']))
-		{
-			Core_Auth::setCurrentLng($_REQUEST['lng_value']);
-		}
-
-		self::_loadModuleList();
 
 		self::$_init = TRUE;
 
@@ -179,7 +188,7 @@ class Core
 			'datePickerFormat' => 'DD.MM.YYYY',
 			'dateTimePickerFormat' => 'DD.MM.YYYY HH:mm:ss',
 			'timePickerFormat' => 'HH:mm:ss',
-			'availableExtension' => array ('JPG', 'JPEG', 'GIF', 'PNG', 'WEBP', 'PDF', 'ZIP', 'DOC', 'DOCX',  'XLS', 'XLSX'),
+			'availableExtension' => array ('JPG', 'JPEG', 'GIF', 'PNG', 'WEBP', 'PDF', 'ZIP', 'DOC', 'DOCX', 'XLS', 'XLSX'),
 			'defaultCache' => 'file',
 			'timezone' => 'America/Los_Angeles',
 			'translate' => TRUE,
@@ -187,6 +196,8 @@ class Core
 			'switchSelectToAutocomplete' => 100,
 			'autocompleteItems' => 10,
 			'cms_folders' => NULL,
+			'dirMode' => 0755,
+			'fileMode' => 0644,
 			'errorDocument503' => 'hostcmsfiles/503.htm',
 			'compressionJsDirectory' => 'hostcmsfiles/js/',
 			'compressionCssDirectory' => 'hostcmsfiles/css/',
@@ -200,7 +211,7 @@ class Core
 				'X-XSS-Protection' => '1;mode=block',
 			),
 			'backendSessionLifetime' => 14400,
-			'backendContentSecurityPolicy' => "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.cloudflare.com *.kaspersky-labs.com; img-src 'self' chart.googleapis.com data: blob: www.hostcms.ru; font-src 'self'; connect-src 'self' blob:; style-src 'self' 'unsafe-inline'"
+			'backendContentSecurityPolicy' => "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: *.cloudflare.com *.kaspersky-labs.com; img-src 'self' chart.googleapis.com data: blob: www.hostcms.ru; font-src 'self'; connect-src 'self' blob:; style-src 'self' 'unsafe-inline'"
 		);
 	}
 
@@ -475,7 +486,7 @@ class Core
 	static public function _shutdown()
 	{
 		// Явно закрываем сессию до закрытия соединения с БД в деструкторе
-		Core_Session::close();
+		class_exists('Core_Session') && Core_Session::close();
 
 		$lastError = error_get_last();
 		if ($lastError && in_array($lastError['type'], array(E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE)))
@@ -665,10 +676,10 @@ class Core
 		define('ERROR_EMAIL', $oSite->getErrorEmail());
 
 		// Права доступа к директории
-		define('CHMOD', octdec($oSite->chmod));
+		//define('CHMOD', octdec($oSite->chmod));
 
 		// Права доступа к файлу
-		define('CHMOD_FILE', octdec($oSite->files_chmod));
+		//define('CHMOD_FILE', octdec($oSite->files_chmod));
 
 		// Формат вывода даты
 		define('DATE_FORMAT', $oSite->date_format);

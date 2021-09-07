@@ -6,7 +6,7 @@
  * @package HostCMS
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 require_once('../../../bootstrap.php');
 
@@ -108,6 +108,8 @@ $iCount = count($aObjects);
 
 if ($iCount)
 {
+	$sWindowId = $oAdmin_Form_Controller->getWindowId();
+
 	ob_start();
 
 	$aColors = Core_Array::get(Core::$config->get('counter_color'), 'Column3D', array());
@@ -149,7 +151,6 @@ if ($iCount)
 		->add(Core::factory('Core_Html_Entity_Script')->value($sScript))
 		->execute();
 	*/
-
 	?>
 	<div class="col-lg-12">
 		<div class="widget counter">
@@ -246,7 +247,7 @@ if ($iCount)
 					content: "<b>%s</b> : <span>%y</span>"
 				}
 			};
-			var placeholder = $("#popularDiagram");
+			var placeholder = $("#<?php echo $sWindowId?> #popularDiagram");
 			var plot = $.plot(placeholder, popularDiagramData, options);
 		});
 	});

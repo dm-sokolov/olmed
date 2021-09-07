@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Company
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Company_Department_Model extends Core_Entity
 {
@@ -33,8 +33,8 @@ class Company_Department_Model extends Core_Entity
 	);
 
 	protected $_belongsTo = array(
-		'company' =>  array(),
-		'user' =>  array(),
+		'company' => array(),
+		'user' => array(),
 		'company_department' => array('foreign_key' => 'parent_id')
 	);
 

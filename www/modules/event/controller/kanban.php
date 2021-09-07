@@ -9,7 +9,7 @@ defined('HOSTCMS') || exit('HostCMS: access denied.');
  * @subpackage Event
  * @version 6.x
  * @author Hostmake LLC
- * @copyright © 2005-2020 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
+ * @copyright © 2005-2021 ООО "Хостмэйк" (Hostmake LLC), http://www.hostcms.ru
  */
 class Event_Controller_Kanban extends Admin_Form_Controller_View
 {
@@ -152,7 +152,7 @@ class Event_Controller_Kanban extends Admin_Form_Controller_View
 										</div>
 										<div class="col-xs-12 col-sm-6 well-avatar text-align-right">
 											<?php
-											if (!$userIsEventCreator)
+											if (!$userIsEventCreator && $oEventCreator)
 											{
 											?>
 												<img src="<?php echo $oEventCreator->getAvatar()?>" title="<?php echo htmlspecialchars($oEventCreator->getFullName())?>"/>

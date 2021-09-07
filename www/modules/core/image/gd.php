@@ -472,20 +472,24 @@ class Core_Image_Gd extends Core_Image
 		if (!is_null($watermarkX))
 		{
 			// Если передан атрибут в %-ах
-			if (preg_match("/^([0-9]*)%$/", $watermarkX, $regs) && $regs[1] > 0)
+			if (preg_match("/^([0-9]*)%$/", $watermarkX, $regs))
 			{
 				// Вычисляем позицию в %-х
-				$watermarkX = ($sourceResource_w - $watermarkResource_w) * ($regs[1] / 100);
+				$watermarkX = $regs[1] > 0
+					? ($sourceResource_w - $watermarkResource_w) * ($regs[1] / 100)
+					: 0;
 			}
 		}
 
 		if (!is_null($watermarkY))
 		{
 			// Если передан атрибут в %-ах
-			if (preg_match("/^([0-9]*)%$/", $watermarkY, $regs) && $regs[1] > 0)
+			if (preg_match("/^([0-9]*)%$/", $watermarkY, $regs))
 			{
 				// Вычисляем позицию в %-х
-				$watermarkY = ($sourceResource_h - $watermarkResource_h) * ($regs[1] / 100);
+				$watermarkY = $regs[1] > 0
+					? ($sourceResource_h - $watermarkResource_h) * ($regs[1] / 100)
+					: 0;
 			}
 		}
 
