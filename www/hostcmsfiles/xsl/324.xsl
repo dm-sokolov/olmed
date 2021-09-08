@@ -55,8 +55,10 @@
 							</xsl:otherwise>
 						</xsl:choose>
 					</div>
-					<xsl:variable name="doctor" select="name"></xsl:variable>
-					<button class="btn btn-primary" onclick="$.showXslTemplate('/callback/', 86, 357, ' ', '{$doctor}'); return false;">Записаться на прием</button>
+					<xsl:if test="informationsystem_group_id != 244">
+						<xsl:variable name="doctor" select="name"></xsl:variable>
+						<button class="btn btn-primary" onclick="$.showXslTemplate('/callback/', 86, 357, ' ', '{$doctor}'); return false;">Записаться на прием</button>
+					</xsl:if>
 				</div>
 			</div>
 		</div>

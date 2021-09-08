@@ -11,6 +11,7 @@
 	<xsl:variable name="group" select="/informationsystem/group"/>
 	<xsl:variable name="city"> в Нижнем Тагиле</xsl:variable>
 	
+	
 	<xsl:template match="/">
 		<xsl:apply-templates select="informationsystem"/>
 	</xsl:template>
@@ -156,11 +157,12 @@
 				<div class="worker__description"><xsl:value-of disable-output-escaping="yes" select="description"/></div>
 			</xsl:if>
 			
-			<div class="worker__button">
-				<xsl:variable name="doctor" select="name"></xsl:variable>
-			<button onclick="$.showXslTemplate('/callback/', 86, 357, ' ', '{$doctor}'); return false;"><span>Запись к врачу</span></button>
-			</div>
-			
+			<xsl:if test="informationsystem_group_id != 248">
+				<div class="worker__button">
+					<xsl:variable name="doctor" select="name"></xsl:variable>
+				<button onclick="$.showXslTemplate('/callback/', 86, 357, ' ', '{$doctor}'); return false;"><span>Запись к врачу</span></button>
+				</div>
+			</xsl:if>
 		</div>
 	</li>
 </xsl:template>

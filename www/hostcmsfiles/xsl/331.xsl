@@ -9,6 +9,8 @@
 	
 	<!-- ЕдиницаСотрудникаNEW -->
 	
+	<xsl:variable name="infosys_url" select="/informationsystem/informationsystem_group/url"></xsl:variable>
+	
 	<xsl:template match="/">
 		<xsl:apply-templates select="informationsystem/informationsystem_item"/>
 	</xsl:template>
@@ -55,8 +57,10 @@
 							</xsl:otherwise>
 						</xsl:choose>
 					</div>
-					<xsl:variable name="doctor" select="name"></xsl:variable>
-					<button class="btn btn-primary" onclick="$.showXslTemplate('/callback/', 86, 357, ' ', '{$doctor}'); return false;">Записаться на прием</button>
+					<xsl:if test="not(contains($infosys_url, 'administraciya'))">
+						<xsl:variable name="doctor" select="name"></xsl:variable>
+						<button class="btn btn-primary" onclick="$.showXslTemplate('/callback/', 86, 357, ' ', '{$doctor}'); return false;">Записаться на прием</button>
+					</xsl:if>
 				</div>
 			</div>
 		</div>
